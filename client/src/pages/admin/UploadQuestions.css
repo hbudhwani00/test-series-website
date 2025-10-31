@@ -1,0 +1,25 @@
+.mode-selector {
+  display: flex;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.mode-selector .btn {
+  flex: 1;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .mode-selector {
+    flex-direction: column;
+  }
+}

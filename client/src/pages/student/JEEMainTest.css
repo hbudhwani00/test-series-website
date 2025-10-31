@@ -1,0 +1,141 @@
+/* JEE Main Test Interface - Official NTA Style */
+
+.jee-main-test {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Hide body overflow in fullscreen */
+body:fullscreen {
+  overflow: auto;
+}
+
+body:-webkit-full-screen {
+  overflow: auto;
+}
+
+body:-moz-full-screen {
+  overflow: auto;
+}
+
+body:-ms-fullscreen {
+  overflow: auto;
+}
+
+/* Prevent text selection during test (reduce cheating) */
+.jee-main-test:fullscreen {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Allow selection only for input fields */
+.jee-main-test:fullscreen input,
+.jee-main-test:fullscreen textarea {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+.jee-main-instructions {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.question-palette-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+}
+
+.question-status-button {
+  aspect-ratio: 1;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.question-status-button:hover {
+  transform: scale(1.1);
+}
+
+.question-status-button.active {
+  box-shadow: 0 0 0 4px #3b82f6;
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-size: 1.5rem;
+  color: #2563eb;
+}
+
+/* Timer Warning Animation */
+@keyframes pulse-warning {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.time-warning {
+  animation: pulse-warning 1s ease-in-out infinite;
+}
+
+/* Section Badge */
+.section-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Question Option Hover Effect */
+.question-option {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.question-option:hover {
+  background-color: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.question-option.selected {
+  background-color: #dbeafe;
+  border-color: #2563eb;
+  border-width: 2px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+  .question-palette-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .question-palette-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  
+  .jee-main-test {
+    font-size: 0.9rem;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .question-palette,
+  .navigation-buttons,
+  .timer {
+    display: none;
+  }
+}

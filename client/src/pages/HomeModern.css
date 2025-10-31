@@ -1,0 +1,589 @@
+/* ============================================
+   WORLD-CLASS TEST SERIES DESIGN
+   AI StudyCoach Color Scheme
+   Navy Blue (#2D3E82) + Orange (#FF8C42) + Light Gray (#F5F7FB)
+   ============================================ */
+
+/* MODERN HERO SECTION - Navy Blue Background */
+.modern-hero {
+  min-height: 95vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px 60px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #2D3E82 0%, #1e2a5a 50%, #3d4f9f 100%);
+}
+
+.hero-background-modern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.cyan-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, 
+    rgba(45, 62, 130, 1) 0%, 
+    rgba(30, 42, 90, 1) 50%, 
+    rgba(61, 79, 159, 1) 100%
+  );
+}
+
+/* Floating Circles - Multiple Sizes */
+.floating-circles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.circle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(2px);
+  animation: floatCircle 25s ease-in-out infinite;
+}
+
+.circle-1 {
+  width: 400px;
+  height: 400px;
+  top: -100px;
+  left: -100px;
+  animation-delay: 0s;
+}
+
+.circle-2 {
+  width: 300px;
+  height: 300px;
+  top: 20%;
+  right: -80px;
+  animation-delay: 5s;
+}
+
+.circle-3 {
+  width: 250px;
+  height: 250px;
+  bottom: 10%;
+  left: 15%;
+  animation-delay: 10s;
+}
+
+.circle-4 {
+  width: 180px;
+  height: 180px;
+  top: 50%;
+  right: 20%;
+  animation-delay: 15s;
+}
+
+.circle-5 {
+  width: 350px;
+  height: 350px;
+  bottom: -120px;
+  right: -100px;
+  animation-delay: 20s;
+}
+
+@keyframes floatCircle {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.6;
+  }
+  25% {
+    transform: translate(30px, -40px) scale(1.1);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translate(-20px, 30px) scale(0.9);
+    opacity: 0.7;
+  }
+  75% {
+    transform: translate(40px, 20px) scale(1.05);
+    opacity: 0.5;
+  }
+}
+
+/* Hero Content - Modern Style */
+.hero-content-modern {
+  max-width: 1200px;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+  color: white;
+}
+
+.hero-badge-modern {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 30px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  animation: slideDown 0.8s ease-out;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-title-modern {
+  font-size: 4.5rem;
+  font-weight: 900;
+  margin-bottom: 25px;
+  line-height: 1.2;
+  animation: fadeInUp 1s ease-out;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+}
+
+.highlight-text {
+  color: #fff;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+}
+
+.hero-subtitle-modern {
+  font-size: 1.4rem;
+  margin-bottom: 40px;
+  opacity: 0.95;
+  animation: fadeInUp 1.2s ease-out;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+/* Hero Stats - Modern Grid */
+.hero-stats-modern {
+  display: flex;
+  justify-content: center;
+  gap: 60px;
+  margin-bottom: 50px;
+  animation: fadeInUp 1.4s ease-out;
+  flex-wrap: wrap;
+}
+
+.stat-item-modern {
+  text-align: center;
+}
+
+.stat-number-modern {
+  font-size: 3rem;
+  font-weight: 900;
+  display: block;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
+}
+
+.stat-label-modern {
+  font-size: 1rem;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+/* Modern CTA Buttons */
+.hero-cta-modern {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  animation: fadeInUp 1.6s ease-out;
+  margin-bottom: 40px;
+}
+
+.cta-button-modern {
+  padding: 18px 45px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.cta-primary-modern {
+  background: linear-gradient(135deg, #FF8C42 0%, #ff7620 100%);
+  color: white;
+  font-weight: 800;
+  box-shadow: 0 8px 25px rgba(255, 140, 66, 0.3);
+}
+
+.cta-primary-modern:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(255, 140, 66, 0.4);
+  background: linear-gradient(135deg, #ff7620 0%, #ff6600 100%);
+}
+
+.cta-secondary-modern {
+  background: transparent;
+  color: white;
+  border: 3px solid white;
+}
+
+.cta-secondary-modern:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  transform: translateY(-3px);
+  border-color: #FF8C42;
+  background: #FF8C42;
+}
+
+/* Trust Badges */
+.trust-badges-modern {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+  animation: fadeInUp 1.8s ease-out;
+  font-size: 0.95rem;
+  opacity: 0.95;
+}
+
+.trust-badges-modern span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* HOW IT WORKS SECTION - Modern Design */
+.how-it-works-section-modern {
+  padding: 100px 20px;
+  background: #F5F7FB;
+}
+
+.section-header-modern {
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.section-badge-modern {
+  display: inline-block;
+  padding: 10px 25px;
+  background: linear-gradient(135deg, #667EEA 0%, #3B82F6 100%);
+  color: white;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.section-title-modern {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: #1a202c;
+  margin-bottom: 20px;
+  line-height: 1.2;
+}
+
+.section-subtitle-modern {
+  font-size: 1.25rem;
+  color: #64748b;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* How It Works Grid - 3 Cards */
+.how-it-works-grid-modern {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 50px;
+  max-width: 1200px;
+  margin: 0 auto 80px;
+}
+
+.work-step-card-modern {
+  text-align: center;
+  padding: 50px 35px;
+  background: white;
+  border-radius: 30px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  border: 1px solid #f1f5f9;
+}
+
+.work-step-card-modern:hover {
+  transform: translateY(-12px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  border-color: transparent;
+}
+
+/* Circular Progress Rings with Icons */
+.work-step-icon-circle {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 35px;
+  transition: transform 0.6s ease;
+}
+
+.work-step-card-modern:hover .work-step-icon-circle {
+  transform: scale(1.1) rotate(15deg);
+}
+
+.work-step-icon-circle svg {
+  width: 120px;
+  height: 120px;
+  transform: rotate(-90deg);
+  transition: transform 0.6s ease;
+}
+
+.work-step-card-modern:hover .work-step-icon-circle svg {
+  transform: rotate(-75deg);
+}
+
+.work-step-icon-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.work-icon {
+  font-size: 2.5rem;
+  animation: bounceIcon 2.5s ease-in-out infinite;
+}
+
+@keyframes bounceIcon {
+  0%, 100% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.15) translateY(-5px);
+  }
+}
+
+.work-step-title-modern {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #1a202c;
+  margin-bottom: 18px;
+}
+
+.work-step-desc-modern {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: #64748b;
+}
+
+/* CTA Button Large */
+.how-it-works-cta-modern {
+  text-align: center;
+}
+
+.cta-button-large {
+  display: inline-flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px 50px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  text-decoration: none;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-button-large::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.cta-button-large:hover::before {
+  left: 100%;
+}
+
+.cta-button-large:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 15px 50px rgba(16, 185, 129, 0.4);
+}
+
+.cta-button-large .cta-arrow {
+  font-size: 1.8rem;
+  transition: transform 0.3s ease;
+}
+
+.cta-button-large:hover .cta-arrow {
+  transform: translateX(8px);
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 1024px) {
+  .hero-title-modern {
+    font-size: 3.5rem;
+  }
+  
+  .section-title-modern {
+    font-size: 2.8rem;
+  }
+  
+  .how-it-works-grid-modern {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  
+  .circle-1, .circle-2, .circle-5 {
+    width: 250px;
+    height: 250px;
+  }
+  
+  .circle-3, .circle-4 {
+    width: 150px;
+    height: 150px;
+  }
+}
+
+@media (max-width: 768px) {
+  .modern-hero {
+    padding: 60px 20px 50px;
+  }
+  
+  .hero-title-modern {
+    font-size: 2.5rem;
+  }
+  
+  .hero-subtitle-modern {
+    font-size: 1.15rem;
+  }
+  
+  .hero-stats-modern {
+    gap: 30px;
+  }
+  
+  .stat-number-modern {
+    font-size: 2.5rem;
+  }
+  
+  .hero-cta-modern {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .cta-button-modern {
+    width: 100%;
+    max-width: 320px;
+    justify-content: center;
+  }
+  
+  .section-title-modern {
+    font-size: 2.2rem;
+  }
+  
+  .section-subtitle-modern {
+    font-size: 1.1rem;
+  }
+  
+  .work-step-card-modern {
+    padding: 40px 30px;
+  }
+  
+  .how-it-works-section-modern {
+    padding: 70px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title-modern {
+    font-size: 2rem;
+  }
+  
+  .hero-badge-modern {
+    font-size: 0.85rem;
+    padding: 10px 20px;
+  }
+  
+  .stat-number-modern {
+    font-size: 2rem;
+  }
+  
+  .trust-badges-modern {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .section-title-modern {
+    font-size: 1.9rem;
+  }
+  
+  .work-step-icon-circle {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .work-step-icon-circle svg {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .work-icon {
+    font-size: 2rem;
+  }
+  
+  .work-step-title-modern {
+    font-size: 1.4rem;
+  }
+  
+  .cta-button-large {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+/* Fade In Animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
