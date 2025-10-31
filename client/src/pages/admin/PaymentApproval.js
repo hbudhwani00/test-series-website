@@ -4,6 +4,7 @@ import axios from 'axios';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
+import { API_URL } from '../../services/api';
 
 const PaymentApproval = () => {
   const [payments, setPayments] = useState([]);
@@ -19,8 +20,8 @@ const PaymentApproval = () => {
   const fetchPayments = async () => {
     try {
       const endpoint = filter === 'PENDING' 
-        ? 'http://localhost:5000/api/payment/pending'
-        : `http://localhost:5000/api/payment/all?status=${filter}`;
+        ? `${API_URL}/payment/pending`
+        : `${API_URL}/payment/all?status=${filter}`;
         
       const response = await axios.get(endpoint, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
