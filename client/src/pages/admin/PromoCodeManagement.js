@@ -73,7 +73,7 @@ const PromoCodeManagement = () => {
   const toggleActive = async (id, currentStatus) => {
     try {
       await axios.put(
-        `http://localhost:5000/api/promocodes/${id}`,
+        `${API_URL}/promocodes/${id}`,
         { isActive: !currentStatus },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -91,7 +91,7 @@ const PromoCodeManagement = () => {
     if (!window.confirm('Delete this promo code?')) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/promocodes/${id}`, {
+      await axios.delete(`${API_URL}/promocodes/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
 

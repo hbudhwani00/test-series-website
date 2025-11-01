@@ -17,7 +17,7 @@ const DemoResultDetail = () => {
 
   const fetchResult = async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/results/public/${resultId}`);
+      const response = await axios.get(`${API_URL}/results/public/${resultId}`);
       setResult(response.data.result);
     } catch (error) {
       toast.error('Failed to load result details');

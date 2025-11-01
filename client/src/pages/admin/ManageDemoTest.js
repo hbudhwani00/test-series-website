@@ -85,7 +85,7 @@ const ManageDemoTest = () => {
       if (editingQuestionId) {
         // Update existing question
         await axios.put(
-          `http://localhost:5000/api/admin/demo-test/update-question/${editingQuestionId}`,
+          `${API_URL}/admin/demo-test/update-question/${editingQuestionId}`,
           questionForm,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -179,7 +179,7 @@ const ManageDemoTest = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.delete(
-        `http://localhost:5000/api/admin/demo-test/remove-question/${questionId}`,
+        `${API_URL}/admin/demo-test/remove-question/${questionId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       toast.success('Question removed successfully!');

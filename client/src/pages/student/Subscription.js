@@ -151,7 +151,7 @@ const Subscription = () => {
 
     try {
       await axios.post(
-        `http://localhost:5000/api/payment/upi/${paymentId}/submit`,
+        `${API_URL}/payment/upi/${paymentId}/submit`,
         {
           transactionId,
           screenshot,

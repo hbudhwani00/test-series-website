@@ -42,7 +42,7 @@ const PaymentApproval = () => {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/payment/${paymentId}/approve`,
+        `${API_URL}/payment/${paymentId}/approve`,
         {},
         {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -65,7 +65,7 @@ const PaymentApproval = () => {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/payment/${paymentId}/reject`,
+        `${API_URL}/payment/${paymentId}/reject`,
         { reason: rejectionReason },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }

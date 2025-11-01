@@ -67,7 +67,7 @@ const ScheduleTests = () => {
       if (editingId) {
         // Update existing schedule
         await axios.put(
-          `http://localhost:5000/api/admin/scheduled-tests/${editingId}`,
+          `${API_URL}/admin/scheduled-tests/${editingId}`,
           formData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -96,7 +96,7 @@ const ScheduleTests = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.delete(
-        `http://localhost:5000/api/admin/scheduled-tests/${id}`,
+        `${API_URL}/admin/scheduled-tests/${id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
@@ -111,7 +111,7 @@ const ScheduleTests = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.put(
-        `http://localhost:5000/api/admin/scheduled-tests/${id}`,
+        `${API_URL}/admin/scheduled-tests/${id}`,
         { isActive: !currentStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );

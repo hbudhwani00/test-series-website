@@ -40,7 +40,7 @@ const ScheduledTestPage = () => {
   const fetchTest = async () => {
     try {
       const token = localStorage.getItem('token');
-      const { data } = await axios.get(`http://localhost:5000/api/scheduled-tests/student/test/${testId}`, {
+      const { data } = await axios.get(`${API_URL}/scheduled-tests/student/test/${testId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       

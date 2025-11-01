@@ -47,7 +47,7 @@ const ManageSubscriptions = () => {
     try {
       const token = localStorage.getItem('token');
       const { data } = await axios.post(
-        `http://localhost:5000/api/admin/subscriptions/${selectedStudent._id}`,
+        `${API_URL}/admin/subscriptions/${selectedStudent._id}`,
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -68,7 +68,7 @@ const ManageSubscriptions = () => {
       const subscription = selectedStudent.subscriptions.find(sub => sub.examType === formData.examType);
       
       const { data } = await axios.put(
-        `http://localhost:5000/api/admin/subscriptions/${selectedStudent._id}/${subscription._id}`,
+        `${API_URL}/admin/subscriptions/${selectedStudent._id}/${subscription._id}`,
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -88,7 +88,7 @@ const ManageSubscriptions = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.delete(
-        `http://localhost:5000/api/admin/subscriptions/${studentId}/${subscriptionId}`,
+        `${API_URL}/admin/subscriptions/${studentId}/${subscriptionId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       

@@ -26,7 +26,7 @@ const ExamPatternSelection = () => {
         return;
       }
 
-      const response = await axios.get("${API_URL}/payment/subscription-status', {
+      const response = await axios.get(`${API_URL}/payment/subscription-status`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSubscriptions(response.data.subscriptions);
@@ -134,7 +134,7 @@ const ExamPatternSelection = () => {
   const handleDemoTest = async () => {
     try {
       // Use the permanent demo test endpoint
-      const response = await axios.get("${API_URL}/demo/test');
+      const response = await axios.get(`${API_URL}/demo/test`);
       console.log('Demo test response:', response.data);
       
       if (!response.data.test) {

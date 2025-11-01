@@ -165,7 +165,7 @@ const ManageScheduledTest = () => {
 
       if (editingTest) {
         await axios.put(
-          `http://localhost:5000/api/scheduled-tests/${editingTest._id}`,
+          `${API_URL}/scheduled-tests/${editingTest._id}`,
           payload,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -195,7 +195,7 @@ const ManageScheduledTest = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/scheduled-tests/${id}`, {
+      await axios.delete(`${API_URL}/scheduled-tests/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Test deleted successfully');
@@ -209,7 +209,7 @@ const ManageScheduledTest = () => {
   const handleEditTest = async (test) => {
     try {
       const token = localStorage.getItem('token');
-      const { data } = await axios.get(`http://localhost:5000/api/scheduled-tests/${test._id}/full`, {
+      const { data } = await axios.get(`${API_URL}/scheduled-tests/${test._id}/full`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

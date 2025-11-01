@@ -29,6 +29,9 @@ const StudentDashboard = () => {
     }
   };
 
+  // Check if exam is already selected
+  const selectedExam = localStorage.getItem('selectedExam');
+
   if (loading) {
     return (
       <div className="modern-loading">
@@ -167,18 +170,20 @@ const StudentDashboard = () => {
               <h2 className="card-title">⚡ Quick Actions</h2>
             </div>
             <div className="action-grid">
-              <Link to="/student/exam-selection" className="action-item purple">
-                <div className="action-icon">🎯</div>
+              {!selectedExam && (
+                <Link to="/student/exam-selection" className="action-item purple">
+                  <div className="action-icon">🎯</div>
+                  <div className="action-content">
+                    <div className="action-title">Select Exam</div>
+                    <div className="action-desc">Choose your target exam</div>
+                  </div>
+                </Link>
+              )}
+              <Link to="/student/ai-test" className="action-item blue">
+                <div className="action-icon">🤖</div>
                 <div className="action-content">
-                  <div className="action-title">Select Exam</div>
-                  <div className="action-desc">Choose your target exam</div>
-                </div>
-              </Link>
-              <Link to="/student/generate-test" className="action-item blue">
-                <div className="action-icon">✨</div>
-                <div className="action-content">
-                  <div className="action-title">Generate Test</div>
-                  <div className="action-desc">Create custom test</div>
+                  <div className="action-title">AI Test</div>
+                  <div className="action-desc">Smart personalized test</div>
                 </div>
               </Link>
               <Link to="/student/results" className="action-item green">

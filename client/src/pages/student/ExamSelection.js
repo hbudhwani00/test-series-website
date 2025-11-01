@@ -10,7 +10,7 @@ const ExamSelection = () => {
     setSelectedExam(examType);
     localStorage.setItem('selectedExam', examType);
     setTimeout(() => {
-      navigate('/student/subscription');
+      navigate('/student/dashboard');
     }, 500);
   };
 

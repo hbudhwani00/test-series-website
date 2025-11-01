@@ -17,7 +17,7 @@ const ScheduledResultDetail = () => {
   const fetchResult = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:5000/api/results/${resultId}`, {
+      const response = await axios.get(`${API_URL}/results/${resultId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setResult(response.data.result);

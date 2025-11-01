@@ -240,7 +240,7 @@ const JEEMainTest = () => {
         setTest(response.data.test);
       } else {
         // For regular test
-        endpoint = `http://localhost:5000/api/tests/${testId}`;
+        endpoint = `${API_URL}/tests/${testId}`;
         
         // If testId is "new", fetch from the /new endpoint to generate a new test
         if (testId === 'new') {
@@ -448,7 +448,7 @@ const JEEMainTest = () => {
       if (isDemoTest) {
         // Demo test submission (no auth required, no prompts)
         response = await axios.post(
-          `http://localhost:5000/api/demo/submit`,
+          `${API_URL}/demo/submit`,
           {
             testId: test._id,
             answers: formattedAnswers,
@@ -460,7 +460,7 @@ const JEEMainTest = () => {
       } else {
         // Regular test submission
         response = await axios.post(
-          `http://localhost:5000/api/results/submit`,
+          `${API_URL}/results/submit`,
           {
             testId: test._id,
             answers: formattedAnswers,
