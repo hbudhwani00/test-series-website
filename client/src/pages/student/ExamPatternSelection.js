@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
+import { API_URL } from '../../services/api';
 
 const ExamPatternSelection = () => {
   const [subscriptions, setSubscriptions] = useState([]);
