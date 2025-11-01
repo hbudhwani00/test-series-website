@@ -392,6 +392,15 @@ const Home = () => {
             <span className="section-badge">💰 Affordable Excellence</span>
             <h2 className="section-title">Choose Your <span className="gradient-text">Success Plan</span></h2>
             <p className="section-subtitle">No hidden fees. Cancel anytime. 7-day money-back guarantee.</p>
+            <p className="mobile-swipe-hint" style={{
+              display: 'none',
+              fontSize: '0.9rem',
+              color: '#64748b',
+              marginTop: '10px',
+              fontStyle: 'italic'
+            }}>
+              👉 Swipe to see all plans →
+            </p>
           </div>
 
           <div className="pricing-cards">

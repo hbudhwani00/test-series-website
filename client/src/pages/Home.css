@@ -387,3 +387,48 @@
 .how-it-works-cta .cta-button:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(255, 140, 66, 0.4); }
 .how-it-works-cta .cta-arrow { font-size: 1.5rem; transition: transform 0.3s ease; }
 .how-it-works-cta .cta-button:hover .cta-arrow { transform: translateX(5px); }
+
+/* Mobile Pricing Slider - Additional Styles */
+@media (max-width: 768px) {
+  .mobile-swipe-hint {
+    display: block !important;
+    animation: swipeHint 2s ease-in-out infinite;
+  }
+  @keyframes swipeHint {
+    0%, 100% { opacity: 0.6; transform: translateX(0); }
+    50% { opacity: 1; transform: translateX(10px); }
+  }
+  
+  .pricing-cards {
+    display: flex !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 20px;
+    padding: 20px 10px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .pricing-cards::-webkit-scrollbar {
+    display: none;
+  }
+  .pricing-card {
+    min-width: 300px;
+    max-width: 300px;
+    flex-shrink: 0;
+    scroll-snap-align: center;
+  }
+  .pricing-card.featured {
+    transform: scale(1) !important;
+  }
+  .pricing-section {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .pricing-card {
+    min-width: 85vw;
+    max-width: 85vw;
+  }
+}
