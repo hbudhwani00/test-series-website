@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_URL } from '../../services/api';
 import { toast } from 'react-toastify';
 import './Dashboard.css';
 
@@ -16,7 +17,7 @@ const StudentAnalytics = () => {
   const fetchStudentAnalytics = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/ai/admin/student-analytics', {
+      const response = await axios.get("${API_URL}/ai/admin/student-analytics', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStudents(response.data.students);
@@ -218,3 +219,4 @@ const StudentAnalytics = () => {
 };
 
 export default StudentAnalytics;
+

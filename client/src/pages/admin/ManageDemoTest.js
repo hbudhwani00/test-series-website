@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import './ManageDemoTest.css';
+import { API_URL } from '../../services/api';
 
 const ManageDemoTest = () => {
   const [demoTest, setDemoTest] = useState(null);
@@ -36,7 +37,7 @@ const ManageDemoTest = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const { data } = await axios.get('http://localhost:5000/api/admin/demo-test', {
+      const { data } = await axios.get("${API_URL}/admin/demo-test', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDemoTest(data.demoTest);
@@ -58,7 +59,7 @@ const ManageDemoTest = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        'http://localhost:5000/api/admin/demo-test/create',
+        "${API_URL}/admin/demo-test/create',
         {
           title,
           description: 'Official Demo Test',
@@ -93,7 +94,7 @@ const ManageDemoTest = () => {
       } else {
         // Add new question
         await axios.post(
-          'http://localhost:5000/api/admin/demo-test/add-question',
+          "${API_URL}/admin/demo-test/add-question',
           questionForm,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -509,3 +510,4 @@ const ManageDemoTest = () => {
 };
 
 export default ManageDemoTest;
+

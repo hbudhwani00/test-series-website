@@ -33,7 +33,7 @@ const ScheduleTests = () => {
       const token = localStorage.getItem('token');
       // You'll need to add an endpoint to get all tests
       // For now, we'll use a placeholder
-      const { data } = await axios.get('http://localhost:5000/api/admin/questions', {
+      const { data } = await axios.get("${API_URL}/admin/questions', {
         headers: { Authorization: `Bearer ${token}` }
       });
       // This is temporary - you should create a proper endpoint to fetch all available tests
@@ -47,7 +47,7 @@ const ScheduleTests = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const { data } = await axios.get('http://localhost:5000/api/admin/scheduled-tests', {
+      const { data } = await axios.get("${API_URL}/admin/scheduled-tests', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setScheduledTests(data.scheduledTests);
@@ -75,7 +75,7 @@ const ScheduleTests = () => {
       } else {
         // Create new schedule
         const { data } = await axios.post(
-          'http://localhost:5000/api/admin/scheduled-tests',
+          "${API_URL}/admin/scheduled-tests',
           formData,
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -532,3 +532,4 @@ const ScheduleTests = () => {
 };
 
 export default ScheduleTests;
+

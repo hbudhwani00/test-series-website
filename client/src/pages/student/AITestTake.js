@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import './JEEMainTest.css';
+import { API_URL } from '../../services/api';
 
 const AITestTake = () => {
   const location = useLocation();
@@ -55,7 +56,7 @@ const AITestTake = () => {
       const timeTaken = (testData.duration * 60) - timeRemaining;
 
       const response = await axios.post(
-        'http://localhost:5000/api/ai/submit-test',
+        "${API_URL}/ai/submit-test',
         {
           questions: testData.questions,
           answers: answers,
@@ -571,4 +572,5 @@ const AITestTake = () => {
 };
 
 export default AITestTake;
+
 

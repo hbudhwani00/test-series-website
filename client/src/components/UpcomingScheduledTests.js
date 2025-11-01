@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_URL } from '../services/api';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card, Badge } from '../../components/ui';
@@ -15,7 +16,7 @@ const UpcomingScheduledTests = () => {
   const fetchScheduledTests = async () => {
     try {
       const token = localStorage.getItem('token');
-      const { data } = await axios.get('http://localhost:5000/api/tests/scheduled/upcoming', {
+      const { data } = await axios.get("${API_URL}/tests/scheduled/upcoming', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setScheduledTests(data.scheduledTests);
@@ -109,3 +110,4 @@ const UpcomingScheduledTests = () => {
 };
 
 export default UpcomingScheduledTests;
+

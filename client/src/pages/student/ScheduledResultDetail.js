@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import { API_URL } from '../../services/api';
 import './ResultDetail.css';
 
 const ScheduledResultDetail = () => {
@@ -648,3 +649,4 @@ const ScheduledResultDetail = () => {
 };
 
 export default ScheduledResultDetail;
+

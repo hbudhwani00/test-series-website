@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import { API_URL } from '../../services/api';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
@@ -25,7 +26,7 @@ const PromoCodeManagement = () => {
 
   const fetchPromoCodes = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/promocodes', {
+      const response = await axios.get("${API_URL}/promocodes', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setPromoCodes(response.data.promoCodes);
@@ -41,7 +42,7 @@ const PromoCodeManagement = () => {
 
     try {
       await axios.post(
-        'http://localhost:5000/api/promocodes',
+        "${API_URL}/promocodes',
         {
           ...formData,
           discount: Number(formData.discount),
@@ -312,3 +313,4 @@ const PromoCodeManagement = () => {
 };
 
 export default PromoCodeManagement;
+

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import { API_URL } from '../../services/api';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 
@@ -24,7 +25,7 @@ const TestSeries = () => {
         return;
       }
 
-      const response = await axios.get('http://localhost:5000/api/test-series/all', {
+      const response = await axios.get("${API_URL}/test-series/all', {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -252,3 +253,4 @@ const TestSeries = () => {
 };
 
 export default TestSeries;
+

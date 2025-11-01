@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { paymentService } from '../../services/api';
+import { paymentService, API_URL } from '../../services/api';
 import axios from 'axios';
 import QRCode from 'qrcode';
 import Card from '../../components/ui/Card';
@@ -35,7 +35,7 @@ const Subscription = () => {
     try {
       const [subsRes, paymentsRes] = await Promise.all([
         paymentService.getSubscriptionStatus(),
-        axios.get('http://localhost:5000/api/payment/my-payments', {
+        axios.get("${API_URL}/payment/my-payments', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         })
       ]);
@@ -57,7 +57,7 @@ const Subscription = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/promocodes/validate',
+        "${API_URL}/promocodes/validate',
         {
           code: promoCode,
           examType: selectedPlan.type,
@@ -96,7 +96,7 @@ const Subscription = () => {
       
       // Initiate payment
       const response = await axios.post(
-        'http://localhost:5000/api/payment/upi/initiate',
+        "${API_URL}/payment/upi/initiate',
         {
           examType: selectedPlan.type,
           amount: amount,
@@ -428,3 +428,4 @@ const Subscription = () => {
 };
 
 export default Subscription;
+

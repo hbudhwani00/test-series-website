@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, Button, Badge } from '../../components/ui';
 import './JEEMainTest.css';
+import { API_URL } from '../../services/api';
 
 const JEEMainTest = () => {
   const { testId } = useParams();
@@ -235,7 +236,7 @@ const JEEMainTest = () => {
       
       if (isDemo) {
         // For demo test, fetch from demo endpoint (no auth required)
-        response = await axios.get('http://localhost:5000/api/demo/test');
+        response = await axios.get("${API_URL}/demo/test');
         setTest(response.data.test);
       } else {
         // For regular test
@@ -243,7 +244,7 @@ const JEEMainTest = () => {
         
         // If testId is "new", fetch from the /new endpoint to generate a new test
         if (testId === 'new') {
-          endpoint = 'http://localhost:5000/api/tests/new';
+          endpoint = "${API_URL}/tests/new';
         }
         
         response = await axios.get(endpoint, {
@@ -912,3 +913,4 @@ const JEEMainTest = () => {
 };
 
 export default JEEMainTest;
+

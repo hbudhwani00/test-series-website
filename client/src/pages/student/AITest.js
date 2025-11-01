@@ -1,9 +1,10 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
+import { API_URL } from '../../services/api';
 
 const AITest = () => {
   const [generating, setGenerating] = useState(false);
@@ -24,7 +25,7 @@ const AITest = () => {
       const token = localStorage.getItem('token');
       
       const response = await axios.post(
-        'http://localhost:5000/api/ai/generate-test',
+        "${API_URL}/ai/generate-test',
         { 
           subject: subject,
           questionCount: questionCount 
@@ -225,3 +226,4 @@ const AITest = () => {
 };
 
 export default AITest;
+

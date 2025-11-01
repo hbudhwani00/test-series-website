@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import { API_URL } from '../../services/api';
 import './JEEMainTest.css';
 
 const ScheduledTestPage = () => {
@@ -90,7 +91,7 @@ const ScheduledTestPage = () => {
       });
 
       const response = await axios.post(
-        'http://localhost:5000/api/scheduled-tests/submit',
+        "${API_URL}/scheduled-tests/submit',
         {
           testId: test._id,
           answers: formattedAnswers,
@@ -269,3 +270,4 @@ const ScheduledTestPage = () => {
 };
 
 export default ScheduledTestPage;
+
