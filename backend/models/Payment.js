@@ -80,4 +80,22 @@ paymentSchema.pre('save', function(next) {
 paymentSchema.index({ userId: 1, status: 1 });
 paymentSchema.index({ status: 1, createdAt: -1 });
 
+// Validate amount calculation
+paymentSchema.pre('save', function(next) {
+  if (this.discount > this.originalAmount) {
+    return next(new Error('Discount cannot exceed original amount'));
+  }
+  
+  const expectedAmount = this.originalAmount - this.discount;
+  if (Math.abs(this.amount - expectedAmount) > 0.01) {
+    return next(new Error('Amount calculation mismatch'));
+  }
+  
+  this.updatedAt = Date.now();
+  next();
+});
+
+// Add index for transaction ID
+paymentSchema.index({ transactionId: 1 }, { sparse: true });
+
 module.exports = mongoose.model('Payment', paymentSchema);
