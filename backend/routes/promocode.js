@@ -36,7 +36,7 @@ router.post('/', auth, adminAuth, async (req, res) => {
       maxUses,
       applicableExams,
       description,
-      createdBy: req.user.id
+      createdBy: req.user.userId
     });
 
     await promoCode.save();
@@ -91,6 +91,11 @@ router.post('/validate', auth, async (req, res) => {
       return res.status(404).json({ message: 'Invalid promo code' });
     }
 
+    // Check if user already used this code
+    if (promoCode.usedBy && promoCode.usedBy.includes(req.user.userId)) {
+      return res.status(400).json({ message: 'You have already used this promo code' });
+    }
+
     if (promoCode.expiryDate && new Date(promoCode.expiryDate) < new Date()) {
       return res.status(400).json({ message: 'Promo code has expired' });
     }
@@ -128,38 +133,6 @@ router.post('/validate', auth, async (req, res) => {
     });
   } catch (error) {
     console.error('Error validating promo code:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// @route   POST /api/promocodes/apply/:orderId
-// @desc    Mark promo code as used after payment confirmation
-// @access  Private/Admin
-router.post('/apply/:orderId', auth, adminAuth, async (req, res) => {
-  try {
-    const { code } = req.body;
-
-    if (!code) {
-      return res.status(400).json({ message: 'Promo code is required' });
-    }
-
-    const promoCode = await PromoCode.findOne({ 
-      code: code.toUpperCase() 
-    });
-
-    if (!promoCode) {
-      return res.status(404).json({ message: 'Promo code not found' });
-    }
-
-    promoCode.usedCount = (promoCode.usedCount || 0) + 1;
-    await promoCode.save();
-
-    res.json({ 
-      message: 'Promo code applied successfully',
-      usedCount: promoCode.usedCount
-    });
-  } catch (error) {
-    console.error('Error applying promo code:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
