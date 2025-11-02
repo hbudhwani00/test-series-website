@@ -27,12 +27,16 @@ const promoCodeSchema = new mongoose.Schema({
   },
   maxUses: {
     type: Number,
-    default: null // null means unlimited
+    default: null
   },
   usedCount: {
     type: Number,
     default: 0
   },
+  usedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   applicableExams: [{
     type: String,
     enum: ['JEE_MAIN', 'JEE_MAIN_ADVANCED', 'NEET']
@@ -54,7 +58,6 @@ const promoCodeSchema = new mongoose.Schema({
   }
 });
 
-// Update timestamp on save
 promoCodeSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
