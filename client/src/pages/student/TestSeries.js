@@ -25,7 +25,7 @@ const TestSeries = () => {
         return;
       }
 
-      const response = await axios.get("${API_URL}/test-series/all', {
+      const response = await axios.get(`${API_URL}/test-series/all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

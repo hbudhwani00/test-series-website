@@ -56,7 +56,7 @@ const AITestTake = () => {
       const timeTaken = (testData.duration * 60) - timeRemaining;
 
       const response = await axios.post(
-        "${API_URL}/ai/submit-test',
+        `${API_URL}/ai/submit-test`,
         {
           questions: testData.questions,
           answers: answers,

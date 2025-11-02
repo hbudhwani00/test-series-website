@@ -117,7 +117,7 @@ const UploadQuestion = () => {
         }
       }
 
-      await axios.post("${API_URL}/questions/upload', dataToSubmit, {
+      await axios.post(`${API_URL}/questions/upload`, dataToSubmit, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

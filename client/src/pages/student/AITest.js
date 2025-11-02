@@ -25,7 +25,7 @@ const AITest = () => {
       const token = localStorage.getItem('token');
       
       const response = await axios.post(
-        "${API_URL}/ai/generate-test',
+        `${API_URL}/ai/generate-test`,
         { 
           subject: subject,
           questionCount: questionCount 

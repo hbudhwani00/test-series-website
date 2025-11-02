@@ -30,7 +30,7 @@ const ManageSubscriptions = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const { data } = await axios.get("${API_URL}/admin/subscriptions', {
+      const { data } = await axios.get(`${API_URL}/admin/subscriptions`, {
         headers: { Authorization: `Bearer ${token}` },
         params: filters
       });

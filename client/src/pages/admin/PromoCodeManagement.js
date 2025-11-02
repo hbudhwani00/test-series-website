@@ -26,7 +26,7 @@ const PromoCodeManagement = () => {
 
   const fetchPromoCodes = async () => {
     try {
-      const response = await axios.get("${API_URL}/promocodes', {
+      const response = await axios.get(`${API_URL}/promocodes`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       setPromoCodes(response.data.promoCodes);
@@ -42,7 +42,7 @@ const PromoCodeManagement = () => {
 
     try {
       await axios.post(
-        "${API_URL}/promocodes',
+        `${API_URL}/promocodes`,
         {
           ...formData,
           discount: Number(formData.discount),

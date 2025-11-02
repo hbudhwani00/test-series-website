@@ -49,7 +49,7 @@ const ManageScheduledTest = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const { data } = await axios.get("${API_URL}/scheduled-tests/all', {
+      const { data } = await axios.get(`${API_URL}/scheduled-tests/all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTests(data.scheduledTests);
@@ -172,7 +172,7 @@ const ManageScheduledTest = () => {
         toast.success('Test updated successfully!');
       } else {
         const { data } = await axios.post(
-          "${API_URL}/scheduled-tests/create',
+          `${API_URL}/scheduled-tests/create`,
           payload,
           { headers: { Authorization: `Bearer ${token}` } }
         );

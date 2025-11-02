@@ -17,7 +17,7 @@ const StudentAnalytics = () => {
   const fetchStudentAnalytics = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get("${API_URL}/ai/admin/student-analytics', {
+      const response = await axios.get(`${API_URL}/ai/admin/student-analytics`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStudents(response.data.students);

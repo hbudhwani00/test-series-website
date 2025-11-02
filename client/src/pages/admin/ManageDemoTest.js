@@ -37,7 +37,7 @@ const ManageDemoTest = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const { data } = await axios.get("${API_URL}/admin/demo-test', {
+      const { data } = await axios.get(`${API_URL}/admin/demo-test`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setDemoTest(data.demoTest);
@@ -59,7 +59,7 @@ const ManageDemoTest = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        "${API_URL}/admin/demo-test/create',
+        `${API_URL}/admin/demo-test/create`,
         {
           title,
           description: 'Official Demo Test',
@@ -94,7 +94,7 @@ const ManageDemoTest = () => {
       } else {
         // Add new question
         await axios.post(
-          "${API_URL}/admin/demo-test/add-question',
+          `${API_URL}/admin/demo-test/add-question`,
           questionForm,
           { headers: { Authorization: `Bearer ${token}` } }
         );

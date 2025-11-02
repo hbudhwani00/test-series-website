@@ -236,7 +236,7 @@ const JEEMainTest = () => {
       
       if (isDemo) {
         // For demo test, fetch from demo endpoint (no auth required)
-        response = await axios.get("${API_URL}/demo/test');
+        response = await axios.get(`${API_URL}/demo/test`);
         setTest(response.data.test);
       } else {
         // For regular test
@@ -244,7 +244,7 @@ const JEEMainTest = () => {
         
         // If testId is "new", fetch from the /new endpoint to generate a new test
         if (testId === 'new') {
-          endpoint = "${API_URL}/tests/new';
+          endpoint = `${API_URL}/tests/new`;
         }
         
         response = await axios.get(endpoint, {

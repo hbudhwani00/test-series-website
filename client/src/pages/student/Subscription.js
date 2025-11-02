@@ -35,7 +35,7 @@ const Subscription = () => {
     try {
       const [subsRes, paymentsRes] = await Promise.all([
         paymentService.getSubscriptionStatus(),
-        axios.get("${API_URL}/payment/my-payments', {
+        axios.get(`${API_URL}/payment/my-payments`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         })
       ]);
@@ -57,7 +57,7 @@ const Subscription = () => {
 
     try {
       const response = await axios.post(
-        "${API_URL}/promocodes/validate',
+        `${API_URL}/promocodes/validate`,
         {
           code: promoCode,
           examType: selectedPlan.type,
@@ -96,7 +96,7 @@ const Subscription = () => {
       
       // Initiate payment
       const response = await axios.post(
-        "${API_URL}/payment/upi/initiate',
+        `${API_URL}/payment/upi/initiate`,
         {
           examType: selectedPlan.type,
           amount: amount,
