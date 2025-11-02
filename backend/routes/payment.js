@@ -289,6 +289,10 @@ router.get('/all', auth, adminAuth, async (req, res) => {
 // @route   PUT /api/payments/:id/approve
 // @desc    Approve payment and activate subscription (Admin only)
 // @access  Private/Admin
+
+// @route   PUT /api/payments/:id/approve
+// @desc    Approve payment and activate subscription (Admin only)
+// @access  Private/Admin
 router.put('/:id/approve', auth, adminAuth, async (req, res) => {
   try {
     const payment = await Payment.findById(req.params.id);
@@ -299,6 +303,29 @@ router.put('/:id/approve', auth, adminAuth, async (req, res) => {
 
     if (payment.status !== 'PENDING') {
       return res.status(400).json({ message: 'Payment already processed' });
+    }
+
+    // Check promo code validity before approval
+    if (payment.promoCode) {
+      const promoCode = await PromoCode.findOne({ code: payment.promoCode });
+      
+      if (!promoCode) {
+        return res.status(400).json({ message: 'Promo code no longer exists' });
+      }
+
+      // Check if user already used it
+      if (promoCode.usedBy && promoCode.usedBy.includes(payment.userId)) {
+        return res.status(400).json({ 
+          message: 'User already used this promo code. Cannot approve payment.' 
+        });
+      }
+
+      // Check if promo code reached max uses
+      if (promoCode.maxUses && promoCode.usedCount >= promoCode.maxUses) {
+        return res.status(400).json({ 
+          message: 'Promo code usage limit reached. Cannot approve payment.' 
+        });
+      }
     }
 
     // Update payment status
@@ -313,22 +340,18 @@ router.put('/:id/approve', auth, adminAuth, async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Calculate expiry date (30 days from now)
     const expiryDate = new Date();
-    expiryDate.setDate(expiryDate.getDate() + 30);
+    expiryDate.setDate(expiryDate.getDate() + 365);
 
-    // Add or update subscription
     const existingSubIndex = user.subscriptions.findIndex(
       sub => sub.examType === payment.examType
     );
 
     if (existingSubIndex !== -1) {
-      // Extend existing subscription
       user.subscriptions[existingSubIndex].expiryDate = expiryDate;
       user.subscriptions[existingSubIndex].isActive = true;
       user.subscriptions[existingSubIndex].amount = payment.amount;
     } else {
-      // Create new subscription
       user.subscriptions.push({
         examType: payment.examType,
         purchaseDate: new Date(),
@@ -341,11 +364,14 @@ router.put('/:id/approve', auth, adminAuth, async (req, res) => {
 
     await user.save();
 
-    // Increment promo code usage if used
+    // Atomic promo code update
     if (payment.promoCode) {
       await PromoCode.findOneAndUpdate(
         { code: payment.promoCode },
-        { $inc: { usedCount: 1 } }
+        {
+          $inc: { usedCount: 1 },
+          $push: { usedBy: payment.userId }
+        }
       );
     }
 
