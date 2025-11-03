@@ -107,3 +107,74 @@
     @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600;
   }
 }
+
+/* Mobile Responsive - Make everything smaller */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+  
+  body {
+    font-size: 0.875rem;
+  }
+  
+  h1 {
+    font-size: 1.75rem !important;
+  }
+  
+  h2 {
+    font-size: 1.5rem !important;
+  }
+  
+  h3 {
+    font-size: 1.25rem !important;
+  }
+  
+  h4 {
+    font-size: 1.125rem !important;
+  }
+  
+  h5, h6 {
+    font-size: 1rem !important;
+  }
+  
+  .btn {
+    @apply px-4 py-2 text-sm;
+  }
+  
+  .card {
+    @apply p-4 mb-4;
+  }
+  
+  .container {
+    @apply px-3;
+  }
+  
+  .input-field {
+    @apply px-3 py-2 text-sm;
+  }
+  
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    @apply px-3 py-2 text-sm;
+  }
+  
+  .badge {
+    @apply px-2 py-0.5 text-xs;
+  }
+  
+  /* Reduce spacing */
+  .form-group {
+    @apply mb-3;
+  }
+  
+  /* Make tables more compact */
+  table {
+    font-size: 0.8rem;
+  }
+  
+  th, td {
+    padding: 0.5rem !important;
+  }
+}
