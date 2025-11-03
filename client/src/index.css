@@ -111,70 +111,79 @@
 /* Mobile Responsive - Make everything smaller */
 @media (max-width: 768px) {
   html {
-    font-size: 14px;
+    font-size: 12px;
   }
   
   body {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
   }
   
   h1 {
-    font-size: 1.75rem !important;
-  }
-  
-  h2 {
     font-size: 1.5rem !important;
   }
   
-  h3 {
+  h2 {
     font-size: 1.25rem !important;
   }
   
-  h4 {
-    font-size: 1.125rem !important;
+  h3 {
+    font-size: 1.1rem !important;
   }
   
-  h5, h6 {
+  h4 {
     font-size: 1rem !important;
   }
   
+  h5, h6 {
+    font-size: 0.9rem !important;
+  }
+  
   .btn {
-    @apply px-4 py-2 text-sm;
+    @apply px-3 py-1.5 text-xs;
   }
   
   .card {
-    @apply p-4 mb-4;
+    @apply p-3 mb-3;
   }
   
   .container {
-    @apply px-3;
+    @apply px-2;
   }
   
   .input-field {
-    @apply px-3 py-2 text-sm;
+    @apply px-2 py-1.5 text-xs;
   }
   
   .form-group input,
   .form-group select,
   .form-group textarea {
-    @apply px-3 py-2 text-sm;
+    @apply px-2 py-1.5 text-xs;
   }
   
   .badge {
-    @apply px-2 py-0.5 text-xs;
+    @apply px-1.5 py-0.5 text-xs;
   }
   
   /* Reduce spacing */
   .form-group {
-    @apply mb-3;
+    @apply mb-2;
+  }
+  
+  .form-group label {
+    font-size: 0.8rem !important;
   }
   
   /* Make tables more compact */
   table {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
   }
   
   th, td {
-    padding: 0.5rem !important;
+    padding: 0.35rem !important;
+  }
+  
+  /* Reduce margins and padding globally */
+  * {
+    line-height: 1.4 !important;
   }
 }
