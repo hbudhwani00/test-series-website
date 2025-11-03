@@ -25,9 +25,11 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3 group">
-            <div className="bg-gradient-to-br from-green-500 to-cyan-500 p-2.5 rounded-xl group-hover:scale-110 transition-all duration-300 shadow-lg">
-              <span className="text-2xl">c:\Users\hbudh\Downloads\Navy and Icy Blue 'test.ai' Logo.jpg</span>
-            </div>
+            <img 
+              src="/logo.jpg" 
+              alt="Test.AI Logo" 
+              className="h-12 w-auto group-hover:scale-105 transition-all duration-300"
+            />
             <div className="flex flex-col">
               <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-cyan-600 bg-clip-text text-transparent">Ai Test Series</span>
               <span className="text-xs text-gray-500 font-medium">JEE & NEET</span>
