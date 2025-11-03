@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 // Components
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -76,6 +77,7 @@ function AppRoutes() {
   
   return (
     <div className="flex flex-col min-h-screen">
+      <ScrollToTop />
       {!isTestRoute && <Navbar />}
       <main className="flex-grow">
         <Routes>
