@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button, Card, Badge, LoadingSpinner } from '../../components/ui';
 import './admin.css';
 
+const API_URL = 'https://test-series-backend-dyfc.onrender.com/api';  // ✅ ADD THIS
+
 const ManageSubscriptions = () => {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);

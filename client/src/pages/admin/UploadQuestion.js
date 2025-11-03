@@ -3,6 +3,8 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { Card, Button } from '../../components/ui';
 
+const API_URL = 'https://test-series-backend-dyfc.onrender.com/api';  // ✅ ADD THIS
+
 const UploadQuestion = () => {
   const [formData, setFormData] = useState({
     examType: 'JEE',

@@ -4,6 +4,8 @@ import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 import './ManageDemoTest.css';
 
+const API_URL = 'https://test-series-backend-dyfc.onrender.com/api';
+
 const ManageScheduledTest = () => {
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);

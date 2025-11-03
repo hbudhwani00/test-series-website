@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { API_URL } from '../config';
+const API_URL = 'https://test-series-backend-dyfc.onrender.com/api'; 
 
 export { API_URL };
 export const API_BASE_URL = API_URL;
