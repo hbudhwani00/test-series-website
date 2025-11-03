@@ -29,7 +29,7 @@ const Navbar = () => {
               <span className="text-2xl">🎓</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-cyan-600 bg-clip-text text-transparent">Test Series</span>
+              <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-cyan-600 bg-clip-text text-transparent">Ai Test Series</span>
               <span className="text-xs text-gray-500 font-medium">JEE & NEET</span>
             </div>
           </Link>
