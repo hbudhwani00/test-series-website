@@ -107,6 +107,26 @@ const UploadQuestion = () => {
     }
   };
 
+  // Handle paste event for images
+  const handlePaste = async (e, type, index = null) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    // Look for image in clipboard
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        e.preventDefault(); // Prevent default paste behavior for images
+        
+        const blob = items[i].getAsFile();
+        if (blob) {
+          toast.info('Uploading pasted image...');
+          await handleImageUpload(blob, type, index);
+        }
+        break;
+      }
+    }
+  };
+
   const handleNumericalRangeChange = (field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -317,14 +337,15 @@ const UploadQuestion = () => {
 
             {/* Question Text */}
             <div>
-              <label className="block text-sm font-medium mb-2">Question Text *</label>
+              <label className="block text-sm font-medium mb-2">Question Text * (You can paste images here with Ctrl+V)</label>
               <textarea
                 name="question"
                 value={formData.question}
                 onChange={handleChange}
+                onPaste={(e) => handlePaste(e, 'question')}
                 rows="4"
                 className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter the question text..."
+                placeholder="Enter the question text... (You can also paste images directly)"
                 required
               />
             </div>
@@ -359,13 +380,14 @@ const UploadQuestion = () => {
                   />
                 </div>
               )}
+              <p className="text-xs text-gray-500 mt-1">💡 Tip: You can paste images directly in the question text area above using Ctrl+V</p>
             </div>
 
             {/* Options for MCQ */}
             {(formData.questionType === 'single' || formData.questionType === 'multiple') && (
               <>
                 <div className="space-y-3">
-                  <label className="block text-sm font-medium">Options *</label>
+                  <label className="block text-sm font-medium">Options * (Paste images in option fields with Ctrl+V)</label>
                   {formData.options.map((option, index) => (
                     <div key={index} className="space-y-2">
                       <div className="flex items-center gap-3">
@@ -374,8 +396,9 @@ const UploadQuestion = () => {
                           type="text"
                           value={option}
                           onChange={(e) => handleOptionChange(index, e.target.value)}
+                          onPaste={(e) => handlePaste(e, 'option', index)}
                           className="flex-1 px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
-                          placeholder={`Option ${String.fromCharCode(65 + index)}`}
+                          placeholder={`Option ${String.fromCharCode(65 + index)} (or paste image)`}
                           required
                         />
                       </div>
@@ -513,14 +536,15 @@ const UploadQuestion = () => {
 
             {/* Explanation */}
             <div>
-              <label className="block text-sm font-medium mb-2">Explanation (Optional)</label>
+              <label className="block text-sm font-medium mb-2">Explanation (Optional - Paste images with Ctrl+V)</label>
               <textarea
                 name="explanation"
                 value={formData.explanation}
                 onChange={handleChange}
+                onPaste={(e) => handlePaste(e, 'explanation')}
                 rows="3"
                 className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
-                placeholder="Explain the solution..."
+                placeholder="Explain the solution... (You can also paste images directly)"
               />
             </div>
 
@@ -554,6 +578,7 @@ const UploadQuestion = () => {
                   />
                 </div>
               )}
+              <p className="text-xs text-gray-500 mt-1">💡 Tip: You can paste images directly in the explanation text area above using Ctrl+V</p>
             </div>
 
             {/* Submit Button */}

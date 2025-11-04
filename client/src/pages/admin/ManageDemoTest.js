@@ -147,6 +147,76 @@ const ManageDemoTest = () => {
     }
   };
 
+  // Handle image upload
+  const handleImageUpload = async (file, type, index = null) => {
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const formDataObj = new FormData();
+      formDataObj.append('image', file);
+
+      const response = await axios.post(`${API_URL}/questions/upload-image`, formDataObj, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      const imageUrl = response.data.imageUrl;
+      const fullImageUrl = `${API_URL.replace('/api', '')}${imageUrl}`;
+
+      // Update the appropriate field based on type
+      if (type === 'question') {
+        setQuestionForm(prev => ({ ...prev, questionImage: fullImageUrl }));
+        toast.success('Question image uploaded');
+      } else if (type === 'option' && index !== null) {
+        const newOptionImages = [...questionForm.optionImages];
+        newOptionImages[index] = fullImageUrl;
+        setQuestionForm(prev => ({ ...prev, optionImages: newOptionImages }));
+        toast.success(`Option ${String.fromCharCode(65 + index)} image uploaded`);
+      } else if (type === 'explanation') {
+        setQuestionForm(prev => ({ ...prev, explanationImage: fullImageUrl }));
+        toast.success('Explanation image uploaded');
+      }
+    } catch (error) {
+      console.error('Image upload error:', error);
+      toast.error('Failed to upload image');
+    }
+  };
+
+  // Handle paste event for images
+  const handlePaste = async (e, type, index = null) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    // Look for image in clipboard
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        e.preventDefault(); // Prevent default paste behavior for images
+        
+        const blob = items[i].getAsFile();
+        if (blob) {
+          toast.info('Uploading pasted image...');
+          await handleImageUpload(blob, type, index);
+        }
+        break;
+      }
+    }
+  };
+
   const handleAddQuestion = async (e) => {
     e.preventDefault();
     
@@ -516,11 +586,12 @@ const ManageDemoTest = () => {
                 </div>
 
                 <div className="form-group">
-                  <label>Question * <span style={{ fontSize: '12px', color: '#666' }}>(Auto-fills if question exists)</span></label>
+                  <label>Question * <span style={{ fontSize: '12px', color: '#666' }}>(Auto-fills if question exists - Paste images with Ctrl+V)</span></label>
                   <textarea
                     value={questionForm.question}
                     onChange={handleQuestionTextChange}
-                    placeholder="Enter question text (will auto-fill if found in question bank)"
+                    onPaste={(e) => handlePaste(e, 'question')}
+                    placeholder="Enter question text (will auto-fill if found in question bank, or paste images directly)"
                     rows="4"
                     required
                   />
@@ -528,7 +599,7 @@ const ManageDemoTest = () => {
 
                 {questionForm.questionType === 'single' && (
                   <>
-                    <label>Options *</label>
+                    <label>Options * <span style={{ fontSize: '12px', color: '#666' }}>(Paste images with Ctrl+V)</span></label>
                     {questionForm.options.map((option, index) => (
                       <div key={index} className="form-group">
                         <input
@@ -539,7 +610,8 @@ const ManageDemoTest = () => {
                             newOptions[index] = e.target.value;
                             setQuestionForm({ ...questionForm, options: newOptions });
                           }}
-                          placeholder={`Option ${index + 1}`}
+                          onPaste={(e) => handlePaste(e, 'option', index)}
+                          placeholder={`Option ${index + 1} (or paste image)`}
                           required
                         />
                       </div>
@@ -574,11 +646,12 @@ const ManageDemoTest = () => {
                 </div>
 
                 <div className="form-group">
-                  <label>Solution/Explanation *</label>
+                  <label>Solution/Explanation * <span style={{ fontSize: '12px', color: '#666' }}>(Paste images with Ctrl+V)</span></label>
                   <textarea
                     value={questionForm.explanation}
                     onChange={(e) => setQuestionForm({ ...questionForm, explanation: e.target.value })}
-                    placeholder="Enter detailed solution"
+                    onPaste={(e) => handlePaste(e, 'explanation')}
+                    placeholder="Enter detailed solution (or paste images directly)"
                     rows="3"
                     required
                   />
