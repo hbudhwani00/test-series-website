@@ -7,9 +7,12 @@ import { API_URL } from '../../services/api';
 const ManageDemoTest = () => {
   const [demoTest, setDemoTest] = useState(null);
   const [showQuestionForm, setShowQuestionForm] = useState(false);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [loading, setLoading] = useState(true);
   const [editingQuestionId, setEditingQuestionId] = useState(null);
+  const [bulkQuestions, setBulkQuestions] = useState('');
+  const [allQuestions, setAllQuestions] = useState([]); // Store all questions from DB
   
   const [questionForm, setQuestionForm] = useState({
     examType: 'JEE',
@@ -31,7 +34,20 @@ const ManageDemoTest = () => {
 
   useEffect(() => {
     fetchDemoTest();
+    fetchAllQuestions(); // Fetch all questions for auto-fill
   }, []);
+
+  const fetchAllQuestions = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const { data } = await axios.get(`${API_URL}/admin/questions?limit=1000`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAllQuestions(data.questions || []);
+    } catch (error) {
+      console.error('Failed to fetch questions:', error);
+    }
+  };
 
   const fetchDemoTest = async () => {
     try {
@@ -76,8 +92,65 @@ const ManageDemoTest = () => {
     }
   };
 
+  // Check for duplicate question
+  const checkDuplicate = (questionText) => {
+    const normalizedInput = questionText.trim().toLowerCase();
+    
+    // Check in demo test questions
+    if (demoTest?.questions) {
+      const duplicate = demoTest.questions.find(
+        q => q.question.trim().toLowerCase() === normalizedInput
+      );
+      if (duplicate) return { isDuplicate: true, source: 'Demo Test' };
+    }
+    
+    return { isDuplicate: false };
+  };
+
+  // Auto-fill from existing questions
+  const handleQuestionTextChange = (e) => {
+    const questionText = e.target.value;
+    setQuestionForm({ ...questionForm, question: questionText });
+    
+    // If text is long enough, try to find matching question
+    if (questionText.trim().length > 20) {
+      const normalizedInput = questionText.trim().toLowerCase();
+      const matchingQuestion = allQuestions.find(
+        q => q.question.trim().toLowerCase() === normalizedInput
+      );
+      
+      if (matchingQuestion) {
+        // Auto-fill all fields
+        toast.info('Question found! Auto-filling details...', { autoClose: 2000 });
+        setQuestionForm({
+          ...questionForm,
+          question: matchingQuestion.question,
+          examType: matchingQuestion.examType || 'JEE',
+          subject: matchingQuestion.subject || 'Physics',
+          chapter: matchingQuestion.chapter || '',
+          topic: matchingQuestion.topic || '',
+          source: matchingQuestion.source || 'Practice',
+          questionType: matchingQuestion.questionType || 'single',
+          options: matchingQuestion.options?.length ? matchingQuestion.options : ['', '', '', ''],
+          correctAnswer: matchingQuestion.correctAnswer !== undefined ? matchingQuestion.correctAnswer.toString() : '',
+          explanation: matchingQuestion.explanation || '',
+          difficulty: matchingQuestion.difficulty || 'medium',
+        });
+      }
+    }
+  };
+
   const handleAddQuestion = async (e) => {
     e.preventDefault();
+    
+    // Check for duplicates before adding
+    if (!editingQuestionId) {
+      const duplicateCheck = checkDuplicate(questionForm.question);
+      if (duplicateCheck.isDuplicate) {
+        toast.error(`This question already exists in ${duplicateCheck.source}!`);
+        return;
+      }
+    }
     
     try {
       const token = localStorage.getItem('token');
@@ -189,6 +262,80 @@ const ManageDemoTest = () => {
     }
   };
 
+  const handleBulkUpload = async () => {
+    if (!bulkQuestions.trim()) {
+      toast.error('Please paste question numbers');
+      return;
+    }
+
+    try {
+      // Parse question numbers from input
+      const questionNumbers = bulkQuestions
+        .split(/[\n,]/)
+        .map(num => num.trim())
+        .filter(num => num && !isNaN(num))
+        .map(num => parseInt(num));
+
+      if (questionNumbers.length === 0) {
+        toast.error('No valid question numbers found');
+        return;
+      }
+
+      // Find questions from allQuestions that match the question numbers
+      const questionsToAdd = [];
+      const notFound = [];
+
+      for (const qNum of questionNumbers) {
+        const found = allQuestions.find(q => q.questionNumber === qNum);
+        if (found) {
+          // Check if already in demo test
+          const duplicate = demoTest.questions.find(
+            dq => dq.question.trim().toLowerCase() === found.question.trim().toLowerCase()
+          );
+          if (!duplicate) {
+            questionsToAdd.push(found);
+          }
+        } else {
+          notFound.push(qNum);
+        }
+      }
+
+      if (questionsToAdd.length === 0) {
+        toast.warning('All questions are either duplicates or not found');
+        return;
+      }
+
+      // Add questions one by one
+      const token = localStorage.getItem('token');
+      let successCount = 0;
+
+      for (const question of questionsToAdd) {
+        try {
+          await axios.post(
+            `${API_URL}/admin/demo-test/add-question`,
+            question,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          successCount++;
+        } catch (error) {
+          console.error(`Failed to add question ${question.questionNumber}:`, error);
+        }
+      }
+
+      toast.success(`${successCount} questions added successfully!`);
+      if (notFound.length > 0) {
+        toast.warning(`Question numbers not found: ${notFound.join(', ')}`);
+      }
+
+      setBulkQuestions('');
+      setShowBulkUpload(false);
+      fetchDemoTest();
+    } catch (error) {
+      toast.error('Bulk upload failed');
+      console.error(error);
+    }
+  };
+
   if (loading) {
     return <div className="loading">Loading...</div>;
   }
@@ -219,11 +366,57 @@ const ManageDemoTest = () => {
           <div className="actions">
             <button 
               className="btn btn-success" 
-              onClick={() => setShowQuestionForm(!showQuestionForm)}
+              onClick={() => {
+                setShowQuestionForm(!showQuestionForm);
+                setShowBulkUpload(false);
+              }}
             >
               {showQuestionForm ? 'Cancel' : '+ Add Question'}
             </button>
+            <button 
+              className="btn btn-primary" 
+              onClick={() => {
+                setShowBulkUpload(!showBulkUpload);
+                setShowQuestionForm(false);
+              }}
+              style={{ marginLeft: '10px' }}
+            >
+              {showBulkUpload ? 'Cancel' : '📋 Bulk Upload'}
+            </button>
           </div>
+
+          {showBulkUpload && (
+            <div className="bulk-upload-form card">
+              <h3>Bulk Upload Questions</h3>
+              <p style={{ color: '#666', marginBottom: '15px' }}>
+                Enter question numbers (comma or newline separated) to add from your question bank:
+              </p>
+              <textarea
+                value={bulkQuestions}
+                onChange={(e) => setBulkQuestions(e.target.value)}
+                placeholder="Example:&#10;1, 5, 12, 23&#10;or&#10;1&#10;5&#10;12&#10;23"
+                rows="6"
+                style={{ width: '100%', padding: '10px', fontSize: '14px' }}
+              />
+              <div className="form-actions" style={{ marginTop: '15px' }}>
+                <button 
+                  className="btn btn-secondary" 
+                  onClick={() => {
+                    setShowBulkUpload(false);
+                    setBulkQuestions('');
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={handleBulkUpload}
+                >
+                  Upload Questions
+                </button>
+              </div>
+            </div>
+          )}
 
           {showQuestionForm && (
             <div className="question-form card">
@@ -316,11 +509,11 @@ const ManageDemoTest = () => {
                 </div>
 
                 <div className="form-group">
-                  <label>Question *</label>
+                  <label>Question * <span style={{ fontSize: '12px', color: '#666' }}>(Auto-fills if question exists)</span></label>
                   <textarea
                     value={questionForm.question}
-                    onChange={(e) => setQuestionForm({ ...questionForm, question: e.target.value })}
-                    placeholder="Enter question text"
+                    onChange={handleQuestionTextChange}
+                    placeholder="Enter question text (will auto-fill if found in question bank)"
                     rows="4"
                     required
                   />

@@ -12,6 +12,9 @@ const ManageScheduledTest = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingTest, setEditingTest] = useState(null);
   const [editingQuestionIndex, setEditingQuestionIndex] = useState(null);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
+  const [bulkQuestions, setBulkQuestions] = useState('');
+  const [allQuestions, setAllQuestions] = useState([]);
   
   const [testData, setTestData] = useState({
     title: '',
@@ -45,7 +48,20 @@ const ManageScheduledTest = () => {
 
   useEffect(() => {
     fetchTests();
+    fetchAllQuestions();
   }, []);
+
+  const fetchAllQuestions = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const { data } = await axios.get(`${API_URL}/admin/questions?limit=1000`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAllQuestions(data.questions || []);
+    } catch (error) {
+      console.error('Failed to fetch questions:', error);
+    }
+  };
 
   const fetchTests = async () => {
     try {
@@ -63,9 +79,113 @@ const ManageScheduledTest = () => {
     }
   };
 
+  // Check for duplicate question
+  const checkDuplicate = (questionText) => {
+    const normalizedInput = questionText.trim().toLowerCase();
+    const duplicate = questions.find(
+      q => q.question.trim().toLowerCase() === normalizedInput
+    );
+    return !!duplicate;
+  };
+
+  // Auto-fill from existing questions
+  const handleQuestionTextChange = (e) => {
+    const questionText = e.target.value;
+    setCurrentQuestion({ ...currentQuestion, question: questionText });
+    
+    if (questionText.trim().length > 20) {
+      const normalizedInput = questionText.trim().toLowerCase();
+      const matchingQuestion = allQuestions.find(
+        q => q.question.trim().toLowerCase() === normalizedInput
+      );
+      
+      if (matchingQuestion) {
+        toast.info('Question found! Auto-filling details...', { autoClose: 2000 });
+        setCurrentQuestion({
+          ...currentQuestion,
+          question: matchingQuestion.question,
+          options: matchingQuestion.options?.length ? matchingQuestion.options : ['', '', '', ''],
+          correctAnswer: matchingQuestion.correctAnswer !== undefined ? parseInt(matchingQuestion.correctAnswer) : 0,
+          marks: matchingQuestion.marks || 4,
+          difficulty: matchingQuestion.difficulty || 'medium',
+          subject: matchingQuestion.subject || testData.subject,
+          chapter: matchingQuestion.chapter || testData.chapter,
+          topic: matchingQuestion.topic || '',
+          explanation: matchingQuestion.explanation || '',
+          questionType: matchingQuestion.questionType || 'mcq',
+          source: matchingQuestion.source || 'Practice'
+        });
+      }
+    }
+  };
+
+  const handleBulkUpload = async () => {
+    if (!bulkQuestions.trim()) {
+      toast.error('Please paste question numbers');
+      return;
+    }
+
+    try {
+      const questionNumbers = bulkQuestions
+        .split(/[\n,]/)
+        .map(num => num.trim())
+        .filter(num => num && !isNaN(num))
+        .map(num => parseInt(num));
+
+      if (questionNumbers.length === 0) {
+        toast.error('No valid question numbers found');
+        return;
+      }
+
+      const questionsToAdd = [];
+      const notFound = [];
+
+      for (const qNum of questionNumbers) {
+        const found = allQuestions.find(q => q.questionNumber === qNum);
+        if (found) {
+          const duplicate = questions.find(
+            dq => dq.question.trim().toLowerCase() === found.question.trim().toLowerCase()
+          );
+          if (!duplicate) {
+            questionsToAdd.push({
+              ...found,
+              questionNumber: questions.length + questionsToAdd.length + 1
+            });
+          }
+        } else {
+          notFound.push(qNum);
+        }
+      }
+
+      if (questionsToAdd.length === 0) {
+        toast.warning('All questions are either duplicates or not found');
+        return;
+      }
+
+      setQuestions([...questions, ...questionsToAdd]);
+      toast.success(`${questionsToAdd.length} questions added!`);
+      
+      if (notFound.length > 0) {
+        toast.warning(`Question numbers not found: ${notFound.join(', ')}`);
+      }
+
+      setBulkQuestions('');
+      setShowBulkUpload(false);
+    } catch (error) {
+      toast.error('Bulk upload failed');
+      console.error(error);
+    }
+  };
+
   const handleAddQuestion = () => {
     if (!currentQuestion.question.trim()) {
       toast.error('Please enter a question');
+      return;
+    }
+
+    // Check for duplicates
+    if (editingQuestionIndex === null && checkDuplicate(currentQuestion.question)) {
+      toast.error('This question already exists in this test!');
       return;
     }
 
@@ -502,7 +622,64 @@ const ManageScheduledTest = () => {
 
                 {/* Questions Section */}
                 <div className="form-section">
-                  <h3>❓ {editingQuestionIndex !== null ? `Edit Question ${editingQuestionIndex + 1}` : `Add Questions (${questions.length} added)`}</h3>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                    <h3>❓ {editingQuestionIndex !== null ? `Edit Question ${editingQuestionIndex + 1}` : `Add Questions (${questions.length} added)`}</h3>
+                    <button 
+                      type="button" 
+                      className="btn btn-secondary" 
+                      onClick={() => setShowBulkUpload(!showBulkUpload)}
+                      style={{ fontSize: '14px' }}
+                    >
+                      {showBulkUpload ? 'Cancel Bulk Upload' : '📋 Bulk Upload Questions'}
+                    </button>
+                  </div>
+
+                  {showBulkUpload && (
+                    <div style={{ 
+                      background: '#f0f9ff', 
+                      border: '2px solid #0ea5e9', 
+                      padding: '20px', 
+                      borderRadius: '8px', 
+                      marginBottom: '20px'
+                    }}>
+                      <h4 style={{ marginTop: 0, color: '#0369a1' }}>📋 Bulk Upload from Question Bank</h4>
+                      <p style={{ color: '#64748b', marginBottom: '15px' }}>
+                        Enter question numbers (comma or newline separated) from your question bank:
+                      </p>
+                      <textarea
+                        value={bulkQuestions}
+                        onChange={(e) => setBulkQuestions(e.target.value)}
+                        placeholder="Example:&#10;1, 5, 12, 23&#10;or&#10;1&#10;5&#10;12&#10;23"
+                        rows="5"
+                        style={{ 
+                          width: '100%', 
+                          padding: '12px', 
+                          fontSize: '14px',
+                          borderRadius: '6px',
+                          border: '1px solid #cbd5e1'
+                        }}
+                      />
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                        <button 
+                          type="button"
+                          className="btn btn-primary" 
+                          onClick={handleBulkUpload}
+                        >
+                          ✓ Add Questions
+                        </button>
+                        <button 
+                          type="button"
+                          className="btn btn-outline" 
+                          onClick={() => {
+                            setShowBulkUpload(false);
+                            setBulkQuestions('');
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   
                   {editingQuestionIndex !== null && (
                     <div style={{ 
@@ -551,11 +728,11 @@ const ManageScheduledTest = () => {
                     </div>
 
                     <div className="form-group">
-                      <label>Question *</label>
+                      <label>Question * <span style={{ fontSize: '12px', color: '#666' }}>(Auto-fills if question exists)</span></label>
                       <textarea
                         value={currentQuestion.question}
-                        onChange={(e) => setCurrentQuestion({ ...currentQuestion, question: e.target.value })}
-                        placeholder="Enter your question here..."
+                        onChange={handleQuestionTextChange}
+                        placeholder="Enter your question here (will auto-fill if found in question bank)..."
                         rows="3"
                       />
                     </div>
