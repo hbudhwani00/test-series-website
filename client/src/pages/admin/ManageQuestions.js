@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { adminService } from '../../services/api';
+import LatexRenderer from '../../components/LatexRenderer';
 import './ManageQuestions.css';
 
 const ManageQuestions = () => {
@@ -118,12 +119,14 @@ const ManageQuestions = () => {
                     Delete
                   </button>
                 </div>
-                <p className="question-text">{q.question}</p>
+                <div className="question-text">
+                  <LatexRenderer content={q.question} />
+                </div>
                 {q.options && q.options.length > 0 && (
                   <div className="question-options">
                     {q.options.map((opt, idx) => (
                       <div key={idx} className="option">
-                        {String.fromCharCode(65 + idx)}. {opt}
+                        {String.fromCharCode(65 + idx)}. <LatexRenderer content={opt} />
                       </div>
                     ))}
                   </div>

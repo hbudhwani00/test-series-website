@@ -131,6 +131,140 @@ body:-ms-fullscreen {
   }
 }
 
+/* Mobile Landscape Mode - Optimized for rotated phones */
+@media (max-width: 926px) and (orientation: landscape) {
+  /* Make header more compact */
+  .jee-main-test header {
+    padding: 0.5rem 1rem !important;
+    min-height: 50px !important;
+  }
+  
+  .jee-main-test header h1 {
+    font-size: 1rem !important;
+    margin: 0 !important;
+  }
+  
+  .jee-main-test header p,
+  .jee-main-test header .text-sm {
+    font-size: 0.7rem !important;
+    margin: 0 !important;
+  }
+  
+  /* Timer in header - make smaller */
+  .jee-main-test .timer,
+  .jee-main-test [class*="timer"] {
+    font-size: 1.2rem !important;
+    padding: 0.25rem 0.5rem !important;
+  }
+  
+  /* Main container - use flexbox for side-by-side layout */
+  .jee-main-test main,
+  .jee-main-test > div > div {
+    display: flex !important;
+    flex-direction: row !important;
+    height: calc(100vh - 60px) !important;
+    overflow: hidden !important;
+  }
+  
+  /* Question area on left - takes more space */
+  .jee-main-test .question-area,
+  .jee-main-test [class*="question"] {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    padding: 1rem !important;
+    max-height: calc(100vh - 60px) !important;
+  }
+  
+  /* Question palette on right - fixed width */
+  .jee-main-test aside,
+  .jee-main-test [class*="palette"],
+  .jee-main-test .question-palette {
+    width: 280px !important;
+    min-width: 280px !important;
+    max-width: 280px !important;
+    height: calc(100vh - 60px) !important;
+    overflow-y: auto !important;
+    border-left: 2px solid #e5e7eb !important;
+    padding: 0.75rem !important;
+    position: relative !important;
+    order: 2 !important;
+  }
+  
+  /* Question palette grid - more compact */
+  .question-palette-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 0.4rem !important;
+  }
+  
+  .question-status-button {
+    font-size: 0.8rem !important;
+    padding: 0.4rem !important;
+    min-height: 35px !important;
+  }
+  
+  /* Hide unnecessary elements in fullscreen */
+  .jee-main-test:fullscreen .url-bar,
+  .jee-main-test:fullscreen [class*="url"],
+  .jee-main-test:fullscreen [class*="candidate-info"] {
+    display: none !important;
+  }
+  
+  /* Navigation buttons - more compact */
+  .jee-main-test .navigation-buttons,
+  .jee-main-test [class*="navigation"] {
+    padding: 0.5rem !important;
+    gap: 0.5rem !important;
+  }
+  
+  .jee-main-test button {
+    font-size: 0.8rem !important;
+    padding: 0.4rem 0.8rem !important;
+  }
+  
+  /* Reduce spacing */
+  .jee-main-test .space-y-4 > * + * {
+    margin-top: 0.5rem !important;
+  }
+  
+  .jee-main-test .space-y-6 > * + * {
+    margin-top: 0.75rem !important;
+  }
+  
+  /* Make questions and options more compact */
+  .jee-main-test .question-text {
+    font-size: 0.9rem !important;
+    line-height: 1.4 !important;
+    margin-bottom: 0.75rem !important;
+  }
+  
+  .jee-main-test .option {
+    padding: 0.5rem !important;
+    font-size: 0.85rem !important;
+  }
+}
+
+/* Extra styles for very small landscape screens */
+@media (max-height: 500px) and (orientation: landscape) {
+  .jee-main-test header {
+    padding: 0.25rem 0.5rem !important;
+    min-height: 40px !important;
+  }
+  
+  .jee-main-test header h1 {
+    font-size: 0.9rem !important;
+  }
+  
+  .question-palette {
+    width: 240px !important;
+    min-width: 240px !important;
+  }
+  
+  .question-status-button {
+    min-height: 30px !important;
+    font-size: 0.75rem !important;
+  }
+}
+
 /* Print Styles */
 @media print {
   .question-palette,

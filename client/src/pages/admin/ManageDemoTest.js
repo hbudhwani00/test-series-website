@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import LatexRenderer from '../../components/LatexRenderer';
 import './ManageDemoTest.css';
 import { API_URL } from '../../services/api';
 
@@ -616,7 +617,13 @@ const ManageDemoTest = () => {
                       </div>
 
                       <div className="preview-question">
-                        <p className="preview-question-text">{questionForm.question || <em>Question text will appear here...</em>}</p>
+                        <div className="preview-question-text">
+                          {questionForm.question ? (
+                            <LatexRenderer content={questionForm.question} />
+                          ) : (
+                            <em>Question text will appear here...</em>
+                          )}
+                        </div>
                       </div>
 
                       {questionForm.questionType === 'single' && (
@@ -627,7 +634,13 @@ const ManageDemoTest = () => {
                               className={`preview-option ${questionForm.correctAnswer == index ? 'correct-answer' : ''}`}
                             >
                               <span className="option-label">{String.fromCharCode(65 + index)})</span>
-                              <span className="option-text">{option || <em>Option {index + 1} will appear here...</em>}</span>
+                              <span className="option-text">
+                                {option ? (
+                                  <LatexRenderer content={option} />
+                                ) : (
+                                  <em>Option {index + 1} will appear here...</em>
+                                )}
+                              </span>
                               {questionForm.correctAnswer == index && <span className="correct-indicator">✓ Correct</span>}
                             </div>
                           ))}
@@ -648,7 +661,13 @@ const ManageDemoTest = () => {
 
                       <div className="preview-solution">
                         <h5>Solution:</h5>
-                        <p>{questionForm.explanation || <em>Solution will appear here after submission...</em>}</p>
+                        <div>
+                          {questionForm.explanation ? (
+                            <LatexRenderer content={questionForm.explanation} />
+                          ) : (
+                            <em>Solution will appear here after submission...</em>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -684,7 +703,9 @@ const ManageDemoTest = () => {
                       </button>
                     </div>
                   </div>
-                  <p className="question-text">{q.question}</p>
+                  <div className="question-text">
+                    <LatexRenderer content={q.question} />
+                  </div>
                   <div className="question-footer">
                     <span>Type: {q.questionType}</span>
                     <span>Section: {q.section}</span>
