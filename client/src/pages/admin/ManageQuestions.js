@@ -121,12 +121,30 @@ const ManageQuestions = () => {
                 </div>
                 <div className="question-text">
                   <LatexRenderer content={q.question} />
+                  {q.questionImage && (
+                    <div className="mt-2">
+                      <img 
+                        src={q.questionImage} 
+                        alt="Question diagram" 
+                        className="max-w-md max-h-48 object-contain border rounded"
+                      />
+                    </div>
+                  )}
                 </div>
                 {q.options && q.options.length > 0 && (
                   <div className="question-options">
                     {q.options.map((opt, idx) => (
                       <div key={idx} className="option">
                         {String.fromCharCode(65 + idx)}. <LatexRenderer content={opt} />
+                        {q.optionImages && q.optionImages[idx] && (
+                          <div className="ml-4 mt-1">
+                            <img 
+                              src={q.optionImages[idx]} 
+                              alt={`Option ${String.fromCharCode(65 + idx)}`} 
+                              className="max-w-xs max-h-24 object-contain border rounded"
+                            />
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

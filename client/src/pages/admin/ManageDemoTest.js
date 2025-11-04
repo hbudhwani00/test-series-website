@@ -25,9 +25,12 @@ const ManageDemoTest = () => {
     section: 'A',
     questionNumber: '',
     question: '',
+    questionImage: '',
     options: ['', '', '', ''],
+    optionImages: ['', '', '', ''],
     correctAnswer: '',
     explanation: '',
+    explanationImage: '',
     difficulty: 'medium',
     marks: 4,
     negativeMarks: -1
@@ -126,6 +129,7 @@ const ManageDemoTest = () => {
         setQuestionForm({
           ...questionForm,
           question: matchingQuestion.question,
+          questionImage: matchingQuestion.questionImage || '',
           examType: matchingQuestion.examType || 'JEE',
           subject: matchingQuestion.subject || 'Physics',
           chapter: matchingQuestion.chapter || '',
@@ -133,8 +137,10 @@ const ManageDemoTest = () => {
           source: matchingQuestion.source || 'Practice',
           questionType: matchingQuestion.questionType || 'single',
           options: matchingQuestion.options?.length ? matchingQuestion.options : ['', '', '', ''],
+          optionImages: matchingQuestion.optionImages?.length ? matchingQuestion.optionImages : ['', '', '', ''],
           correctAnswer: matchingQuestion.correctAnswer !== undefined ? matchingQuestion.correctAnswer.toString() : '',
           explanation: matchingQuestion.explanation || '',
+          explanationImage: matchingQuestion.explanationImage || '',
           difficulty: matchingQuestion.difficulty || 'medium',
         });
       }
@@ -624,6 +630,15 @@ const ManageDemoTest = () => {
                             <em>Question text will appear here...</em>
                           )}
                         </div>
+                        {questionForm.questionImage && (
+                          <div className="preview-image mt-3">
+                            <img 
+                              src={questionForm.questionImage} 
+                              alt="Question diagram" 
+                              style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain' }}
+                            />
+                          </div>
+                        )}
                       </div>
 
                       {questionForm.questionType === 'single' && (
@@ -642,6 +657,15 @@ const ManageDemoTest = () => {
                                 )}
                               </span>
                               {questionForm.correctAnswer == index && <span className="correct-indicator">✓ Correct</span>}
+                              {questionForm.optionImages && questionForm.optionImages[index] && (
+                                <div className="option-image mt-2">
+                                  <img 
+                                    src={questionForm.optionImages[index]} 
+                                    alt={`Option ${String.fromCharCode(65 + index)}`} 
+                                    style={{ maxWidth: '300px', maxHeight: '150px', objectFit: 'contain' }}
+                                  />
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -668,6 +692,15 @@ const ManageDemoTest = () => {
                             <em>Solution will appear here after submission...</em>
                           )}
                         </div>
+                        {questionForm.explanationImage && (
+                          <div className="preview-image mt-3">
+                            <img 
+                              src={questionForm.explanationImage} 
+                              alt="Solution diagram" 
+                              style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain' }}
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

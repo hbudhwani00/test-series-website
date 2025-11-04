@@ -1,8 +1,64 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const Question = require('../models/Question');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
+
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure multer for image uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'question-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = /jpeg|jpg|png|gif|svg/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed!'));
+    }
+  }
+});
+
+// Image upload endpoint
+router.post('/upload-image', auth, upload.single('image'), async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId);
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied. Admin only.' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const imageUrl = `/uploads/${req.file.filename}`;
+    res.json({ imageUrl, message: 'Image uploaded successfully' });
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
 
 // Upload Question (Admin Only)
 router.post('/upload', auth, async (req, res) => {
@@ -20,10 +76,13 @@ router.post('/upload', auth, async (req, res) => {
       questionType,
       section,
       question,
+      questionImage,
       options,
+      optionImages,
       correctAnswer,
       numericalRange,
       explanation,
+      explanationImage,
       difficulty,
       marks,
       negativeMarks,
@@ -43,10 +102,13 @@ router.post('/upload', auth, async (req, res) => {
       questionType,
       section: section || 'A',
       question,
+      questionImage: questionImage || null,
       options: (questionType === 'single' || questionType === 'multiple') ? options : undefined,
+      optionImages: (questionType === 'single' || questionType === 'multiple') ? optionImages : undefined,
       correctAnswer,
       numericalRange: questionType === 'numerical' ? numericalRange : undefined,
       explanation,
+      explanationImage: explanationImage || null,
       difficulty: difficulty || 'medium',
       marks: marks || 4,
       negativeMarks: negativeMarks !== undefined ? negativeMarks : (hasNegativeMarking ? 1 : 0),

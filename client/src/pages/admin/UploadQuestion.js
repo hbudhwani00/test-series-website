@@ -13,10 +13,13 @@ const UploadQuestion = () => {
     questionType: 'single',
     section: 'A',
     question: '',
+    questionImage: '',
     options: ['', '', '', ''],
+    optionImages: ['', '', '', ''],
     correctAnswer: '',
     numericalRange: { min: '', max: '' },
     explanation: '',
+    explanationImage: '',
     difficulty: 'medium',
     marks: 4,
     negativeMarks: 1,
@@ -24,6 +27,7 @@ const UploadQuestion = () => {
   });
 
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -37,6 +41,70 @@ const UploadQuestion = () => {
     const newOptions = [...formData.options];
     newOptions[index] = value;
     setFormData(prev => ({ ...prev, options: newOptions }));
+  };
+
+  const handleImageUpload = async (file, type, index = null) => {
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file');
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB');
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const token = localStorage.getItem('token');
+      const formDataObj = new FormData();
+      formDataObj.append('image', file);
+
+      const response = await axios.post(`${API_URL}/questions/upload-image`, formDataObj, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      const imageUrl = response.data.imageUrl;
+      const fullImageUrl = `${API_URL.replace('/api', '')}${imageUrl}`;
+
+      // Update the appropriate field based on type
+      if (type === 'question') {
+        setFormData(prev => ({ ...prev, questionImage: fullImageUrl }));
+        toast.success('Question image uploaded');
+      } else if (type === 'option' && index !== null) {
+        const newOptionImages = [...formData.optionImages];
+        newOptionImages[index] = fullImageUrl;
+        setFormData(prev => ({ ...prev, optionImages: newOptionImages }));
+        toast.success(`Option ${String.fromCharCode(65 + index)} image uploaded`);
+      } else if (type === 'explanation') {
+        setFormData(prev => ({ ...prev, explanationImage: fullImageUrl }));
+        toast.success('Explanation image uploaded');
+      }
+    } catch (error) {
+      console.error('Image upload error:', error);
+      toast.error('Failed to upload image');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const removeImage = (type, index = null) => {
+    if (type === 'question') {
+      setFormData(prev => ({ ...prev, questionImage: '' }));
+    } else if (type === 'option' && index !== null) {
+      const newOptionImages = [...formData.optionImages];
+      newOptionImages[index] = '';
+      setFormData(prev => ({ ...prev, optionImages: newOptionImages }));
+    } else if (type === 'explanation') {
+      setFormData(prev => ({ ...prev, explanationImage: '' }));
+    }
   };
 
   const handleNumericalRangeChange = (field, value) => {
@@ -94,16 +162,19 @@ const UploadQuestion = () => {
         questionType: formData.questionType,
         section: formData.section,
         question: formData.question.trim(),
+        questionImage: formData.questionImage || null,
         difficulty: formData.difficulty,
         marks: Number(formData.marks),
         negativeMarks: Number(formData.negativeMarks),
         hasNegativeMarking: formData.hasNegativeMarking,
-        explanation: formData.explanation.trim()
+        explanation: formData.explanation.trim(),
+        explanationImage: formData.explanationImage || null
       };
 
       // Add options and correct answer for MCQ
       if (formData.questionType === 'single' || formData.questionType === 'multiple') {
         dataToSubmit.options = formData.options;
+        dataToSubmit.optionImages = formData.optionImages;
         dataToSubmit.correctAnswer = Number(formData.correctAnswer);
       }
 
@@ -133,10 +204,13 @@ const UploadQuestion = () => {
         questionType: 'single',
         section: 'A',
         question: '',
+        questionImage: '',
         options: ['', '', '', ''],
+        optionImages: ['', '', '', ''],
         correctAnswer: '',
         numericalRange: { min: '', max: '' },
         explanation: '',
+        explanationImage: '',
         difficulty: 'medium',
         marks: 4,
         negativeMarks: 1,
@@ -255,22 +329,83 @@ const UploadQuestion = () => {
               />
             </div>
 
+            {/* Question Image Upload */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Question Image/Diagram (Optional)</label>
+              <div className="flex items-center gap-4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e.target.files[0], 'question')}
+                  className="flex-1 px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+                  disabled={uploadingImage}
+                />
+                {formData.questionImage && (
+                  <button
+                    type="button"
+                    onClick={() => removeImage('question')}
+                    className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              {formData.questionImage && (
+                <div className="mt-2">
+                  <img 
+                    src={formData.questionImage} 
+                    alt="Question diagram" 
+                    className="max-w-md max-h-64 object-contain border rounded"
+                  />
+                </div>
+              )}
+            </div>
+
             {/* Options for MCQ */}
             {(formData.questionType === 'single' || formData.questionType === 'multiple') && (
               <>
                 <div className="space-y-3">
                   <label className="block text-sm font-medium">Options *</label>
                   {formData.options.map((option, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <span className="font-semibold w-8">({String.fromCharCode(65 + index)})</span>
-                      <input
-                        type="text"
-                        value={option}
-                        onChange={(e) => handleOptionChange(index, e.target.value)}
-                        className="flex-1 px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
-                        placeholder={`Option ${String.fromCharCode(65 + index)}`}
-                        required
-                      />
+                    <div key={index} className="space-y-2">
+                      <div className="flex items-center gap-3">
+                        <span className="font-semibold w-8">({String.fromCharCode(65 + index)})</span>
+                        <input
+                          type="text"
+                          value={option}
+                          onChange={(e) => handleOptionChange(index, e.target.value)}
+                          className="flex-1 px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+                          placeholder={`Option ${String.fromCharCode(65 + index)}`}
+                          required
+                        />
+                      </div>
+                      <div className="ml-11 flex items-center gap-2">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleImageUpload(e.target.files[0], 'option', index)}
+                          className="flex-1 px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 text-sm"
+                          disabled={uploadingImage}
+                        />
+                        {formData.optionImages[index] && (
+                          <button
+                            type="button"
+                            onClick={() => removeImage('option', index)}
+                            className="px-2 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                      {formData.optionImages[index] && (
+                        <div className="ml-11 mt-1">
+                          <img 
+                            src={formData.optionImages[index]} 
+                            alt={`Option ${String.fromCharCode(65 + index)}`} 
+                            className="max-w-xs max-h-32 object-contain border rounded"
+                          />
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -387,6 +522,38 @@ const UploadQuestion = () => {
                 className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
                 placeholder="Explain the solution..."
               />
+            </div>
+
+            {/* Explanation Image Upload */}
+            <div>
+              <label className="block text-sm font-medium mb-2">Explanation/Solution Image (Optional)</label>
+              <div className="flex items-center gap-4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e.target.files[0], 'explanation')}
+                  className="flex-1 px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
+                  disabled={uploadingImage}
+                />
+                {formData.explanationImage && (
+                  <button
+                    type="button"
+                    onClick={() => removeImage('explanation')}
+                    className="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+              {formData.explanationImage && (
+                <div className="mt-2">
+                  <img 
+                    src={formData.explanationImage} 
+                    alt="Solution diagram" 
+                    className="max-w-md max-h-64 object-contain border rounded"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Submit Button */}

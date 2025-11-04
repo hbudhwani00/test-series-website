@@ -202,6 +202,15 @@ const ScheduledTestPage = () => {
           <div className="question-content">
             <div className="question-text">
               <LatexRenderer content={currentQuestion.question} />
+              {currentQuestion.questionImage && (
+                <div style={{ marginTop: '1rem' }}>
+                  <img 
+                    src={currentQuestion.questionImage} 
+                    alt="Question diagram" 
+                    style={{ maxWidth: '100%', maxHeight: '320px', objectFit: 'contain', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                  />
+                </div>
+              )}
             </div>
             
             {currentQuestion.questionType === 'mcq' ? (
@@ -215,6 +224,15 @@ const ScheduledTestPage = () => {
                     <span className="option-label">{String.fromCharCode(65 + idx)}.</span>
                     <span className="option-text">
                       <LatexRenderer content={option} />
+                      {currentQuestion.optionImages && currentQuestion.optionImages[idx] && (
+                        <div style={{ marginTop: '0.5rem', marginLeft: '1.5rem' }}>
+                          <img 
+                            src={currentQuestion.optionImages[idx]} 
+                            alt={`Option ${String.fromCharCode(65 + idx)}`} 
+                            style={{ maxWidth: '300px', maxHeight: '160px', objectFit: 'contain', border: '1px solid #e5e7eb', borderRadius: '4px' }}
+                          />
+                        </div>
+                      )}
                     </span>
                   </div>
                 ))}

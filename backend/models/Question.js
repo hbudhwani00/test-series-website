@@ -43,8 +43,15 @@ const questionSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  questionImage: {
+    type: String, // URL or path to question image/diagram
+    default: null
+  },
   options: [{
     type: String
+  }],
+  optionImages: [{
+    type: String // URLs or paths to option images
   }],
   correctAnswer: {
     type: mongoose.Schema.Types.Mixed, // Can be array for multiple choice or string/number for others
@@ -57,6 +64,10 @@ const questionSchema = new mongoose.Schema({
   },
   explanation: {
     type: String
+  },
+  explanationImage: {
+    type: String, // URL or path to solution/explanation image
+    default: null
   },
   difficulty: {
     type: String,

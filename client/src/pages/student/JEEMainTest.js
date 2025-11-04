@@ -655,9 +655,20 @@ const JEEMainTest = () => {
                     
                     <div className="text-base leading-relaxed mb-6 min-h-[100px]">
                       {currentQuestion.question ? (
-                        <LatexRenderer 
-                          content={currentQuestion.question.replace(/^(Physics|Chemistry|Mathematics)\s+(MCQ|Numerical)\s+Question\s+\d+:\s*/, '')} 
-                        />
+                        <>
+                          <LatexRenderer 
+                            content={currentQuestion.question.replace(/^(Physics|Chemistry|Mathematics)\s+(MCQ|Numerical)\s+Question\s+\d+:\s*/, '')} 
+                          />
+                          {currentQuestion.questionImage && (
+                            <div className="mt-4">
+                              <img 
+                                src={currentQuestion.questionImage} 
+                                alt="Question diagram" 
+                                className="max-w-full max-h-80 object-contain border rounded shadow-sm"
+                              />
+                            </div>
+                          )}
+                        </>
                       ) : (
                         <p className="text-red-500">Question text not available</p>
                       )}
@@ -696,6 +707,15 @@ const JEEMainTest = () => {
                             <div className="flex-1">
                               <span className="font-semibold mr-2">({optionLabel})</span>
                               <LatexRenderer content={option} />
+                              {currentQuestion.optionImages && currentQuestion.optionImages[index] && (
+                                <div className="mt-2 ml-8">
+                                  <img 
+                                    src={currentQuestion.optionImages[index]} 
+                                    alt={`Option ${optionLabel}`} 
+                                    className="max-w-sm max-h-40 object-contain border rounded"
+                                  />
+                                </div>
+                              )}
                             </div>
                           </div>
                         );
