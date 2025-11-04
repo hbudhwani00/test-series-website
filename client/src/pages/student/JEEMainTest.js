@@ -4,6 +4,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, Button, Badge } from '../../components/ui';
+import LatexRenderer from '../../components/LatexRenderer';
 import './JEEMainTest.css';
 import { API_URL } from '../../services/api';
 
@@ -652,14 +653,15 @@ const JEEMainTest = () => {
                       </div>
                     )}
                     
-                    <div 
-                      className="text-base leading-relaxed mb-6 min-h-[100px]"
-                      dangerouslySetInnerHTML={{ 
-                        __html: currentQuestion.question 
-                          ? currentQuestion.question.replace(/^(Physics|Chemistry|Mathematics)\s+(MCQ|Numerical)\s+Question\s+\d+:\s*/, '') 
-                          : '<p class="text-red-500">Question text not available</p>' 
-                      }}
-                    />
+                    <div className="text-base leading-relaxed mb-6 min-h-[100px]">
+                      {currentQuestion.question ? (
+                        <LatexRenderer 
+                          content={currentQuestion.question.replace(/^(Physics|Chemistry|Mathematics)\s+(MCQ|Numerical)\s+Question\s+\d+:\s*/, '')} 
+                        />
+                      ) : (
+                        <p className="text-red-500">Question text not available</p>
+                      )}
+                    </div>
                   </div>
 
                   {/* Options for MCQ (Section A) */}
@@ -693,7 +695,7 @@ const JEEMainTest = () => {
                             </div>
                             <div className="flex-1">
                               <span className="font-semibold mr-2">({optionLabel})</span>
-                              <span>{option}</span>
+                              <LatexRenderer content={option} />
                             </div>
                           </div>
                         );

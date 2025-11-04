@@ -1,0 +1,39 @@
+.latex-content {
+  display: inline;
+}
+
+.latex-inline {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 2px;
+}
+
+.latex-display {
+  display: block;
+  margin: 15px auto;
+  text-align: center;
+  overflow-x: auto;
+  padding: 10px;
+}
+
+/* Ensure KaTeX renders properly on mobile */
+@media (max-width: 768px) {
+  .latex-display {
+    font-size: 0.9em;
+    padding: 8px;
+  }
+  
+  .latex-inline {
+    font-size: 0.85em;
+  }
+}
+
+/* Make sure long equations don't overflow */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.katex-html {
+  white-space: nowrap;
+}

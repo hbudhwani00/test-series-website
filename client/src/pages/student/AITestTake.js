@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import LatexRenderer from '../../components/LatexRenderer';
 import './JEEMainTest.css';
 import { API_URL } from '../../services/api';
 
@@ -354,7 +355,7 @@ const AITestTake = () => {
               lineHeight: '1.8',
               color: '#1f2937'
             }}>
-              {currentQuestion.question}
+              <LatexRenderer content={currentQuestion.question} />
             </div>
 
             {currentQuestion.questionType === 'single' || currentQuestion.questionType === 'mcq' ? (
@@ -402,7 +403,9 @@ const AITestTake = () => {
                     }}>
                       {String.fromCharCode(65 + idx)}.
                     </span>
-                    <span style={{ flex: 1, color: '#1f2937' }}>{option}</span>
+                    <span style={{ flex: 1, color: '#1f2937' }}>
+                      <LatexRenderer content={option} />
+                    </span>
                   </div>
                 ))}
               </div>

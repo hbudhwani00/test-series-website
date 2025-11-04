@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
+import LatexRenderer from '../../components/LatexRenderer';
 import { API_URL } from '../../services/api';
 import './JEEMainTest.css';
 
@@ -199,7 +200,9 @@ const ScheduledTestPage = () => {
           </div>
 
           <div className="question-content">
-            <p className="question-text">{currentQuestion.question}</p>
+            <div className="question-text">
+              <LatexRenderer content={currentQuestion.question} />
+            </div>
             
             {currentQuestion.questionType === 'mcq' ? (
               <div className="options">
@@ -210,7 +213,9 @@ const ScheduledTestPage = () => {
                     onClick={() => handleAnswerSelect(idx)}
                   >
                     <span className="option-label">{String.fromCharCode(65 + idx)}.</span>
-                    <span className="option-text">{option}</span>
+                    <span className="option-text">
+                      <LatexRenderer content={option} />
+                    </span>
                   </div>
                 ))}
               </div>
