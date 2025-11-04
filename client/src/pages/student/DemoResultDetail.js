@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { API_URL } from '../../services/api';
+import LatexRenderer from '../../components/LatexRenderer';
 import './DemoResultDetail.css';
 
 const DemoResultDetail = () => {
@@ -325,8 +326,18 @@ const DemoResultDetail = () => {
                                   </span>
                                   
                                   <p className="question-text">
-                                    {answer.questionId?.question || 'Question not available'}
+                                    <LatexRenderer content={answer.questionId?.question || 'Question not available'} />
                                   </p>
+                                  
+                                  {answer.questionId?.questionImage && (
+                                    <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+                                      <img 
+                                        src={answer.questionId.questionImage} 
+                                        alt="Question diagram" 
+                                        style={{ maxWidth: '100%', maxHeight: '320px', borderRadius: '8px' }} 
+                                      />
+                                    </div>
+                                  )}
                                   
                                   <div style={{ 
                                     padding: '15px', 
@@ -392,7 +403,19 @@ const DemoResultDetail = () => {
                                             key={optIdx}
                                             className={`option-item ${isCorrectOption ? 'correct-option' : ''} ${isUserOption && !isCorrectOption ? 'user-option' : ''}`}
                                           >
-                                            <strong>{String.fromCharCode(65 + optIdx)}.</strong> {option}
+                                            <strong>{String.fromCharCode(65 + optIdx)}.</strong> 
+                                            <span style={{ marginLeft: '8px' }}>
+                                              <LatexRenderer content={option} />
+                                            </span>
+                                            {answer.questionId?.optionImages && answer.questionId.optionImages[optIdx] && (
+                                              <div style={{ marginTop: '8px', marginLeft: '24px' }}>
+                                                <img 
+                                                  src={answer.questionId.optionImages[optIdx]} 
+                                                  alt={`Option ${String.fromCharCode(65 + optIdx)} diagram`} 
+                                                  style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '6px' }} 
+                                                />
+                                              </div>
+                                            )}
                                             {isCorrectOption && <span style={{ color: 'var(--success-green)', marginLeft: '10px', fontWeight: 'bold' }}>✓</span>}
                                             {isUserOption && !isCorrectOption && <span style={{ color: 'var(--warning-red)', marginLeft: '10px', fontWeight: 'bold' }}>✗ Your Answer</span>}
                                           </li>
@@ -417,7 +440,18 @@ const DemoResultDetail = () => {
                                   
                                   <div className="solution-box">
                                     <h6>💡 Solution:</h6>
-                                    <p>{answer.explanation || 'Solution not available'}</p>
+                                    <p>
+                                      <LatexRenderer content={answer.explanation || 'Solution not available'} />
+                                    </p>
+                                    {answer.questionId?.explanationImage && (
+                                      <div style={{ marginTop: '1rem' }}>
+                                        <img 
+                                          src={answer.questionId.explanationImage} 
+                                          alt="Solution diagram" 
+                                          style={{ maxWidth: '100%', maxHeight: '320px', borderRadius: '8px' }} 
+                                        />
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               );
