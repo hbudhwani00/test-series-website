@@ -121,19 +121,8 @@ const DemoResultDetail = () => {
     });
   }
 
-  // return (
-  //   <div>
-  //     {/* Hero Header */}
-  //     <div className="demo-result-hero">
-  //       <h1>Unlock Your Potential with Personalized AI Learning</h1>
-  //       <p className="subtitle">India's 1st AI Test Series - Tailored to Your Performance</p>
-  //       <Link to="/register" className="cta-button">
-  //         Start Free Test
-  //       </Link>
-  //     </div>
-
-      {/* Main Dashboard Container */}
-      <div className="demo-result-container">
+  return (
+    <div className="demo-result-container">
         
         {/* Dashboard Grid */}
         <div className="demo-dashboard-grid">
@@ -492,8 +481,8 @@ const DemoResultDetail = () => {
           </Link>
         </div>
       </div>
-    // </div>
-  
+    
+  );
 };
 
 export default DemoResultDetail;
