@@ -36,6 +36,16 @@ const ManageDemoTest = () => {
     negativeMarks: -1
   });
 
+  // Image size state (percentage of original size)
+  const [imageSizes, setImageSizes] = useState({
+    question: 100,
+    option0: 100,
+    option1: 100,
+    option2: 100,
+    option3: 100,
+    explanation: 100
+  });
+
   useEffect(() => {
     fetchDemoTest();
     fetchAllQuestions(); // Fetch all questions for auto-fill
@@ -214,6 +224,26 @@ const ManageDemoTest = () => {
         }
         break;
       }
+    }
+  };
+
+  const handleImageSizeChange = (type, index = null, value) => {
+    const key = index !== null ? `${type}${index}` : type;
+    setImageSizes(prev => ({ ...prev, [key]: parseInt(value) }));
+  };
+
+  const removeImage = (type, index = null) => {
+    if (type === 'question') {
+      setQuestionForm(prev => ({ ...prev, questionImage: '' }));
+      setImageSizes(prev => ({ ...prev, question: 100 }));
+    } else if (type === 'option' && index !== null) {
+      const newOptionImages = [...questionForm.optionImages];
+      newOptionImages[index] = '';
+      setQuestionForm(prev => ({ ...prev, optionImages: newOptionImages }));
+      setImageSizes(prev => ({ ...prev, [`option${index}`]: 100 }));
+    } else if (type === 'explanation') {
+      setQuestionForm(prev => ({ ...prev, explanationImage: '' }));
+      setImageSizes(prev => ({ ...prev, explanation: 100 }));
     }
   };
 
@@ -704,11 +734,29 @@ const ManageDemoTest = () => {
                           )}
                         </div>
                         {questionForm.questionImage && (
-                          <div className="preview-image mt-3">
+                          <div className="preview-image mt-3 p-3 border rounded bg-gray-50">
+                            <div className="mb-2 flex items-center gap-3">
+                              <label className="text-sm font-medium text-gray-700">Image Size: {imageSizes.question}%</label>
+                              <input
+                                type="range"
+                                min="20"
+                                max="150"
+                                value={imageSizes.question}
+                                onChange={(e) => handleImageSizeChange('question', null, e.target.value)}
+                                className="flex-1"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeImage('question')}
+                                className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
+                              >
+                                Remove
+                              </button>
+                            </div>
                             <img 
                               src={questionForm.questionImage} 
                               alt="Question diagram" 
-                              style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain' }}
+                              style={{ width: `${imageSizes.question}%`, maxWidth: '100%', objectFit: 'contain' }}
                             />
                           </div>
                         )}
@@ -731,11 +779,29 @@ const ManageDemoTest = () => {
                               </span>
                               {questionForm.correctAnswer == index && <span className="correct-indicator">✓ Correct</span>}
                               {questionForm.optionImages && questionForm.optionImages[index] && (
-                                <div className="option-image mt-2">
+                                <div className="option-image mt-2 p-2 border rounded bg-gray-50">
+                                  <div className="mb-2 flex items-center gap-2">
+                                    <label className="text-xs font-medium text-gray-700">Size: {imageSizes[`option${index}`]}%</label>
+                                    <input
+                                      type="range"
+                                      min="20"
+                                      max="150"
+                                      value={imageSizes[`option${index}`]}
+                                      onChange={(e) => handleImageSizeChange('option', index, e.target.value)}
+                                      className="flex-1"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => removeImage('option', index)}
+                                      className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
                                   <img 
                                     src={questionForm.optionImages[index]} 
                                     alt={`Option ${String.fromCharCode(65 + index)}`} 
-                                    style={{ maxWidth: '300px', maxHeight: '150px', objectFit: 'contain' }}
+                                    style={{ width: `${imageSizes[`option${index}`]}%`, maxWidth: '100%', objectFit: 'contain' }}
                                   />
                                 </div>
                               )}
@@ -766,11 +832,29 @@ const ManageDemoTest = () => {
                           )}
                         </div>
                         {questionForm.explanationImage && (
-                          <div className="preview-image mt-3">
+                          <div className="preview-image mt-3 p-3 border rounded bg-gray-50">
+                            <div className="mb-2 flex items-center gap-3">
+                              <label className="text-sm font-medium text-gray-700">Image Size: {imageSizes.explanation}%</label>
+                              <input
+                                type="range"
+                                min="20"
+                                max="150"
+                                value={imageSizes.explanation}
+                                onChange={(e) => handleImageSizeChange('explanation', null, e.target.value)}
+                                className="flex-1"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeImage('explanation')}
+                                className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
+                              >
+                                Remove
+                              </button>
+                            </div>
                             <img 
                               src={questionForm.explanationImage} 
                               alt="Solution diagram" 
-                              style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain' }}
+                              style={{ width: `${imageSizes.explanation}%`, maxWidth: '100%', objectFit: 'contain' }}
                             />
                           </div>
                         )}

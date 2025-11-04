@@ -28,6 +28,16 @@ const UploadQuestion = () => {
 
   const [submitting, setSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  
+  // Image size state (percentage of original size)
+  const [imageSizes, setImageSizes] = useState({
+    question: 100,
+    option0: 100,
+    option1: 100,
+    option2: 100,
+    option3: 100,
+    explanation: 100
+  });
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -98,13 +108,21 @@ const UploadQuestion = () => {
   const removeImage = (type, index = null) => {
     if (type === 'question') {
       setFormData(prev => ({ ...prev, questionImage: '' }));
+      setImageSizes(prev => ({ ...prev, question: 100 }));
     } else if (type === 'option' && index !== null) {
       const newOptionImages = [...formData.optionImages];
       newOptionImages[index] = '';
       setFormData(prev => ({ ...prev, optionImages: newOptionImages }));
+      setImageSizes(prev => ({ ...prev, [`option${index}`]: 100 }));
     } else if (type === 'explanation') {
       setFormData(prev => ({ ...prev, explanationImage: '' }));
+      setImageSizes(prev => ({ ...prev, explanation: 100 }));
     }
+  };
+
+  const handleImageSizeChange = (type, index = null, value) => {
+    const key = index !== null ? `${type}${index}` : type;
+    setImageSizes(prev => ({ ...prev, [key]: parseInt(value) }));
   };
 
   // Handle paste event for images
@@ -372,11 +390,23 @@ const UploadQuestion = () => {
                 )}
               </div>
               {formData.questionImage && (
-                <div className="mt-2">
+                <div className="mt-3 p-3 border rounded bg-gray-50">
+                  <div className="mb-2 flex items-center gap-3">
+                    <label className="text-sm font-medium text-gray-700">Image Size: {imageSizes.question}%</label>
+                    <input
+                      type="range"
+                      min="20"
+                      max="150"
+                      value={imageSizes.question}
+                      onChange={(e) => handleImageSizeChange('question', null, e.target.value)}
+                      className="flex-1"
+                    />
+                  </div>
                   <img 
                     src={formData.questionImage} 
                     alt="Question diagram" 
-                    className="max-w-md max-h-64 object-contain border rounded"
+                    style={{ width: `${imageSizes.question}%`, maxWidth: '100%' }}
+                    className="object-contain border rounded bg-white"
                   />
                 </div>
               )}
@@ -421,11 +451,23 @@ const UploadQuestion = () => {
                         )}
                       </div>
                       {formData.optionImages[index] && (
-                        <div className="ml-11 mt-1">
+                        <div className="ml-11 mt-2 p-2 border rounded bg-gray-50">
+                          <div className="mb-2 flex items-center gap-2">
+                            <label className="text-xs font-medium text-gray-700">Size: {imageSizes[`option${index}`]}%</label>
+                            <input
+                              type="range"
+                              min="20"
+                              max="150"
+                              value={imageSizes[`option${index}`]}
+                              onChange={(e) => handleImageSizeChange('option', index, e.target.value)}
+                              className="flex-1"
+                            />
+                          </div>
                           <img 
                             src={formData.optionImages[index]} 
                             alt={`Option ${String.fromCharCode(65 + index)}`} 
-                            className="max-w-xs max-h-32 object-contain border rounded"
+                            style={{ width: `${imageSizes[`option${index}`]}%`, maxWidth: '100%' }}
+                            className="object-contain border rounded bg-white"
                           />
                         </div>
                       )}
@@ -570,11 +612,23 @@ const UploadQuestion = () => {
                 )}
               </div>
               {formData.explanationImage && (
-                <div className="mt-2">
+                <div className="mt-3 p-3 border rounded bg-gray-50">
+                  <div className="mb-2 flex items-center gap-3">
+                    <label className="text-sm font-medium text-gray-700">Image Size: {imageSizes.explanation}%</label>
+                    <input
+                      type="range"
+                      min="20"
+                      max="150"
+                      value={imageSizes.explanation}
+                      onChange={(e) => handleImageSizeChange('explanation', null, e.target.value)}
+                      className="flex-1"
+                    />
+                  </div>
                   <img 
                     src={formData.explanationImage} 
                     alt="Solution diagram" 
-                    className="max-w-md max-h-64 object-contain border rounded"
+                    style={{ width: `${imageSizes.explanation}%`, maxWidth: '100%' }}
+                    className="object-contain border rounded bg-white"
                   />
                 </div>
               )}

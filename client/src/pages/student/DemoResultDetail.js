@@ -121,16 +121,16 @@ const DemoResultDetail = () => {
     });
   }
 
-  return (
-    <div>
-      {/* Hero Header */}
-      <div className="demo-result-hero">
-        <h1>Unlock Your Potential with Personalized AI Learning</h1>
-        <p className="subtitle">India's 1st AI Test Series - Tailored to Your Performance</p>
-        <Link to="/register" className="cta-button">
-          Start Free Test
-        </Link>
-      </div>
+  // return (
+  //   <div>
+  //     {/* Hero Header */}
+  //     <div className="demo-result-hero">
+  //       <h1>Unlock Your Potential with Personalized AI Learning</h1>
+  //       <p className="subtitle">India's 1st AI Test Series - Tailored to Your Performance</p>
+  //       <Link to="/register" className="cta-button">
+  //         Start Free Test
+  //       </Link>
+  //     </div>
 
       {/* Main Dashboard Container */}
       <div className="demo-result-container">
@@ -141,8 +141,14 @@ const DemoResultDetail = () => {
           {/* Student Performance Card - Circular Progress */}
           <div className="demo-card">
             <h3 className="demo-card-title">📊 Student Performance</h3>
-            <div className="circular-progress-container">
-              <div className="circular-progress">
+            <div className="circular-progress-container" 
+             style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center' 
+                }}
+  >
+              <div className="circular-progress ">
                 <svg width="200" height="200" className="progress-ring">
                   <circle
                     cx="100"
@@ -486,8 +492,8 @@ const DemoResultDetail = () => {
           </Link>
         </div>
       </div>
-    </div>
-  );
+    // </div>
+  
 };
 
 export default DemoResultDetail;
