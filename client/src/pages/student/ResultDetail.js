@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { resultService } from '../../services/api';
+import LatexRenderer from '../../components/LatexRenderer';
 import './ResultDetail.css';
 
 const ResultDetail = () => {
@@ -87,7 +88,18 @@ const ResultDetail = () => {
               </div>
 
               <div className="question-content">
-                <p className="question-text">{answer.questionId.question}</p>
+                <p className="question-text">
+                  <LatexRenderer content={answer.questionId.question} />
+                </p>
+                {answer.questionId.questionImage && (
+                  <div style={{ marginTop: '1rem' }}>
+                    <img 
+                      src={answer.questionId.questionImage} 
+                      alt="Question diagram" 
+                      style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                    />
+                  </div>
+                )}
 
                 {answer.questionId.questionType === 'numerical' ? (
                   <div className="numerical-answer">
@@ -117,7 +129,18 @@ const ResultDetail = () => {
                           } ${isUserAnswer && !isCorrectAnswer ? 'incorrect-option' : ''}`}
                         >
                           <span className="option-key">{optionKey}</span>
-                          <span className="option-text">{option}</span>
+                          <span className="option-text">
+                            <LatexRenderer content={option} />
+                            {answer.questionId.optionImages && answer.questionId.optionImages[optIndex] && (
+                              <div style={{ marginTop: '0.5rem', marginLeft: '1rem' }}>
+                                <img 
+                                  src={answer.questionId.optionImages[optIndex]} 
+                                  alt={`Option ${optionKey}`} 
+                                  style={{ maxWidth: '250px', maxHeight: '120px', objectFit: 'contain', border: '1px solid #e5e7eb', borderRadius: '4px' }}
+                                />
+                              </div>
+                            )}
+                          </span>
                           {isCorrectAnswer && <span className="badge correct">✓ Correct</span>}
                           {isUserAnswer && !isCorrectAnswer && (
                             <span className="badge incorrect">Your Answer</span>
@@ -131,7 +154,18 @@ const ResultDetail = () => {
                 {answer.questionId.explanation && (
                   <div className="explanation">
                     <strong>Explanation:</strong>
-                    <p>{answer.questionId.explanation}</p>
+                    <p>
+                      <LatexRenderer content={answer.questionId.explanation} />
+                    </p>
+                    {answer.questionId.explanationImage && (
+                      <div style={{ marginTop: '1rem' }}>
+                        <img 
+                          src={answer.questionId.explanationImage} 
+                          alt="Solution diagram" 
+                          style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain', border: '1px solid #e5e7eb', borderRadius: '8px' }}
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

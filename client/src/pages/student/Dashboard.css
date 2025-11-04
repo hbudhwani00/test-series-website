@@ -696,12 +696,34 @@
     grid-template-columns: 1fr;
   }
 
+  .stat-card {
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+  }
+
+  .stat-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .stat-progress {
+    width: 100%;
+    max-width: 200px;
+  }
+
   .action-grid {
     grid-template-columns: 1fr;
   }
 
   .content-right {
     grid-template-columns: 1fr;
+  }
+
+  .motivation-stats {
+    flex-direction: column;
+    gap: 15px;
   }
 }
 

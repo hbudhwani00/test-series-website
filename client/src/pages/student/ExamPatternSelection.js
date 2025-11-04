@@ -9,11 +9,37 @@ import { API_URL } from '../../services/api';
 const ExamPatternSelection = () => {
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hasTakenDemoTest, setHasTakenDemoTest] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchSubscriptions();
+    checkDemoTestCompletion();
   }, []);
+
+  const checkDemoTestCompletion = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      // Check if user has completed demo test
+      const response = await axios.get(`${API_URL}/results/my-results`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Check if any result is from demo test
+      const demoResults = response.data.results?.filter(result => 
+        result.testId?.title?.toLowerCase().includes('demo') || 
+        result.testType === 'demo'
+      );
+      
+      if (demoResults && demoResults.length > 0) {
+        setHasTakenDemoTest(true);
+      }
+    } catch (error) {
+      console.error('Error checking demo test completion:', error);
+    }
+  };
 
   const fetchSubscriptions = async () => {
     try {
@@ -170,8 +196,88 @@ const ExamPatternSelection = () => {
 
   const availablePatterns = getAvailablePatterns();
 
-  // Show demo test option for everyone (logged in or not)
-  const showDemoOnly = availablePatterns.length === 0;
+  // Show demo test option only if user hasn't taken it and has no subscriptions
+  const showDemoOnly = availablePatterns.length === 0 && !hasTakenDemoTest;
+
+  // If user has taken demo test but no subscription, show subscription prompt
+  if (availablePatterns.length === 0 && hasTakenDemoTest) {
+    return (
+      <div className="min-h-screen bg-background p-4 md:p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold mb-2">Great Job! 🎉</h1>
+            <p className="text-gray-600">You've completed the demo test. Ready for more?</p>
+          </div>
+
+          <Card className="p-8">
+            <div className="text-center mb-6">
+              <div className="text-6xl mb-4">🚀</div>
+              <h2 className="text-2xl font-bold mb-2">Unlock Full Access</h2>
+              <p className="text-gray-600 mb-4">Subscribe now to access unlimited tests and track your progress</p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <h3 className="font-bold mb-3 text-lg">What You'll Get:</h3>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li className="flex items-start">
+                    <span className="text-primary mr-2">✓</span>
+                    <span>Unlimited JEE Main practice tests</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-primary mr-2">✓</span>
+                    <span>Subject-wise topic tests</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-primary mr-2">✓</span>
+                    <span>Detailed performance analytics</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-primary mr-2">✓</span>
+                    <span>AI-powered personalized tests</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-primary mr-2">✓</span>
+                    <span>Progress tracking & insights</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="font-bold mb-3 text-lg">Your Demo Results:</h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Check your demo test results and see how you performed!
+                </p>
+                <Button
+                  onClick={() => navigate('/student/results')}
+                  variant="outline"
+                  className="w-full mb-3"
+                >
+                  View Demo Results
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button
+                onClick={() => navigate('/student/subscription')}
+                className="px-8 py-3 text-lg"
+              >
+                Subscribe Now
+              </Button>
+              <Button
+                onClick={() => navigate('/student/dashboard')}
+                variant="outline"
+                className="px-8 py-3"
+              >
+                Go to Dashboard
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   if (showDemoOnly) {
     return (
