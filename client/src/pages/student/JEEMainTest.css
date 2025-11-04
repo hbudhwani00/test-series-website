@@ -134,112 +134,116 @@ body:-ms-fullscreen {
 /* Mobile Landscape Mode - Optimized for rotated phones */
 @media (max-width: 926px) and (orientation: landscape) {
   /* Make header more compact */
-  .jee-main-test header {
+  .jee-main-test > div:first-child {
     padding: 0.5rem 1rem !important;
     min-height: 50px !important;
   }
   
-  .jee-main-test header h1 {
+  .jee-main-test > div:first-child h1 {
     font-size: 1rem !important;
     margin: 0 !important;
   }
   
-  .jee-main-test header p,
-  .jee-main-test header .text-sm {
+  .jee-main-test > div:first-child p,
+  .jee-main-test > div:first-child .text-sm,
+  .jee-main-test > div:first-child .text-xs {
     font-size: 0.7rem !important;
     margin: 0 !important;
   }
   
   /* Timer in header - make smaller */
-  .jee-main-test .timer,
-  .jee-main-test [class*="timer"] {
+  .jee-main-test > div:first-child .text-2xl {
     font-size: 1.2rem !important;
-    padding: 0.25rem 0.5rem !important;
   }
   
-  /* Main container - use flexbox for side-by-side layout */
-  .jee-main-test main,
-  .jee-main-test > div > div {
-    display: flex !important;
-    flex-direction: row !important;
-    height: calc(100vh - 60px) !important;
-    overflow: hidden !important;
-  }
-  
-  /* Question area on left - takes more space */
-  .jee-main-test .question-area,
-  .jee-main-test [class*="question"] {
-    flex: 1 !important;
-    overflow-y: auto !important;
-    padding: 1rem !important;
+  /* Main content container - allow scrolling */
+  .jee-main-test .container {
+    padding: 0.5rem !important;
     max-height: calc(100vh - 60px) !important;
+    overflow-y: auto !important;
   }
   
-  /* Question palette on right - fixed width */
-  .jee-main-test aside,
-  .jee-main-test [class*="palette"],
-  .jee-main-test .question-palette {
-    width: 280px !important;
-    min-width: 280px !important;
-    max-width: 280px !important;
-    height: calc(100vh - 60px) !important;
-    overflow-y: auto !important;
-    border-left: 2px solid #e5e7eb !important;
-    padding: 0.75rem !important;
-    position: relative !important;
+  /* Desktop layout for landscape - question left, palette right */
+  .jee-main-test .grid {
+    display: grid !important;
+    grid-template-columns: 1fr 280px !important;
+    gap: 0.5rem !important;
+    height: auto !important;
+  }
+  
+  /* Question area - left side, allow scrolling */
+  .jee-main-test .lg\\:col-span-2 {
+    order: 1 !important;
+    overflow-y: visible !important;
+  }
+  
+  /* Question palette - right side, fixed width */
+  .jee-main-test .lg\\:col-span-1 {
     order: 2 !important;
+    position: sticky !important;
+    top: 0 !important;
+    max-height: calc(100vh - 70px) !important;
+    overflow-y: auto !important;
   }
   
   /* Question palette grid - more compact */
   .question-palette-grid {
     grid-template-columns: repeat(5, 1fr) !important;
-    gap: 0.4rem !important;
+    gap: 0.35rem !important;
   }
   
   .question-status-button {
-    font-size: 0.8rem !important;
-    padding: 0.4rem !important;
-    min-height: 35px !important;
-  }
-  
-  /* Hide unnecessary elements in fullscreen */
-  .jee-main-test:fullscreen .url-bar,
-  .jee-main-test:fullscreen [class*="url"],
-  .jee-main-test:fullscreen [class*="candidate-info"] {
-    display: none !important;
+    font-size: 0.75rem !important;
+    padding: 0.35rem !important;
+    min-height: 32px !important;
   }
   
   /* Navigation buttons - more compact */
-  .jee-main-test .navigation-buttons,
-  .jee-main-test [class*="navigation"] {
-    padding: 0.5rem !important;
-    gap: 0.5rem !important;
-  }
-  
   .jee-main-test button {
     font-size: 0.8rem !important;
     padding: 0.4rem 0.8rem !important;
   }
   
-  /* Reduce spacing */
-  .jee-main-test .space-y-4 > * + * {
-    margin-top: 0.5rem !important;
+  /* Reduce spacing everywhere */
+  .jee-main-test .p-6 {
+    padding: 0.75rem !important;
   }
   
-  .jee-main-test .space-y-6 > * + * {
-    margin-top: 0.75rem !important;
+  .jee-main-test .p-4 {
+    padding: 0.5rem !important;
   }
   
-  /* Make questions and options more compact */
-  .jee-main-test .question-text {
-    font-size: 0.9rem !important;
-    line-height: 1.4 !important;
+  .jee-main-test .mb-6 {
     margin-bottom: 0.75rem !important;
   }
   
-  .jee-main-test .option {
+  .jee-main-test .mb-4 {
+    margin-bottom: 0.5rem !important;
+  }
+  
+  /* Make questions and options more compact */
+  .jee-main-test .text-base {
+    font-size: 0.9rem !important;
+    line-height: 1.4 !important;
+  }
+  
+  .jee-main-test .text-sm {
+    font-size: 0.8rem !important;
+  }
+  
+  /* Question options - more compact */
+  .jee-main-test .p-3 {
     padding: 0.5rem !important;
-    font-size: 0.85rem !important;
+  }
+  
+  .jee-main-test .space-y-2 > * + * {
+    margin-top: 0.4rem !important;
+  }
+  
+  /* Card padding */
+  .jee-main-test .card,
+  .jee-main-test [class*="Card"] {
+    padding: 0.75rem !important;
   }
 }
 
