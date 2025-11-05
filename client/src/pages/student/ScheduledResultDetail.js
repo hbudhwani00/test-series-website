@@ -12,6 +12,7 @@ const ScheduledResultDetail = () => {
   const [loading, setLoading] = useState(true);
   const [aiFeedback, setAiFeedback] = useState(null);
   const [loadingAI, setLoadingAI] = useState(false);
+  const [showSolutions, setShowSolutions] = useState(true);
 
   useEffect(() => {
     fetchResult();
@@ -669,196 +670,186 @@ const ScheduledResultDetail = () => {
           </div>
         </div>
 
-        {/* Detailed Solutions - Same structure as DemoResultDetail */}
-        <div className="card" style={{ marginTop: '30px' }}>
-          <h2>📝 Detailed Analysis - Questions with Solutions</h2>
-          
-          {Object.keys(groupedAnswers).map((subject, subIdx) => (
-            <div key={subIdx} style={{ marginTop: '20px' }}>
-              <h3 style={{ 
-                background: '#3b82f6', 
-                color: 'white', 
-                padding: '12px 20px', 
-                borderRadius: '8px',
-                marginBottom: '15px'
-              }}>
-                {subject}
-              </h3>
-              
-              {Object.keys(groupedAnswers[subject]).map((chapter, chIdx) => (
-                <div key={chIdx} style={{ marginLeft: '15px', marginBottom: '20px' }}>
-                  <h4 style={{ 
-                    background: '#e0f2fe', 
-                    color: '#0369a1', 
-                    padding: '10px 15px', 
-                    borderRadius: '6px',
-                    marginBottom: '10px',
-                    borderLeft: '4px solid #0369a1'
-                  }}>
-                    📖 Chapter: {chapter}
-                  </h4>
+        {/* Detailed Solutions Section */}
+        <div className="solutions-section">
+          <div 
+            className="solutions-toggle"
+            onClick={() => setShowSolutions(!showSolutions)}
+          >
+            <h2>📝 Detailed Analysis - Questions with Solutions</h2>
+            <span className={`toggle-icon ${showSolutions ? 'open' : ''}`}>▼</span>
+          </div>
+
+          {showSolutions && (
+            <>
+              {Object.keys(groupedAnswers).map((subject, subIdx) => (
+                <div key={subIdx}>
+                  <h3 className="subject-header">{subject}</h3>
                   
-                  {Object.keys(groupedAnswers[subject][chapter]).map((topic, topIdx) => {
-                    const topicAnswers = groupedAnswers[subject][chapter][topic];
-                    
-                    return (
-                    <div key={topIdx} style={{ marginLeft: '15px', marginBottom: '15px' }}>
-                      <h5 style={{ 
-                        background: '#fef3c7', 
-                        color: '#92400e', 
-                        padding: '8px 12px', 
-                        borderRadius: '4px',
-                        marginBottom: '10px',
-                        borderLeft: '3px solid #f59e0b'
-                      }}>
-                        🎯 Topic: {topic}
-                      </h5>
+                  {Object.keys(groupedAnswers[subject]).map((chapter, chIdx) => (
+                    <div key={chIdx}>
+                      <h4 className="chapter-header">📖 Chapter: {chapter}</h4>
                       
-                      {topicAnswers.map((answer, qIdx) => {
+                      {Object.keys(groupedAnswers[subject][chapter]).map((topic, topIdx) => {
+                        const topicAnswers = groupedAnswers[subject][chapter][topic];
+                        
                         return (
-                        <div
-                          key={qIdx} 
-                          style={{ 
-                            marginLeft: '15px',
-                            marginBottom: '20px',
-                            padding: '20px',
-                            background: answer.isCorrect ? '#f0fdf4' : (answer.userAnswer === null ? '#fef3c7' : '#fef2f2'),
-                            borderRadius: '8px',
-                            border: `2px solid ${answer.isCorrect ? '#10b981' : (answer.userAnswer === null ? '#f59e0b' : '#ef4444')}`
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
-                            <span style={{ 
-                              background: answer.isCorrect ? '#10b981' : (answer.userAnswer === null ? '#f59e0b' : '#ef4444'),
-                              color: 'white',
-                              padding: '5px 10px',
-                              borderRadius: '5px',
-                              fontWeight: 'bold',
-                              marginRight: '10px'
-                            }}>
-                              {answer.isCorrect ? '✓ CORRECT' : (answer.userAnswer === null ? '− UNATTEMPTED' : '✗ INCORRECT')}
-                            </span>
-                            <span style={{ color: '#666' }}>
-                              Marks: {answer.marksAwarded > 0 ? `+${answer.marksAwarded}` : answer.marksAwarded}
-                            </span>
-                          </div>
-                          
-                          <div style={{ marginBottom: '15px' }}>
-                            <p style={{ fontWeight: '600', fontSize: '1.05rem', color: '#1f2937', lineHeight: '1.6' }}>
-                              {answer.questionId?.question || 'Question not available'}
-                            </p>
-                          </div>
-                          
-                          {/* Show user's answer and correct answer info */}
-                          <div style={{ marginBottom: '15px', padding: '10px', background: '#f3f4f6', borderRadius: '6px' }}>
-                            <div style={{ marginBottom: '5px' }}>
-                              <strong>Your Answer: </strong>
-                              <span style={{ color: answer.userAnswer === null ? '#f59e0b' : '#1f2937' }}>
-                                {answer.userAnswer === null || answer.userAnswer === undefined || answer.userAnswer === '' ? 
-                                  'Not Attempted' : 
-                                  (answer.questionId?.questionType === 'numerical' ? 
-                                    answer.userAnswer : 
-                                    (typeof answer.userAnswer === 'string' && answer.userAnswer.length === 1 && answer.userAnswer.match(/[A-Z]/i) ?
-                                      `Option ${answer.userAnswer.toUpperCase()}` :
-                                      (typeof answer.userAnswer === 'number' || !isNaN(answer.userAnswer) ?
-                                        `Option ${String.fromCharCode(65 + parseInt(answer.userAnswer))}` :
-                                        answer.userAnswer
-                                      )
-                                    )
-                                  )
-                                }
-                              </span>
-                            </div>
-                            <div>
-                              <strong>Correct Answer: </strong>
-                              <span style={{ color: '#10b981', fontWeight: '600' }}>
-                                {answer.questionId?.questionType === 'numerical' ? 
-                                  answer.correctAnswer : 
-                                  (typeof answer.correctAnswer === 'string' && answer.correctAnswer.length === 1 && answer.correctAnswer.match(/[A-Z]/i) ?
-                                    `Option ${answer.correctAnswer.toUpperCase()}` :
-                                    (typeof answer.correctAnswer === 'number' || !isNaN(answer.correctAnswer) ?
-                                      `Option ${String.fromCharCode(65 + parseInt(answer.correctAnswer))}` :
-                                      answer.correctAnswer
-                                    )
-                                  )
-                                }
-                              </span>
-                            </div>
-                          </div>
-                          
-                          {answer.questionId?.options && answer.questionId.options.length > 0 && (
-                            <div style={{ marginBottom: '15px' }}>
-                              <h6 style={{ fontWeight: '600', marginBottom: '10px', color: '#374151' }}>Options:</h6>
-                              {answer.questionId.options.map((option, optIdx) => {
-                                const normalizedUserAnswer = typeof answer.userAnswer === 'string' && answer.userAnswer.length === 1 ? 
-                                  answer.userAnswer.charCodeAt(0) - 65 :
-                                  parseInt(answer.userAnswer);
-                                
-                                const normalizedCorrectAnswer = typeof answer.correctAnswer === 'string' && answer.correctAnswer.length === 1 ? 
-                                  answer.correctAnswer.charCodeAt(0) - 65 :
-                                  parseInt(answer.correctAnswer);
-                                
-                                const isCorrectOption = optIdx === normalizedCorrectAnswer;
-                                const isUserOption = optIdx === normalizedUserAnswer;
-                                
-                                return (
-                                <div 
-                                  key={optIdx}
-                                  style={{
-                                    padding: '10px',
-                                    margin: '5px 0',
-                                    background: isCorrectOption ? '#d1fae5' : 
-                                               isUserOption ? '#fee2e2' : '#f9fafb',
-                                    border: isCorrectOption ? '2px solid #10b981' :
-                                           isUserOption ? '2px solid #ef4444' : '1px solid #e5e7eb',
-                                    borderRadius: '6px'
-                                  }}
-                                >
-                                  <strong>{String.fromCharCode(65 + optIdx)}.</strong> {option}
-                                  {isCorrectOption && <span style={{ color: '#10b981', marginLeft: '10px', fontWeight: 'bold' }}>✓ Correct Answer</span>}
-                                  {isUserOption && !isCorrectOption && <span style={{ color: '#ef4444', marginLeft: '10px', fontWeight: 'bold' }}>✗ Your Answer</span>}
+                          <div key={topIdx}>
+                            <h5 className="topic-header">🎯 Topic: {topic}</h5>
+                            
+                            {topicAnswers.map((answer, qIdx) => {
+                              const isCorrect = answer.isCorrect;
+                              const isUnattempted = answer.userAnswer === null || answer.userAnswer === undefined;
+                              const questionClass = isCorrect ? 'correct' : (isUnattempted ? 'unattempted' : 'incorrect');
+                              
+                              return (
+                                <div key={qIdx} className={`question-card ${questionClass}`}>
+                                  <span className={`question-status-badge ${questionClass}`}>
+                                    {isCorrect ? '✓ CORRECT' : (isUnattempted ? '− UNATTEMPTED' : '✗ INCORRECT')}
+                                    {' • '}
+                                    Marks: {answer.marksAwarded > 0 ? `+${answer.marksAwarded}` : answer.marksAwarded}
+                                  </span>
+                                  
+                                  <p className="question-text">
+                                    <LatexRenderer content={answer.questionId?.question || 'Question not available'} />
+                                  </p>
+                                  
+                                  {answer.questionId?.questionImage && (
+                                    <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+                                      <img 
+                                        src={answer.questionId.questionImage} 
+                                        alt="Question diagram" 
+                                        style={{ maxWidth: '100%', maxHeight: '320px', borderRadius: '8px' }} 
+                                      />
+                                    </div>
+                                  )}
+                                  
+                                  <div style={{ 
+                                    padding: '15px', 
+                                    background: 'var(--light-bg)', 
+                                    borderRadius: '10px', 
+                                    marginBottom: '15px',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    flexWrap: 'wrap',
+                                    gap: '10px'
+                                  }}>
+                                    <div>
+                                      <strong>Your Answer: </strong>
+                                      <span style={{ color: isUnattempted ? 'var(--orange-accent)' : 'var(--text-primary)' }}>
+                                        {isUnattempted ? 
+                                          'Not Attempted' : 
+                                          (answer.questionId?.questionType === 'numerical' ? 
+                                            answer.userAnswer : 
+                                            (typeof answer.userAnswer === 'string' && answer.userAnswer.length === 1 && answer.userAnswer.match(/[A-Z]/i) ?
+                                              `Option ${answer.userAnswer.toUpperCase()}` :
+                                              (typeof answer.userAnswer === 'number' || !isNaN(answer.userAnswer) ?
+                                                `Option ${String.fromCharCode(65 + parseInt(answer.userAnswer))}` :
+                                                answer.userAnswer
+                                              )
+                                            )
+                                          )
+                                        }
+                                      </span>
+                                    </div>
+                                    <div>
+                                      <strong>Correct Answer: </strong>
+                                      <span style={{ color: 'var(--success-green)', fontWeight: '600' }}>
+                                        {answer.questionId?.questionType === 'numerical' ? 
+                                          answer.correctAnswer : 
+                                          (typeof answer.correctAnswer === 'string' && answer.correctAnswer.length === 1 && answer.correctAnswer.match(/[A-Z]/i) ?
+                                            `Option ${answer.correctAnswer.toUpperCase()}` :
+                                            (typeof answer.correctAnswer === 'number' || !isNaN(answer.correctAnswer) ?
+                                              `Option ${String.fromCharCode(65 + parseInt(answer.correctAnswer))}` :
+                                              answer.correctAnswer
+                                            )
+                                          )
+                                        }
+                                      </span>
+                                    </div>
+                                  </div>
+                                  
+                                  {answer.questionId?.options && answer.questionId.options.length > 0 && (
+                                    <ul className="options-list">
+                                      {answer.questionId.options.map((option, optIdx) => {
+                                        const normalizedUserAnswer = typeof answer.userAnswer === 'string' && answer.userAnswer.length === 1 ? 
+                                          answer.userAnswer.charCodeAt(0) - 65 : 
+                                          parseInt(answer.userAnswer);
+                                        
+                                        const normalizedCorrectAnswer = typeof answer.correctAnswer === 'string' && answer.correctAnswer.length === 1 ? 
+                                          answer.correctAnswer.charCodeAt(0) - 65 :
+                                          parseInt(answer.correctAnswer);
+                                        
+                                        const isCorrectOption = optIdx === normalizedCorrectAnswer;
+                                        const isUserOption = optIdx === normalizedUserAnswer;
+                                        
+                                        return (
+                                          <li 
+                                            key={optIdx}
+                                            className={`option-item ${isCorrectOption ? 'correct-option' : ''} ${isUserOption && !isCorrectOption ? 'user-option' : ''}`}
+                                          >
+                                            <strong>{String.fromCharCode(65 + optIdx)}.</strong> 
+                                            <span style={{ marginLeft: '8px' }}>
+                                              <LatexRenderer content={option} />
+                                            </span>
+                                            {answer.questionId?.optionImages && answer.questionId.optionImages[optIdx] && (
+                                              <div style={{ marginTop: '8px', marginLeft: '24px' }}>
+                                                <img 
+                                                  src={answer.questionId.optionImages[optIdx]} 
+                                                  alt={`Option ${String.fromCharCode(65 + optIdx)} diagram`} 
+                                                  style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '6px' }} 
+                                                />
+                                              </div>
+                                            )}
+                                            {isCorrectOption && <span style={{ color: 'var(--success-green)', marginLeft: '10px', fontWeight: 'bold' }}>✓</span>}
+                                            {isUserOption && !isCorrectOption && <span style={{ color: 'var(--warning-red)', marginLeft: '10px', fontWeight: 'bold' }}>✗ Your Answer</span>}
+                                          </li>
+                                        );
+                                      })}
+                                    </ul>
+                                  )}
+                                  
+                                  {answer.questionId?.questionType === 'numerical' && (
+                                    <div style={{ 
+                                      marginBottom: '15px', 
+                                      padding: '12px', 
+                                      background: 'var(--light-bg)', 
+                                      borderRadius: '8px',
+                                      borderLeft: '4px solid var(--navy-primary)'
+                                    }}>
+                                      <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
+                                        <strong>Type:</strong> Numerical Answer Question
+                                      </p>
+                                    </div>
+                                  )}
+                                  
+                                  <div className="solution-box">
+                                    <h6>💡 Solution:</h6>
+                                    <p>
+                                      <LatexRenderer content={answer.explanation || 'Solution not available'} />
+                                    </p>
+                                    {answer.questionId?.explanationImage && (
+                                      <div style={{ marginTop: '1rem' }}>
+                                        <img 
+                                          src={answer.questionId.explanationImage} 
+                                          alt="Solution diagram" 
+                                          style={{ maxWidth: '100%', maxHeight: '320px', borderRadius: '8px' }} 
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                          
-                          {answer.questionId?.questionType === 'numerical' && (
-                            <div style={{ 
-                              marginBottom: '15px', 
-                              padding: '12px', 
-                              background: '#f3f4f6', 
-                              borderRadius: '6px',
-                              borderLeft: '4px solid #6366f1'
-                            }}>
-                              <p style={{ color: '#4b5563' }}>
-                                <strong>Type:</strong> Numerical Answer Question
-                              </p>
-                            </div>
-                          )}
-                          
-                          <div style={{ 
-                            background: '#fffbeb', 
-                            padding: '15px', 
-                            borderRadius: '6px',
-                            borderLeft: '4px solid #f59e0b',
-                            marginTop: '15px'
-                          }}>
-                            <h6 style={{ color: '#92400e', marginBottom: '8px', fontWeight: '600' }}>💡 Solution:</h6>
-                            <p style={{ color: '#78350f', lineHeight: '1.6' }}>
-                              {answer.explanation || 'Solution not available'}
-                            </p>
+                              );
+                            })}
                           </div>
-                        </div>
                         );
                       })}
                     </div>
-                    );
-                  })}
+                  ))}
                 </div>
               ))}
-            </div>
-          ))}
+            </>
+          )}
         </div>
     </div>
   );

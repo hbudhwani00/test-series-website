@@ -118,6 +118,22 @@ const ResultDetail = () => {
   const strengthTopics = topicPerformance.filter(t => t.correct > 0 && t.incorrect === 0).sort((a, b) => b.correct - a.correct).slice(0, 5);
   const recommendedTopics = topicPerformance.filter(t => t.unattempted > 0 || t.incorrect > 0).sort((a, b) => (b.incorrect + b.unattempted) - (a.incorrect + a.unattempted)).slice(0, 4);
 
+  // Group answers by subject, chapter, and topic for organized display
+  const groupedAnswers = {};
+  if (result.answers) {
+    result.answers.forEach((answer) => {
+      const subject = answer.subject || 'General';
+      const chapter = answer.chapter || 'General';
+      const topic = answer.topic || 'General';
+      
+      if (!groupedAnswers[subject]) groupedAnswers[subject] = {};
+      if (!groupedAnswers[subject][chapter]) groupedAnswers[subject][chapter] = {};
+      if (!groupedAnswers[subject][chapter][topic]) groupedAnswers[subject][chapter][topic] = [];
+      
+      groupedAnswers[subject][chapter][topic].push(answer);
+    });
+  }
+
   return (
     <div className="demo-result-container">
         
@@ -305,118 +321,186 @@ const ResultDetail = () => {
           </div>
         </div>
 
-        {/* Solutions Toggle */}
-        <div className="demo-card" style={{ marginTop: '30px' }}>
-          <div className="solutions-header">
-            <h3 className="demo-card-title">📝 Question-wise Analysis</h3>
-            <button 
-              className="toggle-solutions-btn"
-              onClick={() => setShowSolutions(!showSolutions)}
-            >
-              {showSolutions ? '🙈 Hide Solutions' : '👁️ Show Solutions'}
-            </button>
+        {/* Detailed Solutions Section */}
+        <div className="solutions-section">
+          <div 
+            className="solutions-toggle"
+            onClick={() => setShowSolutions(!showSolutions)}
+          >
+            <h2>📝 Detailed Analysis - Questions with Solutions</h2>
+            <span className={`toggle-icon ${showSolutions ? 'open' : ''}`}>▼</span>
           </div>
-          {result.answers.map((answer, index) => (
-            <div
-              key={answer._id}
-              className={`answer-card card ${
-                answer.isCorrect ? 'correct' : answer.userAnswer ? 'incorrect' : 'unattempted'
-              }`}
-            >
-              <div className="answer-header">
-                <span className="question-number">Question {index + 1}</span>
-                <span className={`answer-status ${answer.isCorrect ? 'correct' : 'incorrect'}`}>
-                  {answer.isCorrect ? '✓ Correct' : answer.userAnswer ? '✗ Incorrect' : '- Unattempted'}
-                </span>
-                <span className="marks-awarded">
-                  Marks: {answer.marksAwarded > 0 ? '+' : ''}{answer.marksAwarded}
-                </span>
-              </div>
 
-              <div className="question-content">
-                <p className="question-text">
-                  <LatexRenderer content={answer.questionId.question} />
-                </p>
-                {answer.questionId.questionImage && (
-                  <div style={{ marginTop: '1rem' }}>
-                    <img 
-                      src={answer.questionId.questionImage} 
-                      alt="Question diagram" 
-                      style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-                    />
-                  </div>
-                )}
-
-                {answer.questionId.questionType === 'numerical' ? (
-                  <div className="numerical-answer">
-                    <p>
-                      <strong>Your Answer:</strong> {answer.userAnswer || 'Not Attempted'}
-                    </p>
-                    <p>
-                      <strong>Correct Answer:</strong> {answer.questionId.correctAnswer}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="options-review">
-                    {answer.questionId.options.map((option, optIndex) => {
-                      const optionKey = String.fromCharCode(65 + optIndex);
-                      const isUserAnswer = Array.isArray(answer.userAnswer)
-                        ? answer.userAnswer.includes(optionKey)
-                        : answer.userAnswer === optionKey;
-                      const isCorrectAnswer = Array.isArray(answer.questionId.correctAnswer)
-                        ? answer.questionId.correctAnswer.includes(optionKey)
-                        : answer.questionId.correctAnswer === optionKey;
-
-                      return (
-                        <div
-                          key={optIndex}
-                          className={`option-review ${
-                            isCorrectAnswer ? 'correct-option' : ''
-                          } ${isUserAnswer && !isCorrectAnswer ? 'incorrect-option' : ''}`}
-                        >
-                          <span className="option-key">{optionKey}</span>
-                          <span className="option-text">
-                            <LatexRenderer content={option} />
-                            {answer.questionId.optionImages && answer.questionId.optionImages[optIndex] && (
-                              <div style={{ marginTop: '0.5rem', marginLeft: '1rem' }}>
-                                <img 
-                                  src={answer.questionId.optionImages[optIndex]} 
-                                  alt={`Option ${optionKey}`} 
-                                  style={{ maxWidth: '250px', maxHeight: '120px', objectFit: 'contain', border: '1px solid #e5e7eb', borderRadius: '4px' }}
-                                />
-                              </div>
-                            )}
-                          </span>
-                          {isCorrectAnswer && <span className="badge correct">✓ Correct</span>}
-                          {isUserAnswer && !isCorrectAnswer && (
-                            <span className="badge incorrect">Your Answer</span>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {answer.questionId.explanation && (
-                  <div className="explanation">
-                    <strong>Explanation:</strong>
-                    <p>
-                      <LatexRenderer content={answer.questionId.explanation} />
-                    </p>
-                    {answer.questionId.explanationImage && (
-                      <div style={{ marginTop: '1rem' }}>
-                        <img 
-                          src={answer.questionId.explanationImage} 
-                          alt="Solution diagram" 
-                          style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
+          {showSolutions && (
+            <>
+              {Object.keys(groupedAnswers).map((subject, subIdx) => (
+                <div key={subIdx}>
+                  <h3 className="subject-header">{subject}</h3>
+                  
+                  {Object.keys(groupedAnswers[subject]).map((chapter, chIdx) => (
+                    <div key={chIdx}>
+                      <h4 className="chapter-header">📖 Chapter: {chapter}</h4>
+                      
+                      {Object.keys(groupedAnswers[subject][chapter]).map((topic, topIdx) => {
+                        const topicAnswers = groupedAnswers[subject][chapter][topic];
+                        
+                        return (
+                          <div key={topIdx}>
+                            <h5 className="topic-header">🎯 Topic: {topic}</h5>
+                            
+                            {topicAnswers.map((answer, qIdx) => {
+                              const isCorrect = answer.isCorrect;
+                              const isUnattempted = answer.userAnswer === null || answer.userAnswer === undefined;
+                              const questionClass = isCorrect ? 'correct' : (isUnattempted ? 'unattempted' : 'incorrect');
+                              
+                              return (
+                                <div key={qIdx} className={`question-card ${questionClass}`}>
+                                  <span className={`question-status-badge ${questionClass}`}>
+                                    {isCorrect ? '✓ CORRECT' : (isUnattempted ? '− UNATTEMPTED' : '✗ INCORRECT')}
+                                    {' • '}
+                                    Marks: {answer.marksAwarded > 0 ? `+${answer.marksAwarded}` : answer.marksAwarded}
+                                  </span>
+                                  
+                                  <p className="question-text">
+                                    <LatexRenderer content={answer.questionId?.question || 'Question not available'} />
+                                  </p>
+                                  
+                                  {answer.questionId?.questionImage && (
+                                    <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+                                      <img 
+                                        src={answer.questionId.questionImage} 
+                                        alt="Question diagram" 
+                                        style={{ maxWidth: '100%', maxHeight: '320px', borderRadius: '8px' }} 
+                                      />
+                                    </div>
+                                  )}
+                                  
+                                  <div style={{ 
+                                    padding: '15px', 
+                                    background: 'var(--light-bg)', 
+                                    borderRadius: '10px', 
+                                    marginBottom: '15px',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    flexWrap: 'wrap',
+                                    gap: '10px'
+                                  }}>
+                                    <div>
+                                      <strong>Your Answer: </strong>
+                                      <span style={{ color: isUnattempted ? 'var(--orange-accent)' : 'var(--text-primary)' }}>
+                                        {isUnattempted ? 
+                                          'Not Attempted' : 
+                                          (answer.questionId?.questionType === 'numerical' ? 
+                                            answer.userAnswer : 
+                                            (typeof answer.userAnswer === 'string' && answer.userAnswer.length === 1 && answer.userAnswer.match(/[A-Z]/i) ?
+                                              `Option ${answer.userAnswer.toUpperCase()}` :
+                                              (typeof answer.userAnswer === 'number' || !isNaN(answer.userAnswer) ?
+                                                `Option ${String.fromCharCode(65 + parseInt(answer.userAnswer))}` :
+                                                answer.userAnswer
+                                              )
+                                            )
+                                          )
+                                        }
+                                      </span>
+                                    </div>
+                                    <div>
+                                      <strong>Correct Answer: </strong>
+                                      <span style={{ color: 'var(--success-green)', fontWeight: '600' }}>
+                                        {answer.questionId?.questionType === 'numerical' ? 
+                                          answer.correctAnswer : 
+                                          (typeof answer.correctAnswer === 'string' && answer.correctAnswer.length === 1 && answer.correctAnswer.match(/[A-Z]/i) ?
+                                            `Option ${answer.correctAnswer.toUpperCase()}` :
+                                            (typeof answer.correctAnswer === 'number' || !isNaN(answer.correctAnswer) ?
+                                              `Option ${String.fromCharCode(65 + parseInt(answer.correctAnswer))}` :
+                                              answer.correctAnswer
+                                            )
+                                          )
+                                        }
+                                      </span>
+                                    </div>
+                                  </div>
+                                  
+                                  {answer.questionId?.options && answer.questionId.options.length > 0 && (
+                                    <ul className="options-list">
+                                      {answer.questionId.options.map((option, optIdx) => {
+                                        const normalizedUserAnswer = typeof answer.userAnswer === 'string' && answer.userAnswer.length === 1 ? 
+                                          answer.userAnswer.charCodeAt(0) - 65 : 
+                                          parseInt(answer.userAnswer);
+                                        
+                                        const normalizedCorrectAnswer = typeof answer.correctAnswer === 'string' && answer.correctAnswer.length === 1 ? 
+                                          answer.correctAnswer.charCodeAt(0) - 65 :
+                                          parseInt(answer.correctAnswer);
+                                        
+                                        const isCorrectOption = optIdx === normalizedCorrectAnswer;
+                                        const isUserOption = optIdx === normalizedUserAnswer;
+                                        
+                                        return (
+                                          <li 
+                                            key={optIdx}
+                                            className={`option-item ${isCorrectOption ? 'correct-option' : ''} ${isUserOption && !isCorrectOption ? 'user-option' : ''}`}
+                                          >
+                                            <strong>{String.fromCharCode(65 + optIdx)}.</strong> 
+                                            <span style={{ marginLeft: '8px' }}>
+                                              <LatexRenderer content={option} />
+                                            </span>
+                                            {answer.questionId?.optionImages && answer.questionId.optionImages[optIdx] && (
+                                              <div style={{ marginTop: '8px', marginLeft: '24px' }}>
+                                                <img 
+                                                  src={answer.questionId.optionImages[optIdx]} 
+                                                  alt={`Option ${String.fromCharCode(65 + optIdx)} diagram`} 
+                                                  style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '6px' }} 
+                                                />
+                                              </div>
+                                            )}
+                                            {isCorrectOption && <span style={{ color: 'var(--success-green)', marginLeft: '10px', fontWeight: 'bold' }}>✓</span>}
+                                            {isUserOption && !isCorrectOption && <span style={{ color: 'var(--warning-red)', marginLeft: '10px', fontWeight: 'bold' }}>✗ Your Answer</span>}
+                                          </li>
+                                        );
+                                      })}
+                                    </ul>
+                                  )}
+                                  
+                                  {answer.questionId?.questionType === 'numerical' && (
+                                    <div style={{ 
+                                      marginBottom: '15px', 
+                                      padding: '12px', 
+                                      background: 'var(--light-bg)', 
+                                      borderRadius: '8px',
+                                      borderLeft: '4px solid var(--navy-primary)'
+                                    }}>
+                                      <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
+                                        <strong>Type:</strong> Numerical Answer Question
+                                      </p>
+                                    </div>
+                                  )}
+                                  
+                                  <div className="solution-box">
+                                    <h6>💡 Solution:</h6>
+                                    <p>
+                                      <LatexRenderer content={answer.explanation || 'Solution not available'} />
+                                    </p>
+                                    {answer.questionId?.explanationImage && (
+                                      <div style={{ marginTop: '1rem' }}>
+                                        <img 
+                                          src={answer.questionId.explanationImage} 
+                                          alt="Solution diagram" 
+                                          style={{ maxWidth: '100%', maxHeight: '320px', borderRadius: '8px' }} 
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </>
+          )}
         </div>
     </div>
   );
