@@ -11,6 +11,8 @@ const DemoResultDetail = () => {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showSolutions, setShowSolutions] = useState(true);
+  const [aiFeedback, setAiFeedback] = useState(null);
+  const [loadingAI, setLoadingAI] = useState(false);
 
   useEffect(() => {
     fetchResult();
@@ -25,6 +27,33 @@ const DemoResultDetail = () => {
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAIFeedback = async () => {
+    setLoadingAI(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `${API_URL}/ai/performance-feedback`,
+        { resultId },
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        }
+      );
+      
+      setAiFeedback(response.data.feedback);
+      
+      if (response.data.source === 'gemini') {
+        toast.success('AI analysis generated successfully!');
+      } else {
+        toast.info('AI analysis generated (fallback mode)');
+      }
+    } catch (error) {
+      console.error('Error fetching AI feedback:', error);
+      toast.error('Failed to generate AI feedback. Please try again.');
+    } finally {
+      setLoadingAI(false);
     }
   };
 
@@ -180,6 +209,34 @@ const DemoResultDetail = () => {
                 <div className="stat-mini-value" style={{ color: '#F59E0B' }}>{result.unattempted}</div>
                 <div className="stat-mini-label">Skipped</div>
               </div>
+            </div>
+
+            {/* AI Suggestions Section */}
+            <div className="ai-suggestion-section">
+              <button 
+                className="ai-suggestion-btn"
+                onClick={fetchAIFeedback}
+                disabled={loadingAI}
+              >
+                {loadingAI ? '🤖 Analyzing Performance...' : '🤖 Get AI Performance Insights'}
+              </button>
+              
+              {aiFeedback && (
+                <div className="ai-feedback-box">
+                  <div className="ai-feedback-header">
+                    <span>🤖 AI Performance Analysis</span>
+                    <button 
+                      className="close-feedback-btn" 
+                      onClick={() => setAiFeedback(null)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="ai-feedback-content">
+                    {aiFeedback}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

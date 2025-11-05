@@ -9,6 +9,8 @@ const ScheduledResultDetail = () => {
   const { resultId } = useParams();
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [aiFeedback, setAiFeedback] = useState(null);
+  const [loadingAI, setLoadingAI] = useState(false);
 
   useEffect(() => {
     fetchResult();
@@ -26,6 +28,33 @@ const ScheduledResultDetail = () => {
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAIFeedback = async () => {
+    setLoadingAI(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `${API_URL}/ai/performance-feedback`,
+        { resultId },
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        }
+      );
+      
+      setAiFeedback(response.data.feedback);
+      
+      if (response.data.source === 'gemini') {
+        toast.success('AI analysis generated successfully!');
+      } else {
+        toast.info('AI analysis generated (fallback mode)');
+      }
+    } catch (error) {
+      console.error('Error fetching AI feedback:', error);
+      toast.error('Failed to generate AI feedback. Please try again.');
+    } finally {
+      setLoadingAI(false);
     }
   };
 
@@ -111,6 +140,74 @@ const ScheduledResultDetail = () => {
 
           <div className="time-info" style={{ marginTop: '20px', textAlign: 'center', color: '#666' }}>
             <p>⏱️ Time Taken: {Math.floor(result.timeTaken / 60)} minutes {result.timeTaken % 60} seconds</p>
+          </div>
+
+          {/* AI Suggestions Section */}
+          <div className="ai-suggestion-section" style={{ marginTop: '25px', paddingTop: '20px', borderTop: '2px dashed #e5e7eb' }}>
+            <button 
+              className="btn btn-primary"
+              onClick={fetchAIFeedback}
+              disabled={loadingAI}
+              style={{ 
+                width: '100%',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                border: 'none',
+                padding: '15px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: loadingAI ? 'not-allowed' : 'pointer',
+                opacity: loadingAI ? 0.7 : 1
+              }}
+            >
+              {loadingAI ? '🤖 Analyzing Performance...' : '🤖 Get AI Performance Insights'}
+            </button>
+            
+            {aiFeedback && (
+              <div style={{
+                marginTop: '20px',
+                background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                borderRadius: '12px',
+                padding: '20px',
+                border: '2px solid #667eea',
+                boxShadow: '0 4px 15px rgba(102, 126, 234, 0.2)',
+                animation: 'slideIn 0.3s ease'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '15px',
+                  paddingBottom: '10px',
+                  borderBottom: '2px solid #667eea',
+                  fontWeight: '700',
+                  fontSize: '1.1rem',
+                  color: '#667eea'
+                }}>
+                  <span>🤖 AI Performance Analysis</span>
+                  <button 
+                    onClick={() => setAiFeedback(null)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      fontSize: '1.5rem',
+                      cursor: 'pointer',
+                      color: '#6c757d',
+                      padding: 0
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div style={{
+                  whiteSpace: 'pre-wrap',
+                  lineHeight: '1.8',
+                  color: '#212529',
+                  fontSize: '0.95rem'
+                }}>
+                  {aiFeedback}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
