@@ -222,14 +222,11 @@ router.get('/:resultId', auth, async (req, res) => {
   }
 });
 
-// Get All Results for User
+// Get All Results for User (only their own results)
 router.get('/user/all', auth, async (req, res) => {
   try {
     const results = await Result.find({ 
-      $or: [
-        { userId: req.user.userId },  // Regular authenticated tests
-        { isDemo: true }               // Demo tests (show to all)
-      ]
+      userId: req.user.userId  // Only show this user's results (including their demo results)
     })
       .populate('testId', 'title examType subject chapter')
       .sort({ submittedAt: -1 });

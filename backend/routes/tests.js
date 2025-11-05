@@ -480,21 +480,6 @@ router.get('/scheduled/upcoming', auth, async (req, res) => {
 // Get Test Details by ID - MUST be after all specific routes
 router.get('/:testId', async (req, res) => {
   try {
-    // Check if user is authenticated
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    let userId = null;
-    
-    if (token) {
-      try {
-        const jwt = require('jsonwebtoken');
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        userId = decoded.userId;
-      } catch (err) {
-        // Invalid token - treat as unauthenticated
-        userId = null;
-      }
-    }
-
     const test = await Test.findById(req.params.testId)
       .populate('questions.questionId')
       .populate('jeeMainStructure.Physics.sectionA jeeMainStructure.Physics.sectionB jeeMainStructure.Chemistry.sectionA jeeMainStructure.Chemistry.sectionB jeeMainStructure.Mathematics.sectionA jeeMainStructure.Mathematics.sectionB');
@@ -503,9 +488,29 @@ router.get('/:testId', async (req, res) => {
       return res.status(404).json({ message: 'Test not found' });
     }
 
-    // If test has a createdBy field and user is not authenticated or not the owner, check if it's a demo test
-    if (test.createdBy && userId && test.createdBy.toString() !== userId.toString() && test.testType !== 'demo') {
-      return res.status(403).json({ message: 'Access denied' });
+    // Allow access to demo tests without authentication
+    if (test.testType === 'demo') {
+      return res.json({ test });
+    }
+
+    // For non-demo tests, require authentication
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) {
+      return res.status(401).json({ message: 'Authentication required. Please login to access this test.' });
+    }
+
+    let userId = null;
+    try {
+      const jwt = require('jsonwebtoken');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      userId = decoded.userId;
+    } catch (err) {
+      return res.status(401).json({ message: 'Invalid token. Please login again.' });
+    }
+
+    // Check if user has access to this test (if it's owned by someone specific)
+    if (test.createdBy && test.createdBy.toString() !== userId.toString()) {
+      return res.status(403).json({ message: 'Access denied. You do not have permission to access this test.' });
     }
 
     res.json({ test });

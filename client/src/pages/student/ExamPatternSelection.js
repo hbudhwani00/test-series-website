@@ -23,7 +23,7 @@ const ExamPatternSelection = () => {
       if (!token) return;
 
       // Check if user has completed demo test
-      const response = await axios.get(`${API_URL}/results/my-results`, {
+      const response = await axios.get(`${API_URL}/results/user/all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
