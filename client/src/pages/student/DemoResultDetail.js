@@ -223,13 +223,13 @@ const DemoResultDetail = () => {
   return (
     <div className="demo-result-container">
         
-        {/* Lead Capture Modal - Only for non-logged-in users */}
+        {/* Lead Capture Modal - Only for non-logged-in users - BLOCKS ACCESS TO RESULTS */}
         {showLeadForm && (
-          <div className="lead-modal-overlay">
+          <div className="lead-modal-overlay non-dismissible">
             <div className="lead-modal">
               <div className="lead-modal-header">
-                <h2>🎉 Great Job on Completing the Test!</h2>
-                <p>Enter your details to view your personalized performance report</p>
+                <h2>🎉 Congratulations on Completing the Test!</h2>
+                <p>Please enter your details to unlock and view your detailed performance report</p>
               </div>
               
               <form onSubmit={handleLeadSubmit} className="lead-form">
@@ -243,6 +243,7 @@ const DemoResultDetail = () => {
                     placeholder="Enter your full name"
                     className="form-input"
                     required
+                    autoFocus
                   />
                 </div>
                 
@@ -264,7 +265,7 @@ const DemoResultDetail = () => {
                     pattern="[6-9][0-9]{9}"
                     required
                   />
-                  <small className="form-hint">We'll send your report via WhatsApp</small>
+                  <small className="form-hint">📱 Get updates on new tests & study tips</small>
                 </div>
                 
                 <div className="form-group">
@@ -284,16 +285,19 @@ const DemoResultDetail = () => {
                   className="lead-submit-btn"
                   disabled={submittingLead}
                 >
-                  {submittingLead ? '⏳ Submitting...' : '🚀 View My Results'}
+                  {submittingLead ? '⏳ Submitting...' : '🚀 Unlock My Results'}
                 </button>
                 
                 <p className="lead-privacy-note">
-                  🔒 Your information is safe and will not be shared with third parties.
+                  🔒 Your information is secure. We respect your privacy and won't spam you.
                 </p>
               </form>
             </div>
           </div>
         )}
+        
+        {/* Results Dashboard - Blurred when modal is showing */}
+        <div className={`results-content ${showLeadForm ? 'blurred' : ''}`}>
         
         {/* Dashboard Grid */}
         <div className="demo-dashboard-grid">
@@ -673,6 +677,8 @@ const DemoResultDetail = () => {
             🚀 Register for Full Access & More Tests
           </Link>
         </div>
+        
+      </div>
       </div>
     
   );

@@ -5,6 +5,7 @@ const Question = require('../models/Question');
 const User = require('../models/User');
 const Test = require('../models/Test');
 const ScheduledTest = require('../models/ScheduledTest');
+const DemoLead = require('../models/DemoLead');
 const { generateJEEMainTest, getJEEMainInstructions } = require('../utils/jeeMainPattern');
 
 // Upload Question (Admin Only)
@@ -912,6 +913,169 @@ router.get('/jee-main-pattern', adminAuth, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get All Demo Leads (Admin Only)
+router.get('/demo-leads', adminAuth, async (req, res) => {
+  try {
+    const { 
+      page = 1, 
+      limit = 50, 
+      sortBy = 'createdAt', 
+      order = 'desc',
+      search = '',
+      converted = '' // 'true', 'false', or '' (all)
+    } = req.query;
+
+    // Build filter
+    const filter = {};
+    
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { phone: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    if (converted === 'true') {
+      filter.convertedToUser = true;
+    } else if (converted === 'false') {
+      filter.convertedToUser = false;
+    }
+
+    // Calculate pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    // Build sort object
+    const sortObj = {};
+    sortObj[sortBy] = order === 'desc' ? -1 : 1;
+
+    // Fetch leads with pagination
+    const leads = await DemoLead.find(filter)
+      .populate('resultId', 'score percentage totalMarks correctAnswers incorrectAnswers unattempted timeTaken')
+      .sort(sortObj)
+      .limit(parseInt(limit))
+      .skip(skip);
+
+    // Get total count
+    const total = await DemoLead.countDocuments(filter);
+
+    // Get stats
+    const stats = {
+      totalLeads: await DemoLead.countDocuments(),
+      convertedLeads: await DemoLead.countDocuments({ convertedToUser: true }),
+      unconvertedLeads: await DemoLead.countDocuments({ convertedToUser: false }),
+      averageScore: await DemoLead.aggregate([
+        { $match: { testScore: { $exists: true, $ne: null } } },
+        { $group: { _id: null, avgScore: { $avg: '$testPercentage' } } }
+      ]).then(result => result[0]?.avgScore?.toFixed(2) || 0),
+      leadsToday: await DemoLead.countDocuments({
+        createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }
+      }),
+      leadsThisWeek: await DemoLead.countDocuments({
+        createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+      }),
+      leadsThisMonth: await DemoLead.countDocuments({
+        createdAt: { $gte: new Date(new Date().setDate(1)) }
+      })
+    };
+
+    res.json({
+      leads,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(total / parseInt(limit))
+      },
+      stats
+    });
+
+  } catch (error) {
+    console.error('Error fetching demo leads:', error);
+    res.status(500).json({ message: 'Failed to fetch demo leads', error: error.message });
+  }
+});
+
+// Mark Lead as Converted (Admin Only)
+router.patch('/demo-leads/:leadId/convert', adminAuth, async (req, res) => {
+  try {
+    const { leadId } = req.params;
+    const { converted } = req.body;
+
+    const lead = await DemoLead.findByIdAndUpdate(
+      leadId,
+      { convertedToUser: converted },
+      { new: true }
+    );
+
+    if (!lead) {
+      return res.status(404).json({ message: 'Lead not found' });
+    }
+
+    res.json({ 
+      message: `Lead marked as ${converted ? 'converted' : 'unconverted'}`,
+      lead 
+    });
+
+  } catch (error) {
+    console.error('Error updating lead:', error);
+    res.status(500).json({ message: 'Failed to update lead', error: error.message });
+  }
+});
+
+// Delete Lead (Admin Only)
+router.delete('/demo-leads/:leadId', adminAuth, async (req, res) => {
+  try {
+    const { leadId } = req.params;
+
+    const lead = await DemoLead.findByIdAndDelete(leadId);
+
+    if (!lead) {
+      return res.status(404).json({ message: 'Lead not found' });
+    }
+
+    res.json({ message: 'Lead deleted successfully' });
+
+  } catch (error) {
+    console.error('Error deleting lead:', error);
+    res.status(500).json({ message: 'Failed to delete lead', error: error.message });
+  }
+});
+
+// Export Leads to CSV (Admin Only)
+router.get('/demo-leads/export/csv', adminAuth, async (req, res) => {
+  try {
+    const leads = await DemoLead.find()
+      .populate('resultId', 'score percentage totalMarks')
+      .sort({ createdAt: -1 });
+
+    // Create CSV header
+    let csv = 'Name,Phone,Email,Score,Percentage,Converted,Submitted On\n';
+
+    // Add data rows
+    leads.forEach(lead => {
+      const name = lead.name.replace(/,/g, ' ');
+      const phone = lead.phone;
+      const email = lead.email || 'N/A';
+      const score = lead.testScore || 'N/A';
+      const percentage = lead.testPercentage ? `${lead.testPercentage}%` : 'N/A';
+      const converted = lead.convertedToUser ? 'Yes' : 'No';
+      const date = new Date(lead.createdAt).toLocaleDateString('en-IN');
+      
+      csv += `${name},${phone},${email},${score},${percentage},${converted},${date}\n`;
+    });
+
+    // Set headers for file download
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=demo-leads-${Date.now()}.csv`);
+    res.send(csv);
+
+  } catch (error) {
+    console.error('Error exporting leads:', error);
+    res.status(500).json({ message: 'Failed to export leads', error: error.message });
   }
 });
 

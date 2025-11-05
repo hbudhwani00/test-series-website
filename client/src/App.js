@@ -43,6 +43,7 @@ import ScheduleTests from './pages/admin/ScheduleTests';
 import PaymentApproval from './pages/admin/PaymentApproval';
 import PromoCodeManagement from './pages/admin/PromoCodeManagement';
 import StudentAnalytics from './pages/admin/StudentAnalytics';
+import DemoLeads from './pages/admin/DemoLeads';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -268,6 +269,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute adminOnly={true}>
               <StudentAnalytics />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/demo-leads"
+          element={
+            <ProtectedRoute adminOnly={true}>
+              <DemoLeads />
             </ProtectedRoute>
           }
         />

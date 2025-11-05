@@ -897,6 +897,23 @@ body {
   line-height: 1.5;
 }
 
+/* Non-dismissible modal - prevents closing by clicking outside */
+.lead-modal-overlay.non-dismissible {
+  pointer-events: none; /* Overlay not clickable */
+}
+
+.lead-modal-overlay.non-dismissible .lead-modal {
+  pointer-events: all; /* But modal itself is clickable */
+}
+
+/* Blur effect for results when modal is showing */
+.results-content.blurred {
+  filter: blur(20px);
+  opacity: 0.3;
+  pointer-events: none;
+  user-select: none;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

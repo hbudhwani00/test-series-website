@@ -90,6 +90,9 @@ const AdminDashboard = () => {
           <Link to="/admin/demo-test" className="btn btn-primary">
             📋 Manage Demo Test
           </Link>
+          <Link to="/admin/demo-leads" className="btn btn-success">
+            📊 View Demo Leads
+          </Link>
           <Link to="/admin/manage-scheduled-tests" className="btn btn-primary">
             📅 Manage Scheduled Tests
           </Link>
