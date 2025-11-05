@@ -3,6 +3,7 @@ const router = express.Router();
 const DemoTest = require('../models/DemoTest');
 const Question = require('../models/Question');
 const Result = require('../models/Result');
+const DemoLead = require('../models/DemoLead');
 
 // Get Demo Test (Public - No Auth Required)
 router.get('/test', async (req, res) => {
@@ -207,6 +208,96 @@ router.post('/submit', async (req, res) => {
   } catch (error) {
     console.error('Error in demo test submission:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Save Demo Lead (Post-Test Lead Capture)
+router.post('/save-lead', async (req, res) => {
+  try {
+    const { name, phone, email, resultId } = req.body;
+
+    console.log('=== Saving Demo Lead ===');
+    console.log('Name:', name);
+    console.log('Phone:', phone);
+    console.log('Email:', email);
+    console.log('Result ID:', resultId);
+
+    // Validation
+    if (!name || !phone) {
+      return res.status(400).json({ message: 'Name and phone are required' });
+    }
+
+    // Validate Indian phone number format
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phone)) {
+      return res.status(400).json({ message: 'Invalid phone number. Please enter a valid 10-digit Indian mobile number.' });
+    }
+
+    // Check if lead already exists with this phone number
+    let existingLead = await DemoLead.findOne({ phone });
+    
+    if (existingLead) {
+      // Update existing lead
+      existingLead.name = name;
+      if (email) existingLead.email = email;
+      if (resultId) {
+        existingLead.resultId = resultId;
+        
+        // Fetch result to get score
+        const result = await Result.findById(resultId);
+        if (result) {
+          existingLead.testScore = result.score;
+          existingLead.testPercentage = result.percentage;
+        }
+      }
+      await existingLead.save();
+      
+      console.log('Updated existing lead:', existingLead._id);
+      return res.json({ 
+        success: true, 
+        message: 'Welcome back! Your information has been updated.',
+        lead: existingLead 
+      });
+    }
+
+    // Create new lead
+    const leadData = {
+      name,
+      phone,
+      email: email || undefined,
+      resultId: resultId || undefined
+    };
+
+    // If resultId provided, fetch score/percentage
+    if (resultId) {
+      const result = await Result.findById(resultId);
+      if (result) {
+        leadData.testScore = result.score;
+        leadData.testPercentage = result.percentage;
+      }
+    }
+
+    const newLead = new DemoLead(leadData);
+    await newLead.save();
+
+    console.log('New lead created:', newLead._id);
+
+    res.json({ 
+      success: true, 
+      message: 'Thank you! Your information has been saved.',
+      lead: newLead 
+    });
+
+  } catch (error) {
+    console.error('Error saving demo lead:', error);
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ message: messages.join(', ') });
+    }
+    
+    res.status(500).json({ message: 'Failed to save information. Please try again.' });
   }
 });
 

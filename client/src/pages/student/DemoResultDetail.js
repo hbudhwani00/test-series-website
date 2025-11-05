@@ -13,6 +13,13 @@ const DemoResultDetail = () => {
   const [showSolutions, setShowSolutions] = useState(true);
   const [aiFeedback, setAiFeedback] = useState(null);
   const [loadingAI, setLoadingAI] = useState(false);
+  
+  // Lead capture states
+  const [showLeadForm, setShowLeadForm] = useState(false);
+  const [leadName, setLeadName] = useState('');
+  const [leadPhone, setLeadPhone] = useState('');
+  const [leadEmail, setLeadEmail] = useState('');
+  const [submittingLead, setSubmittingLead] = useState(false);
 
   useEffect(() => {
     fetchResult();
@@ -22,11 +29,70 @@ const DemoResultDetail = () => {
     try {
       const response = await axios.get(`${API_URL}/results/public/${resultId}`);
       setResult(response.data.result);
+      
+      // Check if user is logged in
+      const token = localStorage.getItem('token');
+      
+      // Check if lead info already submitted for this session
+      const leadSubmitted = sessionStorage.getItem(`lead_submitted_${resultId}`);
+      
+      // Show lead form ONLY if:
+      // 1. User is NOT logged in (no token)
+      // 2. Lead info NOT already submitted in this session
+      if (!token && !leadSubmitted) {
+        setShowLeadForm(true);
+      }
     } catch (error) {
       toast.error('Failed to load result details');
       console.error(error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLeadSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Validation
+    if (!leadName.trim()) {
+      toast.error('Please enter your name');
+      return;
+    }
+    
+    if (!leadPhone.trim()) {
+      toast.error('Please enter your phone number');
+      return;
+    }
+    
+    // Indian phone number validation
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(leadPhone.trim())) {
+      toast.error('Please enter a valid 10-digit mobile number');
+      return;
+    }
+    
+    setSubmittingLead(true);
+    
+    try {
+      const response = await axios.post(`${API_URL}/demo/save-lead`, {
+        name: leadName.trim(),
+        phone: leadPhone.trim(),
+        email: leadEmail.trim() || undefined,
+        resultId: resultId
+      });
+      
+      // Mark as submitted in session
+      sessionStorage.setItem(`lead_submitted_${resultId}`, 'true');
+      
+      toast.success(response.data.message || 'Thank you! You can now view your results.');
+      setShowLeadForm(false);
+      
+    } catch (error) {
+      console.error('Error submitting lead:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to save information. Please try again.';
+      toast.error(errorMessage);
+    } finally {
+      setSubmittingLead(false);
     }
   };
 
@@ -156,6 +222,78 @@ const DemoResultDetail = () => {
 
   return (
     <div className="demo-result-container">
+        
+        {/* Lead Capture Modal - Only for non-logged-in users */}
+        {showLeadForm && (
+          <div className="lead-modal-overlay">
+            <div className="lead-modal">
+              <div className="lead-modal-header">
+                <h2>🎉 Great Job on Completing the Test!</h2>
+                <p>Enter your details to view your personalized performance report</p>
+              </div>
+              
+              <form onSubmit={handleLeadSubmit} className="lead-form">
+                <div className="form-group">
+                  <label htmlFor="leadName">Full Name *</label>
+                  <input
+                    type="text"
+                    id="leadName"
+                    value={leadName}
+                    onChange={(e) => setLeadName(e.target.value)}
+                    placeholder="Enter your full name"
+                    className="form-input"
+                    required
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="leadPhone">Mobile Number *</label>
+                  <input
+                    type="tel"
+                    id="leadPhone"
+                    value={leadPhone}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, ''); // Only digits
+                      if (value.length <= 10) {
+                        setLeadPhone(value);
+                      }
+                    }}
+                    placeholder="Enter 10-digit mobile number"
+                    className="form-input"
+                    maxLength="10"
+                    pattern="[6-9][0-9]{9}"
+                    required
+                  />
+                  <small className="form-hint">We'll send your report via WhatsApp</small>
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="leadEmail">Email (Optional)</label>
+                  <input
+                    type="email"
+                    id="leadEmail"
+                    value={leadEmail}
+                    onChange={(e) => setLeadEmail(e.target.value)}
+                    placeholder="your.email@example.com"
+                    className="form-input"
+                  />
+                </div>
+                
+                <button 
+                  type="submit" 
+                  className="lead-submit-btn"
+                  disabled={submittingLead}
+                >
+                  {submittingLead ? '⏳ Submitting...' : '🚀 View My Results'}
+                </button>
+                
+                <p className="lead-privacy-note">
+                  🔒 Your information is safe and will not be shared with third parties.
+                </p>
+              </form>
+            </div>
+          </div>
+        )}
         
         {/* Dashboard Grid */}
         <div className="demo-dashboard-grid">

@@ -9,9 +9,9 @@ import './Subscription.css';
 
 const Subscription = () => {
   const [plans] = useState([
-    { type: 'JEE_MAIN', name: 'JEE Main', amount: 299, duration: 30 },
-    { type: 'JEE_MAIN_ADVANCED', name: 'JEE Main + Advanced', amount: 399, duration: 30 },
-    { type: 'NEET', name: 'NEET', amount: 399, duration: 30 }
+    { type: 'JEE_MAIN', name: 'JEE Main', amount: 299, duration: 120 },
+    { type: 'JEE_MAIN_ADVANCED', name: 'JEE Main + Advanced', amount: 399, duration: 180 },
+    { type: 'NEET', name: 'NEET', amount: 399, duration: 180 }
   ]);
   
   const [subscriptions, setSubscriptions] = useState([]);
@@ -418,7 +418,7 @@ const Subscription = () => {
             <li>✅ Pay via UPI (Google Pay, PhonePe, Paytm, etc.)</li>
             <li>✅ Secure payment through UPI QR Code</li>
             <li>✅ Payment verification within 30 minutes</li>
-            <li>✅ Use promo code "NEW" for ₹290 discount (₹299 → ₹9)</li>
+            <li>✅ Use promo code "NEW" for ₹100 discount (₹299 → ₹199)</li>
             <li>📧 For support, contact: <strong>support@testseries.com</strong></li>
           </ul>
         </Card>

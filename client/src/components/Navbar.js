@@ -40,12 +40,12 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-1">
             {!user ? (
               <>
-                <Link
+                {/* <Link
                   to="/demo-tests"
                   className="px-4 py-2 rounded-lg text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-300 font-medium"
                 >
                   Try Demo
-                </Link>
+                </Link> */}
                 <Link
                   to="/login"
                   className="px-4 py-2 rounded-lg text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-300 font-medium"

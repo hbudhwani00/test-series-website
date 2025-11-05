@@ -77,9 +77,9 @@ const Home = () => {
           </div>
 
           <div className="trust-badges-modern">
-            <span>✓ No Credit Card Required</span>
-            <span>✓ 100% Free Demo Test</span>
-            <span>✓ Instant Access</span>
+            
+            <p className="cta-note">✓ No credit card required  •  ✓ Cancel anytime  •  ✓ 7-day guarantee</p>
+          
           </div>
         </div>
       </section>
