@@ -86,7 +86,11 @@ const DemoResultDetail = () => {
   // Circular progress calculation
   const radius = 85;
   const circumference = 2 * Math.PI * radius;
-  const progressOffset = circumference - (result.percentage / 100) * circumference;
+  
+  // Handle negative percentages - show 0% progress but display actual percentage
+  const displayPercentage = result.percentage;
+  const progressPercentage = Math.max(0, Math.min(100, result.percentage)); // Clamp between 0-100 for visual
+  const progressOffset = circumference - (progressPercentage / 100) * circumference;
 
   const getGrade = (percentage) => {
     if (percentage >= 90) return { grade: 'A+', color: '#10b981' };
@@ -130,14 +134,8 @@ const DemoResultDetail = () => {
           {/* Student Performance Card - Circular Progress */}
           <div className="demo-card">
             <h3 className="demo-card-title">📊 Student Performance</h3>
-            <div className="circular-progress-container" 
-             style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center' 
-                }}
-  >
-              <div className="circular-progress ">
+            <div className="circular-progress-container">
+              <div className="circular-progress">
                 <svg width="200" height="200" className="progress-ring">
                   <circle
                     cx="100"
@@ -152,7 +150,7 @@ const DemoResultDetail = () => {
                     cy="100"
                     r={radius}
                     fill="none"
-                    stroke={result.percentage >= 70 ? '#22C55E' : result.percentage >= 40 ? '#F59E0B' : '#EF4444'}
+                    stroke={progressPercentage >= 70 ? '#22C55E' : progressPercentage >= 40 ? '#F59E0B' : '#EF4444'}
                     strokeWidth="16"
                     strokeDasharray={circumference}
                     strokeDashoffset={progressOffset}
@@ -160,7 +158,7 @@ const DemoResultDetail = () => {
                     className="progress-ring-circle"
                   />
                 </svg>
-                <div className="progress-value">{Math.round(result.percentage)}%</div>
+                <div className="progress-value">{displayPercentage >= 0 ? Math.round(displayPercentage) : displayPercentage.toFixed(1)}%</div>
               </div>
               <div className="progress-label">Overall Score</div>
               <div className="progress-sublabel">
