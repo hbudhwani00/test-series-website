@@ -122,29 +122,21 @@ body:-ms-fullscreen {
 }
 
 @media (max-width: 768px) {
-  .question-palette-grid {
-    grid-template-columns: repeat(3, 1fr) !important; /* Smaller 3-column grid */
-  }
-  
-  .jee-main-test {
-    font-size: 0.9rem;
-  }
-
   /* MOBILE PORTRAIT: Timer and palette on RIGHT side */
-  .jee-main-test .grid {
+  .jee-test-layout {
     display: flex !important;
     flex-direction: row !important;
     gap: 8px !important;
   }
 
   /* Question panel - LEFT side (60%) */
-  .jee-main-test .lg\\:col-span-2 {
+  .jee-question-panel {
     flex: 0 0 60% !important;
     order: 1 !important;
   }
 
   /* Palette panel - RIGHT side (38%) */
-  .jee-main-test .lg\\:col-span-1 {
+  .jee-palette-panel {
     flex: 0 0 38% !important;
     order: 2 !important;
     position: sticky;
@@ -153,73 +145,92 @@ body:-ms-fullscreen {
     overflow-y: auto;
   }
 
+  /* Palette grid - 3 columns */
+  .jee-palette-panel .grid-cols-5 {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 4px !important;
+  }
+
+  /* Smaller palette buttons */
+  .jee-palette-panel .grid-cols-5 button {
+    font-size: 10px !important;
+    padding: 6px 2px !important;
+    min-height: 28px;
+  }
+
   /* Smaller timer */
-  .jee-main-test .lg\\:col-span-1 .text-white.px-4 {
+  .jee-palette-panel .bg-gray-800 {
     padding: 6px 4px !important;
   }
 
-  .jee-main-test .lg\\:col-span-1 .text-2xl {
+  .jee-palette-panel .text-2xl {
     font-size: 16px !important;
   }
 
-  .jee-main-test .lg\\:col-span-1 .text-xs {
+  .jee-palette-panel .text-xs {
     font-size: 9px !important;
   }
 
   /* Smaller profile section */
-  .jee-main-test .lg\\:col-span-1 .bg-gray-100 {
-    padding: 6px !important;
+  .jee-palette-panel .bg-gray-100 {
+    padding: 6px 4px !important;
   }
 
-  .jee-main-test .lg\\:col-span-1 h3 {
+  .jee-palette-panel h3 {
     font-size: 11px !important;
   }
 
-  .jee-main-test .lg\\:col-span-1 p {
+  .jee-palette-panel p {
     font-size: 9px !important;
   }
 
-  /* Smaller palette buttons */
-  .question-palette-grid button {
-    font-size: 10px !important;
-    padding: 6px 4px !important;
-    min-height: 30px;
-  }
-
   /* Smaller legend */
-  .jee-main-test .lg\\:col-span-1 .border-t-2 {
+  .jee-palette-panel .border-t-2 {
     padding: 6px 4px !important;
   }
 
-  .jee-main-test .lg\\:col-span-1 .border-t-2 .text-xs {
+  .jee-palette-panel .border-t-2 .text-xs {
     font-size: 8px !important;
   }
 
-  .jee-main-test .lg\\:col-span-1 .border-t-2 .w-6 {
+  .jee-palette-panel .border-t-2 .w-6 {
     width: 16px !important;
     height: 16px !important;
     font-size: 8px !important;
   }
 
+  .jee-palette-panel .space-y-2 {
+    gap: 4px !important;
+  }
+
   /* Submit button always visible */
-  .jee-main-test .lg\\:col-span-1 .mt-6 {
+  .jee-palette-panel .mt-6 {
     position: sticky;
     bottom: 0;
     background: white;
     padding: 6px 4px !important;
+    margin-top: 8px !important;
     border-top: 2px solid #e5e7eb;
     z-index: 10;
   }
 
-  .jee-main-test .lg\\:col-span-1 button.w-full {
+  .jee-palette-panel button.w-full {
     font-size: 11px !important;
-    padding: 8px !important;
+    padding: 8px 6px !important;
   }
 
   /* Navigation buttons smaller */
-  .jee-main-test .lg\\:col-span-2 button {
+  .jee-question-panel button {
     font-size: 11px !important;
     padding: 8px 12px !important;
+  }
+
+  .jee-question-panel .flex.gap-2 button {
+    padding: 6px 10px !important;
+  }
+  
+  .jee-main-test {
+    font-size: 0.9rem;
   }
 }
 
