@@ -447,7 +447,7 @@ const JEEMainTest = () => {
       let response;
       
       if (isDemoTest) {
-        // Demo test submission (no auth required, no prompts)
+        // Demo test submission (send token if user is logged in so result is saved to their account)
         response = await axios.post(
           `${API_URL}/demo/submit`,
           {
@@ -456,7 +456,8 @@ const JEEMainTest = () => {
             timeTaken: (180 * 60) - timeRemaining,
             userName: 'Demo User',
             userEmail: ''
-          }
+          },
+          { headers: token ? { Authorization: `Bearer ${token}` } : {} }
         );
       } else {
         // Regular test submission
