@@ -85,6 +85,45 @@ const ScheduledResultDetail = () => {
   const progressPercentage = Math.max(0, Math.min(100, result.percentage));
   const progressOffset = circumference - (progressPercentage / 100) * circumference;
 
+  // Calculate topic performance
+  const getTopicPerformance = () => {
+    const topicStats = {};
+    
+    if (result.answers) {
+      result.answers.forEach((answer) => {
+        const topicKey = `${answer.subject}/${answer.chapter}/${answer.topic}`;
+        
+        if (!topicStats[topicKey]) {
+          topicStats[topicKey] = {
+            subject: answer.subject || 'General',
+            chapter: answer.chapter || 'General',
+            topic: answer.topic || 'General',
+            total: 0,
+            correct: 0,
+            incorrect: 0,
+            unattempted: 0
+          };
+        }
+        
+        topicStats[topicKey].total++;
+        if (answer.isCorrect) {
+          topicStats[topicKey].correct++;
+        } else if (answer.userAnswer === null || answer.userAnswer === undefined) {
+          topicStats[topicKey].unattempted++;
+        } else {
+          topicStats[topicKey].incorrect++;
+        }
+      });
+    }
+    
+    return Object.values(topicStats);
+  };
+
+  const topicPerformance = getTopicPerformance();
+  const weakTopics = topicPerformance.filter(t => t.incorrect > 0).sort((a, b) => b.incorrect - a.incorrect).slice(0, 5);
+  const strengthTopics = topicPerformance.filter(t => t.correct > 0 && t.incorrect === 0).sort((a, b) => b.correct - a.correct).slice(0, 5);
+  const recommendedTopics = topicPerformance.filter(t => t.unattempted > 0 || t.incorrect > 0).sort((a, b) => (b.incorrect + b.unattempted) - (a.incorrect + a.unattempted)).slice(0, 4);
+
   // Group answers by subject, chapter, and topic
   const groupedAnswers = {};
   if (result.answers) {
@@ -207,6 +246,98 @@ const ScheduledResultDetail = () => {
             <Link to="/student/scheduled-tests" className="topic-btn primary" style={{ marginTop: '20px', width: '100%', textAlign: 'center' }}>
               Back to Scheduled Tests
             </Link>
+          </div>
+
+          {/* Weak Topics Card */}
+          <div className="demo-card">
+            <h3 className="demo-card-title">
+              <span style={{ fontSize: '1.5rem' }}>📉</span> Weak Topics
+            </h3>
+            {weakTopics.length > 0 ? (
+              <>
+                <ul className="weak-topics-list">
+                  {weakTopics.map((topic, idx) => (
+                    <li key={idx} className="weak-topic-item">
+                      <span className="topic-bullet"></span>
+                      <span className="topic-name">{topic.topic}</span>
+                      <span className="topic-count">{topic.incorrect} wrong</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="topic-actions">
+                  <button className="topic-btn">Practice More</button>
+                </div>
+              </>
+            ) : (
+              <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '20px' }}>
+                🎉 Great! No weak topics identified. Keep up the excellent work!
+              </p>
+            )}
+          </div>
+
+          {/* Strength Areas Card */}
+          <div className="demo-card">
+            <h3 className="demo-card-title">
+              <span style={{ fontSize: '1.5rem' }}>✅</span> Strength Topics
+            </h3>
+            {strengthTopics.length > 0 ? (
+              <>
+                <ul className="weak-topics-list">
+                  {strengthTopics.map((topic, idx) => (
+                    <li key={idx} className="weak-topic-item">
+                      <span className="topic-bullet strength"></span>
+                      <span className="topic-name">{topic.topic}</span>
+                      <span className="topic-count">{topic.correct} correct</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="topic-actions">
+                  <button className="topic-btn primary">View Progress</button>
+                </div>
+              </>
+            ) : (
+              <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '20px' }}>
+                Keep practicing to build your strengths!
+              </p>
+            )}
+          </div>
+
+          {/* Recommended Practice Card */}
+          <div className="demo-card">
+            <h3 className="demo-card-title">
+              <span style={{ fontSize: '1.5rem' }}>🎯</span> Recommended Practice
+            </h3>
+            {recommendedTopics.length > 0 ? (
+              <>
+                <div className="practice-chart">
+                  {recommendedTopics.map((topic, idx) => {
+                    const needsPractice = topic.incorrect + topic.unattempted;
+                    const percentage = (needsPractice / topic.total) * 100;
+                    return (
+                      <div key={idx} className="chart-bar-item">
+                        <div className="chart-bar-header">
+                          <span className="chart-bar-label">{topic.topic}</span>
+                          <span className="chart-bar-value">{needsPractice} questions</span>
+                        </div>
+                        <div className="chart-bar-bg">
+                          <div 
+                            className="chart-bar-fill" 
+                            style={{ width: `${percentage}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="topic-actions">
+                  <button className="topic-btn">Generate AI Test</button>
+                </div>
+              </>
+            ) : (
+              <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '20px' }}>
+                Excellent! You've mastered all topics in this test.
+              </p>
+            )}
           </div>
         </div>
 
