@@ -14,9 +14,18 @@ const Results = () => {
 
   const fetchResults = async () => {
     try {
+      console.log('Fetching results...');
+      const token = localStorage.getItem('token');
+      console.log('Token exists:', !!token);
+      
       const response = await resultService.getAllResults();
+      console.log('Results response:', response.data);
+      console.log('Number of results:', response.data.results?.length);
+      
       setResults(response.data.results);
     } catch (error) {
+      console.error('Error fetching results:', error);
+      console.error('Error response:', error.response?.data);
       toast.error('Failed to load results');
     } finally {
       setLoading(false);

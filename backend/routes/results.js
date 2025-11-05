@@ -225,15 +225,19 @@ router.get('/:resultId', auth, async (req, res) => {
 // Get All Results for User (only their own results)
 router.get('/user/all', auth, async (req, res) => {
   try {
+    console.log('Fetching results for user:', req.user.userId);
+    
     const results = await Result.find({ 
       userId: req.user.userId  // Only show this user's results (including their demo results)
     })
       .populate('testId', 'title examType subject chapter')
       .sort({ submittedAt: -1 });
 
+    console.log(`Found ${results.length} results for user ${req.user.userId}`);
+    
     res.json({ results });
   } catch (error) {
-    console.error(error);
+    console.error('Error fetching user results:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
