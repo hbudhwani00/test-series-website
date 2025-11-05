@@ -3,7 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { API_URL } from '../../services/api';
-import './ResultDetail.css';
+import LatexRenderer from '../../components/LatexRenderer';
+import './DemoResultDetail.css'; // Use same CSS as Demo
 
 const ScheduledResultDetail = () => {
   const { resultId } = useParams();
@@ -77,6 +78,13 @@ const ScheduledResultDetail = () => {
 
   const gradeInfo = getGrade(result.percentage);
 
+  // Calculate circular progress
+  const radius = 84;
+  const circumference = 2 * Math.PI * radius;
+  const displayPercentage = result.percentage;
+  const progressPercentage = Math.max(0, Math.min(100, result.percentage));
+  const progressOffset = circumference - (progressPercentage / 100) * circumference;
+
   // Group answers by subject, chapter, and topic
   const groupedAnswers = {};
   if (result.answers) {
@@ -100,118 +108,110 @@ const ScheduledResultDetail = () => {
   }
 
   return (
-    <div className="container" style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <div className="result-detail">
-        <div className="result-summary card">
-          <h1>📅 Scheduled Test Result</h1>
-          <h2>{result.testId?.title || 'Scheduled Test'}</h2>
-
-          <div className="summary-stats">
-            <div className="summary-stat">
-              <div className="summary-value">{result.score}</div>
-              <div className="summary-label">Total Score</div>
-            </div>
-            <div className="summary-stat">
-              <div className="summary-value">{result.percentage.toFixed(2)}%</div>
-              <div className="summary-label">Percentage</div>
-            </div>
-            <div className="summary-stat">
-              <div className="summary-value" style={{ color: gradeInfo.color, fontSize: '2.5rem' }}>
-                {gradeInfo.grade}
+    <div className="demo-result-container">
+        
+        {/* Dashboard Grid */}
+        <div className="demo-dashboard-grid">
+          
+          {/* Student Performance Card - Circular Progress */}
+          <div className="demo-card">
+            <h3 className="demo-card-title">📅 Scheduled Test Performance</h3>
+            <div className="circular-progress-container">
+              <div className="circular-progress">
+                <svg width="200" height="200" className="progress-ring">
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r={radius}
+                    fill="none"
+                    stroke="#E5E7EB"
+                    strokeWidth="16"
+                  />
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r={radius}
+                    fill="none"
+                    stroke={progressPercentage >= 70 ? '#22C55E' : progressPercentage >= 40 ? '#F59E0B' : '#EF4444'}
+                    strokeWidth="16"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={progressOffset}
+                    strokeLinecap="round"
+                    className="progress-ring-circle"
+                  />
+                </svg>
+                <div className="progress-value">{displayPercentage >= 0 ? Math.round(displayPercentage) : displayPercentage.toFixed(1)}%</div>
               </div>
-              <div className="summary-label">Grade</div>
-            </div>
-          </div>
-
-          <div className="summary-stats" style={{ marginTop: '20px' }}>
-            <div className="summary-stat">
-              <div className="summary-value correct">{result.correctAnswers}</div>
-              <div className="summary-label">✓ Correct</div>
-            </div>
-            <div className="summary-stat">
-              <div className="summary-value incorrect">{result.incorrectAnswers}</div>
-              <div className="summary-label">✗ Incorrect</div>
-            </div>
-            <div className="summary-stat">
-              <div className="summary-value">{result.unattempted}</div>
-              <div className="summary-label">− Unattempted</div>
-            </div>
-          </div>
-
-          <div className="time-info" style={{ marginTop: '20px', textAlign: 'center', color: '#666' }}>
-            <p>⏱️ Time Taken: {Math.floor(result.timeTaken / 60)} minutes {result.timeTaken % 60} seconds</p>
-          </div>
-
-          {/* AI Suggestions Section */}
-          <div className="ai-suggestion-section" style={{ marginTop: '25px', paddingTop: '20px', borderTop: '2px dashed #e5e7eb' }}>
-            <button 
-              className="btn btn-primary"
-              onClick={fetchAIFeedback}
-              disabled={loadingAI}
-              style={{ 
-                width: '100%',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                border: 'none',
-                padding: '15px',
-                fontSize: '1rem',
-                fontWeight: '600',
-                cursor: loadingAI ? 'not-allowed' : 'pointer',
-                opacity: loadingAI ? 0.7 : 1
-              }}
-            >
-              {loadingAI ? '🤖 Analyzing Performance...' : '🤖 Get AI Performance Insights'}
-            </button>
-            
-            {aiFeedback && (
-              <div style={{
-                marginTop: '20px',
-                background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                borderRadius: '12px',
-                padding: '20px',
-                border: '2px solid #667eea',
-                boxShadow: '0 4px 15px rgba(102, 126, 234, 0.2)',
-                animation: 'slideIn 0.3s ease'
+              <div className="progress-label">Overall Score</div>
+              <div className="progress-sublabel">
+                {result.testId?.title || 'Scheduled Test'}
+              </div>
+              <div className="progress-sublabel" style={{ 
+                fontSize: '1.5rem', 
+                fontWeight: 'bold', 
+                color: gradeInfo.color,
+                marginTop: '10px'
               }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '15px',
-                  paddingBottom: '10px',
-                  borderBottom: '2px solid #667eea',
-                  fontWeight: '700',
-                  fontSize: '1.1rem',
-                  color: '#667eea'
-                }}>
-                  <span>🤖 AI Performance Analysis</span>
-                  <button 
-                    onClick={() => setAiFeedback(null)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      fontSize: '1.5rem',
-                      cursor: 'pointer',
-                      color: '#6c757d',
-                      padding: 0
-                    }}
-                  >
-                    ✕
-                  </button>
-                </div>
-                <div style={{
-                  whiteSpace: 'pre-wrap',
-                  lineHeight: '1.8',
-                  color: '#212529',
-                  fontSize: '0.95rem'
-                }}>
-                  {aiFeedback}
-                </div>
+                Grade: {gradeInfo.grade}
               </div>
-            )}
+              <div className="progress-sublabel">
+                Time: {Math.floor(result.timeTaken / 60)}m {result.timeTaken % 60}s
+              </div>
+            </div>
+            
+            {/* Mini Stats Grid */}
+            <div className="stats-mini-grid">
+              <div className="stat-mini-card">
+                <div className="stat-mini-value" style={{ color: '#22C55E' }}>{result.correctAnswers}</div>
+                <div className="stat-mini-label">Correct</div>
+              </div>
+              <div className="stat-mini-card">
+                <div className="stat-mini-value" style={{ color: '#EF4444' }}>{result.incorrectAnswers}</div>
+                <div className="stat-mini-label">Incorrect</div>
+              </div>
+              <div className="stat-mini-card">
+                <div className="stat-mini-value" style={{ color: '#F59E0B' }}>{result.unattempted}</div>
+                <div className="stat-mini-label">Skipped</div>
+              </div>
+            </div>
+
+            {/* AI Suggestions Section */}
+            <div className="ai-suggestion-section">
+              <button 
+                className="ai-suggestion-btn"
+                onClick={fetchAIFeedback}
+                disabled={loadingAI}
+              >
+                {loadingAI ? '🤖 Analyzing Performance...' : '🤖 Get AI Performance Insights'}
+              </button>
+              
+              {aiFeedback && (
+                <div className="ai-feedback-box">
+                  <div className="ai-feedback-header">
+                    <span>🤖 AI Performance Analysis</span>
+                    <button 
+                      className="close-feedback-btn" 
+                      onClick={() => setAiFeedback(null)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="ai-feedback-content">
+                    {aiFeedback}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Back Button */}
+            <Link to="/student/scheduled-tests" className="topic-btn primary" style={{ marginTop: '20px', width: '100%', textAlign: 'center' }}>
+              Back to Scheduled Tests
+            </Link>
           </div>
         </div>
 
-        <div className="card" style={{ marginTop: '20px' }}>
+        {/* Performance Summary Card */}
+        <div className="demo-card" style={{ marginTop: '30px' }}>
           <h2>📊 Performance Summary</h2>
           <div style={{ padding: '20px' }}>
             <p style={{ fontSize: '1.1rem', color: '#333', lineHeight: '1.8', marginBottom: '30px' }}>
@@ -729,18 +729,6 @@ const ScheduledResultDetail = () => {
             </div>
           ))}
         </div>
-
-        <div className="actions" style={{ marginTop: '30px', textAlign: 'center', paddingBottom: '40px' }}>
-          <Link to="/student/dashboard" className="btn btn-primary" style={{ 
-            padding: '15px 40px', 
-            fontSize: '1.2rem',
-            textDecoration: 'none',
-            display: 'inline-block'
-          }}>
-            ← Back to Dashboard
-          </Link>
-        </div>
-      </div>
     </div>
   );
 };

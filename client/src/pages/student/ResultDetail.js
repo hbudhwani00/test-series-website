@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import { resultService, API_URL } from '../../services/api';
 import LatexRenderer from '../../components/LatexRenderer';
-import './ResultDetail.css';
+import './DemoResultDetail.css'; // Use same CSS as Demo
 
 const ResultDetail = () => {
   const { resultId } = useParams();
@@ -12,6 +12,7 @@ const ResultDetail = () => {
   const [loading, setLoading] = useState(true);
   const [aiFeedback, setAiFeedback] = useState(null);
   const [loadingAI, setLoadingAI] = useState(false);
+  const [showSolutions, setShowSolutions] = useState(true);
 
   useEffect(() => {
     fetchResult();
@@ -56,113 +57,134 @@ const ResultDetail = () => {
   };
 
   if (loading) {
-    return <div className="loading">Loading result...</div>;
+    return <div className="demo-loading">Loading your results...</div>;
   }
 
   if (!result) {
-    return <div className="container">Result not found</div>;
+    return (
+      <div className="demo-result-container">
+        <div className="demo-card">
+          <h2>Result not found</h2>
+          <p>The requested result could not be found.</p>
+          <Link to="/student/results" className="topic-btn primary">Back to Results</Link>
+        </div>
+      </div>
+    );
   }
 
+  // Calculate circular progress
+  const radius = 84;
+  const circumference = 2 * Math.PI * radius;
+  const displayPercentage = result.percentage;
+  const progressPercentage = Math.max(0, Math.min(100, result.percentage));
+  const progressOffset = circumference - (progressPercentage / 100) * circumference;
+
   return (
-    <div className="container">
-      <div className="result-detail">
-        <div className="result-summary card">
-          <h1>Test Result</h1>
-          <h2>{result.testId.title}</h2>
-
-          <div className="summary-stats">
-            <div className="summary-stat">
-              <div className="summary-value">{result.score}</div>
-              <div className="summary-label">Total Score</div>
-            </div>
-            <div className="summary-stat">
-              <div className="summary-value">{result.percentage.toFixed(2)}%</div>
-              <div className="summary-label">Percentage</div>
-            </div>
-            <div className="summary-stat">
-              <div className="summary-value correct">{result.correctAnswers}</div>
-              <div className="summary-label">Correct</div>
-            </div>
-            <div className="summary-stat">
-              <div className="summary-value incorrect">{result.incorrectAnswers}</div>
-              <div className="summary-label">Incorrect</div>
-            </div>
-            <div className="summary-stat">
-              <div className="summary-value">{result.unattempted}</div>
-              <div className="summary-label">Unattempted</div>
-            </div>
-          </div>
-
-          <div className="ai-suggestion-section" style={{ marginTop: '25px', paddingTop: '20px', borderTop: '2px dashed #e5e7eb' }}>
-            <button 
-              className="btn btn-primary"
-              onClick={fetchAIFeedback}
-              disabled={loadingAI}
-              style={{ 
-                width: '100%',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                border: 'none',
-                padding: '15px',
-                fontSize: '1rem',
-                fontWeight: '600'
-              }}
-            >
-              {loadingAI ? '🤖 Analyzing Performance...' : '🤖 Get AI Performance Insights'}
-            </button>
-            
-            {aiFeedback && (
-              <div style={{
-                marginTop: '20px',
-                background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
-                borderRadius: '12px',
-                padding: '20px',
-                border: '2px solid #667eea',
-                boxShadow: '0 4px 15px rgba(102, 126, 234, 0.2)'
-              }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '15px',
-                  paddingBottom: '10px',
-                  borderBottom: '2px solid #667eea',
-                  fontWeight: '700',
-                  fontSize: '1.1rem',
-                  color: '#667eea'
-                }}>
-                  <span>🤖 AI Performance Analysis</span>
-                  <button 
-                    onClick={() => setAiFeedback(null)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      fontSize: '1.5rem',
-                      cursor: 'pointer',
-                      color: '#6c757d'
-                    }}
-                  >
-                    ✕
-                  </button>
-                </div>
-                <div style={{
-                  whiteSpace: 'pre-wrap',
-                  lineHeight: '1.8',
-                  color: '#212529',
-                  fontSize: '0.95rem'
-                }}>
-                  {aiFeedback}
-                </div>
+    <div className="demo-result-container">
+        
+        {/* Dashboard Grid */}
+        <div className="demo-dashboard-grid">
+          
+          {/* Student Performance Card - Circular Progress */}
+          <div className="demo-card">
+            <h3 className="demo-card-title">📊 {result.testId?.isAIGenerated ? 'AI Test' : 'Test'} Performance</h3>
+            <div className="circular-progress-container">
+              <div className="circular-progress">
+                <svg width="200" height="200" className="progress-ring">
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r={radius}
+                    fill="none"
+                    stroke="#E5E7EB"
+                    strokeWidth="16"
+                  />
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r={radius}
+                    fill="none"
+                    stroke={progressPercentage >= 70 ? '#22C55E' : progressPercentage >= 40 ? '#F59E0B' : '#EF4444'}
+                    strokeWidth="16"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={progressOffset}
+                    strokeLinecap="round"
+                    className="progress-ring-circle"
+                  />
+                </svg>
+                <div className="progress-value">{displayPercentage >= 0 ? Math.round(displayPercentage) : displayPercentage.toFixed(1)}%</div>
               </div>
-            )}
-          </div>
+              <div className="progress-label">Overall Score</div>
+              <div className="progress-sublabel">
+                {result.testId?.title || 'Test Result'}
+              </div>
+              <div className="progress-sublabel">
+                Time: {Math.floor(result.timeTaken / 60)}m {result.timeTaken % 60}s
+              </div>
+            </div>
+            
+            {/* Mini Stats Grid */}
+            <div className="stats-mini-grid">
+              <div className="stat-mini-card">
+                <div className="stat-mini-value" style={{ color: '#22C55E' }}>{result.correctAnswers}</div>
+                <div className="stat-mini-label">Correct</div>
+              </div>
+              <div className="stat-mini-card">
+                <div className="stat-mini-value" style={{ color: '#EF4444' }}>{result.incorrectAnswers}</div>
+                <div className="stat-mini-label">Incorrect</div>
+              </div>
+              <div className="stat-mini-card">
+                <div className="stat-mini-value" style={{ color: '#F59E0B' }}>{result.unattempted}</div>
+                <div className="stat-mini-label">Skipped</div>
+              </div>
+            </div>
 
-          <Link to="/student/results" className="btn btn-secondary">
-            Back to Results
-          </Link>
+            {/* AI Suggestions Section */}
+            <div className="ai-suggestion-section">
+              <button 
+                className="ai-suggestion-btn"
+                onClick={fetchAIFeedback}
+                disabled={loadingAI}
+              >
+                {loadingAI ? '🤖 Analyzing Performance...' : '🤖 Get AI Performance Insights'}
+              </button>
+              
+              {aiFeedback && (
+                <div className="ai-feedback-box">
+                  <div className="ai-feedback-header">
+                    <span>🤖 AI Performance Analysis</span>
+                    <button 
+                      className="close-feedback-btn" 
+                      onClick={() => setAiFeedback(null)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="ai-feedback-content">
+                    {aiFeedback}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Back Button */}
+            <Link to="/student/results" className="topic-btn primary" style={{ marginTop: '20px', width: '100%', textAlign: 'center' }}>
+              Back to Results
+            </Link>
+          </div>
         </div>
 
-        <div className="answers-review">
-          <h2>Answer Review</h2>
+        {/* Solutions Toggle */}
+        <div className="demo-card" style={{ marginTop: '30px' }}>
+          <div className="solutions-header">
+            <h3 className="demo-card-title">📝 Question-wise Analysis</h3>
+            <button 
+              className="toggle-solutions-btn"
+              onClick={() => setShowSolutions(!showSolutions)}
+            >
+              {showSolutions ? '🙈 Hide Solutions' : '👁️ Show Solutions'}
+            </button>
+          </div>
           {result.answers.map((answer, index) => (
             <div
               key={answer._id}
@@ -265,7 +287,6 @@ const ResultDetail = () => {
             </div>
           ))}
         </div>
-      </div>
     </div>
   );
 };
