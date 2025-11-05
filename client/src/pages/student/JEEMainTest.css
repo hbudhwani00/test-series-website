@@ -123,11 +123,103 @@ body:-ms-fullscreen {
 
 @media (max-width: 768px) {
   .question-palette-grid {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(3, 1fr) !important; /* Smaller 3-column grid */
   }
   
   .jee-main-test {
     font-size: 0.9rem;
+  }
+
+  /* MOBILE PORTRAIT: Timer and palette on RIGHT side */
+  .jee-main-test .grid {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+  }
+
+  /* Question panel - LEFT side (60%) */
+  .jee-main-test .lg\\:col-span-2 {
+    flex: 0 0 60% !important;
+    order: 1 !important;
+  }
+
+  /* Palette panel - RIGHT side (38%) */
+  .jee-main-test .lg\\:col-span-1 {
+    flex: 0 0 38% !important;
+    order: 2 !important;
+    position: sticky;
+    top: 70px;
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+  }
+
+  /* Smaller timer */
+  .jee-main-test .lg\\:col-span-1 .text-white.px-4 {
+    padding: 6px 4px !important;
+  }
+
+  .jee-main-test .lg\\:col-span-1 .text-2xl {
+    font-size: 16px !important;
+  }
+
+  .jee-main-test .lg\\:col-span-1 .text-xs {
+    font-size: 9px !important;
+  }
+
+  /* Smaller profile section */
+  .jee-main-test .lg\\:col-span-1 .bg-gray-100 {
+    padding: 6px !important;
+  }
+
+  .jee-main-test .lg\\:col-span-1 h3 {
+    font-size: 11px !important;
+  }
+
+  .jee-main-test .lg\\:col-span-1 p {
+    font-size: 9px !important;
+  }
+
+  /* Smaller palette buttons */
+  .question-palette-grid button {
+    font-size: 10px !important;
+    padding: 6px 4px !important;
+    min-height: 30px;
+  }
+
+  /* Smaller legend */
+  .jee-main-test .lg\\:col-span-1 .border-t-2 {
+    padding: 6px 4px !important;
+  }
+
+  .jee-main-test .lg\\:col-span-1 .border-t-2 .text-xs {
+    font-size: 8px !important;
+  }
+
+  .jee-main-test .lg\\:col-span-1 .border-t-2 .w-6 {
+    width: 16px !important;
+    height: 16px !important;
+    font-size: 8px !important;
+  }
+
+  /* Submit button always visible */
+  .jee-main-test .lg\\:col-span-1 .mt-6 {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 6px 4px !important;
+    border-top: 2px solid #e5e7eb;
+    z-index: 10;
+  }
+
+  .jee-main-test .lg\\:col-span-1 button.w-full {
+    font-size: 11px !important;
+    padding: 8px !important;
+  }
+
+  /* Navigation buttons smaller */
+  .jee-main-test .lg\\:col-span-2 button {
+    font-size: 11px !important;
+    padding: 8px 12px !important;
   }
 }
 
