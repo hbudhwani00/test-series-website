@@ -124,6 +124,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow: visible;
 }
 
 .demo-card:hover {
@@ -149,8 +150,9 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 30px 20px;
   width: 100%;
+  overflow: visible;
 }
 
 .circular-progress {
@@ -161,10 +163,12 @@ body {
   align-items: center;
   justify-content: center;
   margin: 0 auto;
+  overflow: visible;
 }
 
 .progress-ring {
   transform: rotate(-90deg);
+  overflow: visible;
 }
 
 .progress-ring-circle {
