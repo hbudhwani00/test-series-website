@@ -35,7 +35,7 @@ router.get('/test', async (req, res) => {
   }
 });
 
-// Submit Demo Test (No Auth Required)
+// Submit Demo Test (No Auth Required, but will save userId if available)
 router.post('/submit', async (req, res) => {
   try {
     const { testId, answers, timeTaken, userName, userEmail } = req.body;
@@ -43,6 +43,21 @@ router.post('/submit', async (req, res) => {
     console.log('=== Demo Test Submit ===');
     console.log('Test ID:', testId);
     console.log('Received answers:', JSON.stringify(answers, null, 2));
+
+    // Check if user is authenticated (optional for demo tests)
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    let userId = null;
+    
+    if (token) {
+      try {
+        const jwt = require('jsonwebtoken');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        userId = decoded.userId;
+        console.log('Authenticated user taking demo test:', userId);
+      } catch (err) {
+        console.log('No valid auth token - treating as anonymous demo test');
+      }
+    }
 
     // Get demo test with questions
     const demoTest = await DemoTest.findById(testId).populate('questions');
@@ -147,8 +162,8 @@ router.post('/submit', async (req, res) => {
     // Allow negative scores (removed Math.max(0, score))
     const percentage = (score / demoTest.totalMarks) * 100;
 
-    // Create result (without user authentication)
-    const result = new Result({
+    // Create result (save userId if user is authenticated, otherwise save demo user info)
+    const resultData = {
       testId: testId,
       answers: evaluatedAnswers,
       score,
@@ -158,12 +173,24 @@ router.post('/submit', async (req, res) => {
       incorrectAnswers,
       unattempted,
       timeTaken,
-      isDemo: true,
-      demoUserName: userName || 'Demo User',
-      demoUserEmail: userEmail || ''
-    });
+      isDemo: true
+    };
+
+    // Add userId if user is authenticated
+    if (userId) {
+      resultData.userId = userId;
+      console.log('Saving demo result for authenticated user:', userId);
+    } else {
+      // Save demo user info for anonymous users
+      resultData.demoUserName = userName || 'Demo User';
+      resultData.demoUserEmail = userEmail || '';
+      console.log('Saving demo result for anonymous user');
+    }
+
+    const result = new Result(resultData);
 
     await result.save();
+    console.log('Demo result saved with ID:', result._id);
 
     res.json({
       message: 'Demo test submitted successfully',

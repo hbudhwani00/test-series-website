@@ -137,7 +137,16 @@ router.post('/submit', auth, async (req, res) => {
       timeTaken
     });
 
+    console.log('=== Saving Result ===');
+    console.log('User ID from token:', req.user.userId);
+    console.log('Result userId field:', result.userId);
+    console.log('Result testId field:', result.testId);
+
     await result.save();
+
+    console.log('=== Result Saved Successfully ===');
+    console.log('Saved result ID:', result._id);
+    console.log('Saved result userId:', result.userId);
 
     res.json({
       message: 'Test submitted successfully',
