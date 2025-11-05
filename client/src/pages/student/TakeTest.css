@@ -408,7 +408,7 @@ body:-ms-fullscreen {
 }
 
 @media (max-width: 1024px) {
-  .test-content {
+  .test-layout-grid {
     grid-template-columns: 1fr;
   }
 
@@ -425,22 +425,22 @@ body:-ms-fullscreen {
   }
 
   /* MOBILE: Question palette on the RIGHT side, smaller size */
-  .test-content {
+  .test-layout-grid {
     display: flex !important;
     flex-direction: row !important;
     gap: 8px;
   }
 
   /* Question panel takes 60% on left */
-  .test-content > div:first-child {
-    flex: 0 0 60%;
-    order: 1;
+  .question-panel {
+    flex: 0 0 60% !important;
+    order: 1 !important;
   }
 
   /* Palette panel takes 40% on right */
-  .test-content > div:last-child {
-    flex: 0 0 38%;
-    order: 2;
+  .palette-panel {
+    flex: 0 0 38% !important;
+    order: 2 !important;
     position: sticky;
     top: 80px;
     max-height: calc(100vh - 100px);
@@ -448,118 +448,119 @@ body:-ms-fullscreen {
   }
 
   /* Make palette grid smaller - 3 columns instead of 5 */
-  .palette-grid {
+  .palette-panel .grid-cols-5 {
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 6px !important;
   }
 
   /* Smaller palette buttons */
-  .palette-grid button {
+  .palette-panel .grid-cols-5 button {
     font-size: 11px !important;
     padding: 8px 4px !important;
     min-height: 32px;
   }
 
   /* Smaller timer */
-  .test-content .bg-gray-800 {
+  .palette-panel .bg-gray-800 {
     padding: 8px 4px !important;
   }
 
-  .test-content .bg-gray-800 .text-2xl {
+  .palette-panel .bg-gray-800 .text-2xl {
     font-size: 16px !important;
   }
 
-  .test-content .bg-gray-800 .text-xs {
+  .palette-panel .bg-gray-800 .text-xs {
     font-size: 9px !important;
   }
 
   /* Smaller profile section */
-  .test-content .bg-gray-100 {
+  .palette-panel .bg-gray-100 {
     padding: 8px 6px !important;
   }
 
-  .test-content .bg-gray-100 h3 {
+  .palette-panel .bg-gray-100 h3 {
     font-size: 11px !important;
   }
 
-  .test-content .bg-gray-100 p {
+  .palette-panel .bg-gray-100 p {
     font-size: 9px !important;
   }
 
   /* Smaller legend */
-  .test-content .border-t-2 {
+  .palette-panel .border-t-2 {
     padding-top: 8px !important;
     padding-left: 6px !important;
     padding-right: 6px !important;
   }
 
-  .test-content .border-t-2 .text-xs {
+  .palette-panel .border-t-2 .text-xs {
     font-size: 9px !important;
   }
 
-  .test-content .border-t-2 .space-y-2 {
+  .palette-panel .border-t-2 .space-y-2 {
     gap: 4px !important;
   }
 
-  .test-content .border-t-2 .w-6 {
+  .palette-panel .border-t-2 .w-6 {
     width: 18px !important;
     height: 18px !important;
     font-size: 9px !important;
   }
 
   /* Submit button - always visible */
-  .test-content .mt-6 {
+  .palette-panel .mt-6 {
     margin-top: 12px !important;
     position: sticky;
     bottom: 0;
     background: white;
     padding: 8px 6px !important;
     border-top: 2px solid #e5e7eb;
+    z-index: 10;
   }
 
-  .test-content .mt-6 button {
+  .palette-panel .mt-6 button {
     padding: 10px 8px !important;
     font-size: 12px !important;
   }
 
   /* Navigation buttons smaller */
-  .navigation-buttons {
+  .question-panel .flex.flex-wrap {
     flex-direction: row !important;
     flex-wrap: wrap;
     gap: 6px !important;
   }
 
-  .navigation-buttons button {
+  .question-panel .flex.flex-wrap button {
     font-size: 11px !important;
     padding: 8px 12px !important;
   }
 
   /* Question text smaller on mobile */
-  .question-card h3 {
+  .question-panel h3 {
     font-size: 14px !important;
   }
 
-  .question-card p {
+  .question-panel p {
     font-size: 13px !important;
   }
 }
 
 /* EXTRA SMALL SCREENS - even tighter layout */
 @media (max-width: 480px) {
-  .test-content > div:first-child {
-    flex: 0 0 58%;
+  .question-panel {
+    flex: 0 0 58% !important;
   }
 
-  .test-content > div:last-child {
-    flex: 0 0 40%;
+  .palette-panel {
+    flex: 0 0 40% !important;
   }
 
-  .palette-grid {
+  .palette-panel .grid-cols-5 {
     grid-template-columns: repeat(3, 1fr) !important;
     gap: 4px !important;
   }
 
-  .palette-grid button {
+  .palette-panel .grid-cols-5 button {
     font-size: 10px !important;
     padding: 6px 2px !important;
     min-height: 28px;
