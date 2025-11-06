@@ -404,7 +404,7 @@ const TakeTest = () => {
       <div className="container mx-auto p-4" style={{ marginTop: '80px' }}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 test-layout-grid">
           {/* Left Panel - Main Question Area */}
-          <div className="lg:col-span-2 order-2 lg:order-1 question-panel">
+          <div className="lg:col-span-2 order-1 lg:order-2 question-panel">
             <Card>
               {/* Question Header */}
               <div className="bg-gray-100 px-4 py-3 mb-4 border-b-2 border-gray-300">
@@ -547,7 +547,7 @@ const TakeTest = () => {
           </div>
 
           {/* Right Panel - Question Palette (Official NTA Style) */}
-          <div className="lg:col-span-1 order-1 lg:order-2 palette-panel">
+          <div className="lg:col-span-1 order-2 lg:order-1 palette-panel">
             <Card className="sticky top-24">
               {/* Profile Section */}
               <div className="bg-gray-100 px-4 py-3 mb-4 border-b-2 border-gray-300">
