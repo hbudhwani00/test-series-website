@@ -617,18 +617,18 @@ const JEEMainTest = () => {
           <div className="lg:col-span-2 jee-question-panel">
             <Card>
               {/* Question Header */}
-              <div className="bg-gray-100 px-4 py-3 mb-4 border-b-2 border-gray-300">
+              <div className="bg-gray-100 px-2 py-2 mb-4 border-b-2 border-gray-300">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="text-base font-bold text-gray-800">
+                    <h3 className="text-xs font-bold text-gray-800">
                       {currentQuestion?.subject || 'Physics'}
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-xs text-gray-600">
                       Section {currentQuestion?.section || 'A'}: Question No. {currentQuestion?.questionNumber || (currentQuestionIndex + 1)}
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <span className={`px-3 py-1 rounded text-xs font-semibold ${
+                    <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
                       currentQuestion?.section === 'A' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'
                     }`}>
                       {currentQuestion?.section === 'A' ? 'Negative Marking: -1' : 'No Negative Marking'}
@@ -644,7 +644,7 @@ const JEEMainTest = () => {
               {currentQuestion ? (
                 <div className="px-4">
                   <div className="mb-6">
-                    <p className="text-sm text-gray-600 mb-2">Question {currentQuestion?.questionNumber || (currentQuestionIndex + 1)}:</p>
+                    <p className="text-xs text-gray-600">Question {currentQuestion?.questionNumber || (currentQuestionIndex + 1)}:</p>
                     
                     {/* Debug info - remove this after fixing */}
                     {!currentQuestion.question && (
@@ -678,7 +678,7 @@ const JEEMainTest = () => {
 
                   {/* Options for MCQ (Section A) */}
                   {currentQuestion.section === 'A' && currentQuestion.options && (
-                    <div className="space-y-2 mb-6">
+                    <div className="space-y-6 mb-6">
                       {currentQuestion.options.map((option, index) => {
                         const optionLabel = String.fromCharCode(65 + index);
                         const key = getQuestionKey();
