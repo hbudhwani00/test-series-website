@@ -125,13 +125,26 @@ body:-ms-fullscreen {
   /* MOBILE: Keep side-by-side layout - Questions LEFT, Palette RIGHT */
   .jee-test-layout {
     display: grid !important;
-    grid-template-columns: 25% 73% !important; /* More space for questions */
+    grid-template-columns: 20% 78% !important; /* CHANGED: Made left panel smaller (was 25%) */
     gap: 6px !important;
   }
 
-  /* Question panel stays on left */
+  /* Question panel stays on left - MAKE IT SMALLER */
   .jee-question-panel {
     grid-column: 1 !important;
+    font-size: 9px !important; /* ADD: Make text smaller */
+    padding: 4px 2px !important; /* ADD: Reduce padding */
+  }
+
+  /* ADD: Make question numbers smaller in panel */
+  .jee-question-panel h3,
+  .jee-question-panel .font-bold {
+    font-size: 10px !important;
+  }
+
+  .jee-question-panel p,
+  .jee-question-panel .text-xs {
+    font-size: 8px !important;
   }
 
   /* Palette panel stays on right */
@@ -143,76 +156,19 @@ body:-ms-fullscreen {
     overflow-y: auto;
   }
 
-  /* Palette grid - 2 columns (smaller) */
-  .jee-palette-panel .grid-cols-5 {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 3px !important;
+  /* ADD: Increase spacing between questions in main content area */
+  .jee-palette-panel .space-y-6 > * + *,
+  .question-container {
+    margin-bottom: 45px !important; /* ADD: Large spacing between questions */
+    padding-bottom: 25px !important; /* ADD: Extra padding */
   }
 
-  /* Smaller palette buttons */
-  .jee-palette-panel .grid-cols-5 button {
-    font-size: 8px !important;
-    padding: 3px 1px !important;
-    min-height: 22px !important;
-  }
-
-  /* Smaller timer */
-  .jee-palette-panel .bg-gray-800 {
-    padding: 3px 1px !important;
-  }
-
-  .jee-palette-panel .text-2xl {
-    font-size: 12px !important;
-  }
-
-  .jee-palette-panel .text-xs {
-    font-size: 7px !important;
-  }
-
-  /* Smaller profile section */
-  .jee-palette-panel .bg-gray-100 {
-    padding: 3px 1px !important;
-  }
-
-  .jee-palette-panel h3 {
-    font-size: 9px !important;
-  }
-
-  .jee-palette-panel p {
-    font-size: 7px !important;
-  }
-
-  /* Smaller legend */
-  .jee-palette-panel .border-t-2 {
-    padding: 4px 2px !important;
-  }
-
-  .jee-palette-panel .border-t-2 .text-xs {
-    font-size: 7px !important;
-  }
-
-  .jee-palette-panel .border-t-2 .w-6 {
-    width: 14px !important;
-    height: 14px !important;
-    font-size: 7px !important;
-  }
-
-  /* Submit button at top - smaller */
-  .jee-palette-panel .mb-4 button.bg-red-600 {
-    font-size: 9px !important;
-    padding: 6px 2px !important;
-  }
-
-  /* Navigation buttons smaller */
-  .jee-question-panel button {
-    font-size: 11px !important;
-    padding: 8px 12px !important;
-  }
-  
-  .jee-main-test {
-    font-size: 0.9rem;
+  /* ADD: Separate questions with a subtle line (optional) */
+  .question-container:not(:last-child) {
+    border-bottom: 1px solid #e5e7eb !important;
   }
 }
+  /* Rest of your existing mobile styles... */
 
 /* Mobile Landscape Mode - Optimized for rotated phones */
 @media (max-width: 926px) and (orientation: landscape) {
