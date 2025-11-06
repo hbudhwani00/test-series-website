@@ -121,10 +121,26 @@ body:-ms-fullscreen {
   }
 
 @media (max-width: 768px) {
+  .jee-test-layout {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 80px); /* subtract header */
+    overflow: hidden;
+  }
+
+  .question-panel {
+    flex: 0 0 75%;
+    overflow-y: auto;
+  }
+
   .palette-panel {
-    margin-bottom: 12px;
+    flex: 0 0 25%;
+    overflow-y: auto;
+    border-top: 2px solid #e5e7eb;
+    background: #fff;
   }
 }
+
 
   .jee-main-test {
     font-size: 0.9rem;

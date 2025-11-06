@@ -612,7 +612,7 @@ const JEEMainTest = () => {
       </div>
 
       <div className="container mx-auto p-4" style={{ flex: 1, overflow: 'auto' }}>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 jee-test-layout">
+        <div className="jee-test-layout">
           {/* Left Panel - Main Question Area */}
             <div className="lg:col-span-2 question-panel">
             <Card>
