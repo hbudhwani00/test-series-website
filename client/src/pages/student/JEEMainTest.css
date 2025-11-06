@@ -119,48 +119,111 @@ body:-ms-fullscreen {
   .question-palette-grid {
     grid-template-columns: repeat(4, 1fr);
   }
+}
 
 @media (max-width: 768px) {
+  /* MOBILE: Keep side-by-side layout - Questions LEFT, Palette RIGHT */
   .jee-test-layout {
-    display: flex;
-    flex-direction: row;
-    height: calc(100vh - 80px); /* minus header */
-    overflow: hidden;
+    display: grid !important;
+    grid-template-columns: 60% 38% !important;
+    gap: 8px !important;
   }
 
-  /* Question on Left (75%) */
-  .question-panel {
-    flex: 0 0 75%;
+  /* Question panel stays on left */
+  .jee-question-panel {
+    grid-column: 1 !important;
+  }
+
+  /* Palette panel stays on right */
+  .jee-palette-panel {
+    grid-column: 2 !important;
+    position: sticky;
+    top: 70px;
+    max-height: calc(100vh - 80px);
     overflow-y: auto;
-    padding-right: 6px;
   }
 
-  /* Palette on Right (25%) - Fixed and scrollable */
-.palette-panel {
-    flex: 0 0 25%;
-    border-left: 2px solid #e5e7eb;
-    background: #fff;
-    height: 100%;
-    overflow-y: auto;
-    /* no sticky needed; the column is fixed by flex sizing */
+  /* Palette grid - 3 columns */
+  .jee-palette-panel .grid-cols-5 {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 4px !important;
   }
 
-  /* Make palette grid fit the narrow column */
-  .palette-panel .grid-cols-5 {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-
-  .palette-panel button {
+  /* Smaller palette buttons */
+  .jee-palette-panel .grid-cols-5 button {
     font-size: 10px !important;
     padding: 6px 2px !important;
     min-height: 28px;
   }
 
+  /* Smaller timer */
+  .jee-palette-panel .bg-gray-800 {
+    padding: 6px 4px !important;
+  }
+
+  .jee-palette-panel .text-2xl {
+    font-size: 16px !important;
+  }
+
+  .jee-palette-panel .text-xs {
+    font-size: 9px !important;
+  }
+
+  /* Smaller profile section */
+  .jee-palette-panel .bg-gray-100 {
+    padding: 6px 4px !important;
+  }
+
+  .jee-palette-panel h3 {
+    font-size: 11px !important;
+  }
+
+  .jee-palette-panel p {
+    font-size: 9px !important;
+  }
+
+  /* Smaller legend */
+  .jee-palette-panel .border-t-2 {
+    padding: 6px 4px !important;
+  }
+
+  .jee-palette-panel .border-t-2 .text-xs {
+    font-size: 8px !important;
+  }
+
+  .jee-palette-panel .border-t-2 .w-6 {
+    width: 16px !important;
+    height: 16px !important;
+    font-size: 8px !important;
+  }
+
+  /* Submit button always visible */
+  .jee-palette-panel .mt-6 {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    padding: 6px 4px !important;
+    margin-top: 8px !important;
+    border-top: 2px solid #e5e7eb;
+    z-index: 10;
+  }
+
+  .jee-palette-panel button.w-full {
+    font-size: 11px !important;
+    padding: 8px 6px !important;
+  }
+
+  /* Navigation buttons smaller */
+  .jee-question-panel button {
+    font-size: 11px !important;
+    padding: 8px 12px !important;
+  }
+  
   .jee-main-test {
     font-size: 0.9rem;
   }
 }
-}
+
 /* Mobile Landscape Mode - Optimized for rotated phones */
 @media (max-width: 926px) and (orientation: landscape) {
   /* Make header more compact */
