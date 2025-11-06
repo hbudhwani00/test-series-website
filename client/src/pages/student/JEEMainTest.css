@@ -123,21 +123,38 @@ body:-ms-fullscreen {
 @media (max-width: 768px) {
   .jee-test-layout {
     display: flex;
-    flex-direction: column;
-    height: calc(100vh - 80px); /* subtract header */
+    flex-direction: row;
+    height: calc(100vh - 80px); /* minus header */
     overflow: hidden;
   }
 
+  /* Question on Left (75%) */
   .question-panel {
     flex: 0 0 75%;
     overflow-y: auto;
+    padding-right: 6px;
   }
 
+  /* Palette on Right (25%) - Fixed and scrollable */
   .palette-panel {
     flex: 0 0 25%;
-    overflow-y: auto;
-    border-top: 2px solid #e5e7eb;
+    border-left: 2px solid #e5e7eb;
     background: #fff;
+    height: 100%;
+    overflow-y: auto;
+    position: sticky;
+    top: 80px; /* same as header height */
+  }
+
+  /* Reduce grid cols to fit narrow space */
+  .palette-panel .grid-cols-5 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .palette-panel button {
+    font-size: 10px !important;
+    padding: 6px 2px !important;
+    min-height: 28px;
   }
 }
 
