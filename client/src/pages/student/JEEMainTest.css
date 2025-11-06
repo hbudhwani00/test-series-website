@@ -160,7 +160,7 @@ body:-ms-fullscreen {
     font-size: 0.9rem;
   }
 }
-
+}
 /* Mobile Landscape Mode - Optimized for rotated phones */
 @media (max-width: 926px) and (orientation: landscape) {
   /* Make header more compact */
