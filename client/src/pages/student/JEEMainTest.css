@@ -151,147 +151,96 @@ body:-ms-fullscreen {
   margin-top: 20px !important;
 }
 @media (max-width: 768px) {
-  /* MOBILE: Completely separate layout - Questions 100%, Palette as overlay drawer */
-  
-  /* Force block layout, no grid */
+  /* MOBILE: Side-by-side layout - Questions LEFT (65%), Palette RIGHT (33%) */
   .jee-test-layout {
-    display: block !important;
-    position: relative !important;
+    display: grid !important;
+    grid-template-columns: 65% 33% !important;
+    gap: 6px !important;
   }
 
-  /* Question panel - FULL SCREEN WIDTH, no restrictions */
+  /* Question panel on LEFT - 65% width */
   .jee-question-panel {
+    grid-column: 1 !important;
     width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
   }
 
-  /* Completely HIDE the inline palette panel on mobile */
-  .jee-palette-panel:not(.mobile-palette-drawer) {
-    display: none !important;
-    visibility: hidden !important;
-    position: absolute !important;
-    left: -9999px !important;
-  }
-
-  /* Mobile drawer - hidden off-screen by default */
-  .jee-palette-panel.mobile-palette-drawer {
-    display: block !important;
-    position: fixed !important;
-    top: 0 !important;
-    right: -100% !important;
-    width: 90% !important;
-    max-width: 420px !important;
-    height: 100vh !important;
-    z-index: 10000 !important;
-    transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    overflow: hidden !important;
-    visibility: visible !important;
-  }
-
-  /* Mobile drawer - SHOWN state (slides in) */
-  .jee-palette-panel.mobile-palette-drawer.show {
-    right: 0 !important;
-  }
-
-  /* Drawer content styling */
-  .mobile-palette-drawer .drawer-content {
-    height: 100vh !important;
+  /* Palette panel on RIGHT - 33% width, scrollable */
+  .jee-palette-panel {
+    grid-column: 2 !important;
+    position: sticky !important;
+    top: 70px !important;
+    max-height: calc(100vh - 80px) !important;
     overflow-y: auto !important;
-    overflow-x: hidden !important;
-    position: relative !important;
-    background: white !important;
-    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.4) !important;
   }
 
-  /* Dark overlay behind drawer */
-  .drawer-overlay {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    background: rgba(0, 0, 0, 0.6) !important;
-    z-index: 9999 !important;
-    animation: fadeIn 0.3s ease !important;
-    cursor: pointer !important;
+  /* Palette grid - 2 columns for mobile */
+  .jee-palette-panel .grid-cols-5 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 3px !important;
   }
 
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  /* Smaller palette buttons */
+  .jee-palette-panel .grid-cols-5 button {
+    font-size: 8px !important;
+    padding: 3px 1px !important;
+    min-height: 22px !important;
   }
 
-  /* Close button (X) - red circle */
-  .close-drawer-btn {
-    position: absolute !important;
-    top: 12px !important;
-    right: 12px !important;
-    background: #ef4444 !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 50% !important;
-    width: 40px !important;
-    height: 40px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    font-size: 24px !important;
-    font-weight: bold !important;
-    cursor: pointer !important;
-    z-index: 10002 !important;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4) !important;
-    line-height: 1 !important;
+  /* Smaller timer */
+  .jee-palette-panel .bg-gray-800 {
+    padding: 3px 1px !important;
   }
 
-  .close-drawer-btn:hover {
-    background: #dc2626 !important;
-    transform: scale(1.1) !important;
+  .jee-palette-panel .text-2xl {
+    font-size: 12px !important;
   }
 
-  .close-drawer-btn:active {
-    transform: scale(0.9) !important;
+  .jee-palette-panel .text-xs {
+    font-size: 7px !important;
   }
 
-  /* Floating Palette Button - bottom center for easy reach */
-  .floating-palette-btn {
-    position: fixed !important;
-    bottom: 24px !important;
-    right: 24px !important;
-    width: 72px !important;
-    height: 72px !important;
-    background: linear-gradient(135deg, #3b82f6, #1e40af) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 50% !important;
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: pointer !important;
-    z-index: 9998 !important;
-    transition: all 0.3s ease !important;
-    font-weight: 600 !important;
+  /* Smaller profile section */
+  .jee-palette-panel .bg-gray-100 {
+    padding: 3px 1px !important;
   }
 
-  .floating-palette-btn:hover {
-    transform: scale(1.1) !important;
-    box-shadow: 0 8px 28px rgba(59, 130, 246, 0.8) !important;
+  .jee-palette-panel h3 {
+    font-size: 9px !important;
   }
 
-  .floating-palette-btn:active {
-    transform: scale(0.95) !important;
+  .jee-palette-panel p {
+    font-size: 7px !important;
   }
 
-  .floating-palette-btn svg {
-    margin-bottom: 4px !important;
+  /* Smaller legend */
+  .jee-palette-panel .border-t-2 {
+    padding: 4px 2px !important;
+  }
+
+  .jee-palette-panel .border-t-2 .text-xs {
+    font-size: 6px !important;
+  }
+
+  .jee-palette-panel .border-t-2 .w-6 {
+    width: 12px !important;
+    height: 12px !important;
+    font-size: 6px !important;
+  }
+
+  /* Submit button - smaller */
+  .jee-palette-panel .mb-4 button.bg-red-600 {
+    font-size: 9px !important;
+    padding: 6px 2px !important;
+  }
+
+  /* Navigation buttons smaller */
+  .jee-question-panel button {
+    font-size: 11px !important;
+    padding: 8px 12px !important;
   }
   
-  /* General mobile text size */
   .jee-main-test {
-    font-size: 0.95rem !important;
+    font-size: 0.9rem;
   }
 }
 

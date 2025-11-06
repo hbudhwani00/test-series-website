@@ -24,7 +24,6 @@ const JEEMainTest = () => {
   const [isLandscape, setIsLandscape] = useState(true);
   const [isDemoTest, setIsDemoTest] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [showPaletteDrawer, setShowPaletteDrawer] = useState(false);
 
   // Check if device is mobile and orientation
   useEffect(() => {
@@ -860,25 +859,9 @@ const JEEMainTest = () => {
             </Card>
           </div>
 
-          {/* Palette Panel - RIGHT (Desktop 33%, Mobile: Floating Drawer) */}
-          {isMobile && showPaletteDrawer && (
-            <div className="drawer-overlay" onClick={() => setShowPaletteDrawer(false)}></div>
-          )}
-          
-          <div className={`lg:col-span-1 jee-palette-panel ${isMobile ? 'mobile-palette-drawer' : ''} ${isMobile && showPaletteDrawer ? 'show' : ''}`}>
-            <Card className={`sticky top-24 ${isMobile ? 'drawer-content' : ''}`}>
-              {isMobile && (
-                <button 
-                  className="close-drawer-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowPaletteDrawer(false);
-                  }}
-                >
-                  ✕
-                </button>
-              )}
-              
+          {/* Palette Panel - RIGHT (Desktop 33%, Mobile 33%) */}
+          <div className="lg:col-span-1 jee-palette-panel">
+            <Card className="sticky top-24">
               {/* Profile Section */}
               <div className="bg-gray-100 px-4 py-3 mb-4 border-b-2 border-gray-300">
                 <h3 className="font-bold text-sm text-gray-800">Candidate Name</h3>
@@ -956,19 +939,6 @@ const JEEMainTest = () => {
             </Card>
           </div>
         </div>
-
-        {/* Floating Palette Button - Mobile Only */}
-        {isMobile && !showPaletteDrawer && (
-          <button
-            className="floating-palette-btn"
-            onClick={() => setShowPaletteDrawer(true)}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-            </svg>
-            <span className="text-xs mt-1">Palette</span>
-          </button>
-        )}
       </div>
     </div>
   );
