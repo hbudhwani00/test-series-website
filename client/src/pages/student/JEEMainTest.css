@@ -199,8 +199,14 @@ body:-ms-fullscreen {
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
-    background: rgba(0, 0, 0, 0.5) !important;
+    background: rgba(0, 0, 0, 0.6) !important;
     z-index: 9998 !important;
+    animation: fadeIn 0.3s ease !important;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   /* Close Button */
@@ -208,24 +214,30 @@ body:-ms-fullscreen {
     position: absolute !important;
     top: 10px !important;
     right: 10px !important;
-    background: rgba(239, 68, 68, 0.9) !important;
+    background: #ef4444 !important;
     color: white !important;
     border: none !important;
     border-radius: 50% !important;
-    width: 32px !important;
-    height: 32px !important;
+    width: 36px !important;
+    height: 36px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    font-size: 20px !important;
+    font-size: 22px !important;
     font-weight: bold !important;
     cursor: pointer !important;
-    z-index: 10000 !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+    z-index: 10001 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+    line-height: 1 !important;
   }
 
   .close-drawer-btn:hover {
-    background: rgba(220, 38, 38, 1) !important;
+    background: #dc2626 !important;
+    transform: scale(1.1) !important;
+  }
+
+  .close-drawer-btn:active {
+    transform: scale(0.95) !important;
   }
 
   /* Floating Palette Button */

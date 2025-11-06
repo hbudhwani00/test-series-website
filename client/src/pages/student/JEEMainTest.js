@@ -861,15 +861,19 @@ const JEEMainTest = () => {
           </div>
 
           {/* Palette Panel - RIGHT (Desktop 33%, Mobile: Floating Drawer) */}
+          {isMobile && showPaletteDrawer && (
+            <div className="drawer-overlay" onClick={() => setShowPaletteDrawer(false)}></div>
+          )}
+          
           <div className={`lg:col-span-1 jee-palette-panel ${isMobile ? 'mobile-palette-drawer' : ''} ${isMobile && showPaletteDrawer ? 'show' : ''}`}>
-            {isMobile && showPaletteDrawer && (
-              <div className="drawer-overlay" onClick={() => setShowPaletteDrawer(false)}></div>
-            )}
             <Card className={`sticky top-24 ${isMobile ? 'drawer-content' : ''}`}>
               {isMobile && (
                 <button 
                   className="close-drawer-btn"
-                  onClick={() => setShowPaletteDrawer(false)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowPaletteDrawer(false);
+                  }}
                 >
                   ✕
                 </button>
