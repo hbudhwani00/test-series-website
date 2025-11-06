@@ -336,6 +336,43 @@ body:-ms-fullscreen {
     font-size: 0.75rem !important;
   }
 }
+/* Force smaller panel header and larger spacing - HIGH SPECIFICITY */
+.jee-main-test .jee-question-panel .bg-gray-100 {
+  padding: 6px 10px !important;
+}
+
+.jee-main-test .jee-question-panel .bg-gray-100 h3 {
+  font-size: 11px !important;
+}
+
+.jee-main-test .jee-question-panel .bg-gray-100 p {
+  font-size: 9px !important;
+}
+
+.jee-main-test .jee-question-panel .bg-gray-100 span {
+  padding: 3px 6px !important;
+  font-size: 8px !important;
+}
+
+/* Increase spacing between question text and options */
+.jee-main-test .jee-question-panel .mb-6 {
+  margin-bottom: 80px !important;
+}
+
+/* Increase spacing between each option */
+.jee-main-test .jee-question-panel .space-y-2 > div {
+  margin-top: 30px !important;
+}
+
+.jee-main-test .jee-question-panel .space-y-2 > div:first-child {
+  margin-top: 0 !important;
+}
+
+/* Make entire question text area have more spacing */
+.jee-main-test .jee-question-panel .text-base.leading-relaxed {
+  margin-bottom: 60px !important;
+  padding-bottom: 30px !important;
+}
 
 /* Print Styles */
 @media print {
