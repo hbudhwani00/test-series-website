@@ -125,7 +125,7 @@ body:-ms-fullscreen {
   /* MOBILE: Keep side-by-side layout - Questions LEFT, Palette RIGHT */
   .jee-test-layout {
     display: grid !important;
-    grid-template-columns: 75% 23% !important; /* More space for questions */
+    grid-template-columns: 25% 73% !important; /* More space for questions */
     gap: 6px !important;
   }
 
