@@ -162,13 +162,12 @@ body:-ms-fullscreen {
     margin-bottom: 20px;
   }
 
-  /* Palette panel - HIDDEN by default, shown as drawer */
-  .jee-palette-panel {
+  /* Palette panel - HIDDEN by default on mobile */
+  .jee-palette-panel:not(.mobile-palette-drawer) {
     display: none !important;
   }
 
-  /* Mobile Palette Drawer */
-  .mobile-palette-drawer {
+  .jee-palette-panel.mobile-palette-drawer:not(.show) {
     display: block !important;
     position: fixed !important;
     top: 0 !important;
@@ -181,8 +180,18 @@ body:-ms-fullscreen {
     overflow: hidden !important;
   }
 
-  .mobile-palette-drawer.show {
+  /* Mobile Palette Drawer - SHOWN state */
+  .jee-palette-panel.mobile-palette-drawer.show {
+    display: block !important;
+    position: fixed !important;
+    top: 0 !important;
     right: 0 !important;
+    width: 85% !important;
+    max-width: 400px !important;
+    height: 100vh !important;
+    z-index: 9999 !important;
+    transition: right 0.3s ease-in-out !important;
+    overflow: hidden !important;
   }
 
   .mobile-palette-drawer .drawer-content {
