@@ -125,7 +125,7 @@ body:-ms-fullscreen {
   /* MOBILE: Keep side-by-side layout - Questions LEFT, Palette RIGHT */
   .jee-test-layout {
     display: grid !important;
-    grid-template-columns: 60% 38% !important;
+    grid-template-columns: 70% 28% !important; /* More space for questions */
     gap: 8px !important;
   }
 
@@ -143,74 +143,64 @@ body:-ms-fullscreen {
     overflow-y: auto;
   }
 
-  /* Palette grid - 3 columns */
+  /* Palette grid - 2 columns (smaller) */
   .jee-palette-panel .grid-cols-5 {
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 4px !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 3px !important;
   }
 
   /* Smaller palette buttons */
   .jee-palette-panel .grid-cols-5 button {
-    font-size: 10px !important;
-    padding: 6px 2px !important;
-    min-height: 28px;
+    font-size: 9px !important;
+    padding: 4px 2px !important;
+    min-height: 24px !important;
   }
 
   /* Smaller timer */
   .jee-palette-panel .bg-gray-800 {
-    padding: 6px 4px !important;
+    padding: 4px 2px !important;
   }
 
   .jee-palette-panel .text-2xl {
-    font-size: 16px !important;
+    font-size: 14px !important;
   }
 
   .jee-palette-panel .text-xs {
-    font-size: 9px !important;
+    font-size: 8px !important;
   }
 
   /* Smaller profile section */
   .jee-palette-panel .bg-gray-100 {
-    padding: 6px 4px !important;
+    padding: 4px 2px !important;
   }
 
   .jee-palette-panel h3 {
-    font-size: 11px !important;
+    font-size: 10px !important;
   }
 
   .jee-palette-panel p {
-    font-size: 9px !important;
+    font-size: 8px !important;
   }
 
   /* Smaller legend */
   .jee-palette-panel .border-t-2 {
-    padding: 6px 4px !important;
+    padding: 4px 2px !important;
   }
 
   .jee-palette-panel .border-t-2 .text-xs {
-    font-size: 8px !important;
+    font-size: 7px !important;
   }
 
   .jee-palette-panel .border-t-2 .w-6 {
-    width: 16px !important;
-    height: 16px !important;
-    font-size: 8px !important;
+    width: 14px !important;
+    height: 14px !important;
+    font-size: 7px !important;
   }
 
-  /* Submit button always visible */
-  .jee-palette-panel .mt-6 {
-    position: sticky;
-    bottom: 0;
-    background: white;
-    padding: 6px 4px !important;
-    margin-top: 8px !important;
-    border-top: 2px solid #e5e7eb;
-    z-index: 10;
-  }
-
-  .jee-palette-panel button.w-full {
-    font-size: 11px !important;
-    padding: 8px 6px !important;
+  /* Submit button at top - smaller */
+  .jee-palette-panel .mb-4 button.bg-red-600 {
+    font-size: 10px !important;
+    padding: 8px 4px !important;
   }
 
   /* Navigation buttons smaller */

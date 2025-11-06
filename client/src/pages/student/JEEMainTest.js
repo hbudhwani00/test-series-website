@@ -860,6 +860,16 @@ const JEEMainTest = () => {
                 <p className="text-xs text-gray-600">Roll No: XXXXXXXX</p>
               </div>
 
+              {/* Submit Button - Moved to top */}
+              <div className="mb-4 px-2">
+                <button
+                  onClick={handleSubmit}
+                  className="w-full bg-red-600 text-white py-3 rounded font-bold text-sm hover:bg-red-700 transition-all"
+                >
+                  SUBMIT TEST
+                </button>
+              </div>
+
               {/* Timer */}
               <div className="bg-gray-800 text-white px-4 py-3 mb-4 text-center">
                 <p className="text-xs mb-1">Time Left</p>
@@ -918,15 +928,6 @@ const JEEMainTest = () => {
                 </div>
               </div>
 
-              {/* Submit Button */}
-              <div className="mt-6 px-2">
-                <button
-                  onClick={handleSubmit}
-                  className="w-full bg-red-600 text-white py-3 rounded font-bold text-sm hover:bg-red-700 transition-all"
-                >
-                  SUBMIT
-                </button>
-              </div>
             </Card>
           </div>
         </div>
