@@ -613,8 +613,8 @@ const JEEMainTest = () => {
 
       <div className="container mx-auto p-4" style={{ flex: 1, overflow: 'auto' }}>
         <div className="jee-test-layout">
-          {/* Left Panel - Main Question Area */}
-            <div className="palette-panel lg:col-span-1">
+          {/* ✅ Question Panel (Left - 75%) */}
+            <div className="question-panel lg:col-span-2">
             <Card>
               {/* Question Header */}
               <div className="bg-gray-100 px-4 py-3 mb-4 border-b-2 border-gray-300">
@@ -851,8 +851,8 @@ const JEEMainTest = () => {
             </Card>
           </div>
 
-          {/* Right Panel - Question Palette (Official NTA Style) */}
-           <div className="question-panel lg:col-span-2">
+         {/* ✅ Palette Panel (Right - 25%) */}
+          <div className="palette-panel lg:col-span-1">
             <Card className="sticky top-24">
               {/* Profile Section */}
               <div className="bg-gray-100 px-4 py-3 mb-4 border-b-2 border-gray-300">
