@@ -136,17 +136,16 @@ body:-ms-fullscreen {
   }
 
   /* Palette on Right (25%) - Fixed and scrollable */
-  .palette-panel {
+.palette-panel {
     flex: 0 0 25%;
     border-left: 2px solid #e5e7eb;
     background: #fff;
     height: 100%;
     overflow-y: auto;
-    position: sticky;
-    top: 80px; /* same as header height */
+    /* no sticky needed; the column is fixed by flex sizing */
   }
 
-  /* Reduce grid cols to fit narrow space */
+  /* Make palette grid fit the narrow column */
   .palette-panel .grid-cols-5 {
     grid-template-columns: repeat(2, 1fr) !important;
   }
@@ -156,8 +155,6 @@ body:-ms-fullscreen {
     padding: 6px 2px !important;
     min-height: 28px;
   }
-}
-
 
   .jee-main-test {
     font-size: 0.9rem;
