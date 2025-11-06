@@ -120,7 +120,36 @@ body:-ms-fullscreen {
     grid-template-columns: repeat(4, 1fr);
   }
 }
+.jee-question-panel .bg-gray-100.px-4.py-3 {
+  padding: 6px 10px !important;
+  font-size: 11px !important;
+}
 
+.jee-question-panel .bg-gray-100 h3 {
+  font-size: 12px !important;
+}
+
+.jee-question-panel .bg-gray-100 p {
+  font-size: 10px !important;
+}
+
+.jee-question-panel .bg-gray-100 .px-3 {
+  padding: 4px 8px !important;
+  font-size: 9px !important;
+}
+
+/* Increase spacing in question content */
+.jee-question-panel .text-base {
+  margin-bottom: 50px !important;
+}
+
+.jee-question-panel .space-y-2 {
+  gap: 20px !important;
+}
+
+.jee-question-panel .space-y-2 > * + * {
+  margin-top: 20px !important;
+}
 @media (max-width: 768px) {
   /* MOBILE: Keep side-by-side layout - Questions LEFT, Palette RIGHT */
   .jee-test-layout {
