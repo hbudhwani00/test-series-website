@@ -151,57 +151,61 @@ body:-ms-fullscreen {
   margin-top: 20px !important;
 }
 @media (max-width: 768px) {
-  /* MOBILE: Questions full width, Palette as floating drawer */
+  /* MOBILE: Completely separate layout - Questions 100%, Palette as overlay drawer */
+  
+  /* Force block layout, no grid */
   .jee-test-layout {
     display: block !important;
+    position: relative !important;
   }
 
-  /* Question panel - FULL WIDTH */
+  /* Question panel - FULL SCREEN WIDTH, no restrictions */
   .jee-question-panel {
     width: 100% !important;
-    margin-bottom: 20px;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  /* Palette panel - HIDDEN by default on mobile */
+  /* Completely HIDE the inline palette panel on mobile */
   .jee-palette-panel:not(.mobile-palette-drawer) {
     display: none !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
   }
 
-  .jee-palette-panel.mobile-palette-drawer:not(.show) {
+  /* Mobile drawer - hidden off-screen by default */
+  .jee-palette-panel.mobile-palette-drawer {
     display: block !important;
     position: fixed !important;
     top: 0 !important;
     right: -100% !important;
-    width: 85% !important;
-    max-width: 400px !important;
+    width: 90% !important;
+    max-width: 420px !important;
     height: 100vh !important;
-    z-index: 9999 !important;
-    transition: right 0.3s ease-in-out !important;
+    z-index: 10000 !important;
+    transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
     overflow: hidden !important;
+    visibility: visible !important;
   }
 
-  /* Mobile Palette Drawer - SHOWN state */
+  /* Mobile drawer - SHOWN state (slides in) */
   .jee-palette-panel.mobile-palette-drawer.show {
-    display: block !important;
-    position: fixed !important;
-    top: 0 !important;
     right: 0 !important;
-    width: 85% !important;
-    max-width: 400px !important;
-    height: 100vh !important;
-    z-index: 9999 !important;
-    transition: right 0.3s ease-in-out !important;
-    overflow: hidden !important;
   }
 
+  /* Drawer content styling */
   .mobile-palette-drawer .drawer-content {
     height: 100vh !important;
     overflow-y: auto !important;
+    overflow-x: hidden !important;
     position: relative !important;
-    box-shadow: -5px 0 15px rgba(0,0,0,0.3) !important;
+    background: white !important;
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.4) !important;
   }
 
-  /* Drawer Overlay */
+  /* Dark overlay behind drawer */
   .drawer-overlay {
     position: fixed !important;
     top: 0 !important;
@@ -209,8 +213,9 @@ body:-ms-fullscreen {
     right: 0 !important;
     bottom: 0 !important;
     background: rgba(0, 0, 0, 0.6) !important;
-    z-index: 9998 !important;
+    z-index: 9999 !important;
     animation: fadeIn 0.3s ease !important;
+    cursor: pointer !important;
   }
 
   @keyframes fadeIn {
@@ -218,25 +223,25 @@ body:-ms-fullscreen {
     to { opacity: 1; }
   }
 
-  /* Close Button */
+  /* Close button (X) - red circle */
   .close-drawer-btn {
     position: absolute !important;
-    top: 10px !important;
-    right: 10px !important;
+    top: 12px !important;
+    right: 12px !important;
     background: #ef4444 !important;
     color: white !important;
     border: none !important;
     border-radius: 50% !important;
-    width: 36px !important;
-    height: 36px !important;
+    width: 40px !important;
+    height: 40px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    font-size: 22px !important;
+    font-size: 24px !important;
     font-weight: bold !important;
     cursor: pointer !important;
-    z-index: 10001 !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+    z-index: 10002 !important;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4) !important;
     line-height: 1 !important;
   }
 
@@ -246,41 +251,47 @@ body:-ms-fullscreen {
   }
 
   .close-drawer-btn:active {
-    transform: scale(0.95) !important;
+    transform: scale(0.9) !important;
   }
 
-  /* Floating Palette Button */
+  /* Floating Palette Button - bottom center for easy reach */
   .floating-palette-btn {
     position: fixed !important;
-    bottom: 20px !important;
-    right: 20px !important;
-    width: 70px !important;
-    height: 70px !important;
-    background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+    bottom: 24px !important;
+    right: 24px !important;
+    width: 72px !important;
+    height: 72px !important;
+    background: linear-gradient(135deg, #3b82f6, #1e40af) !important;
     color: white !important;
     border: none !important;
     border-radius: 50% !important;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5) !important;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6) !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
     cursor: pointer !important;
-    z-index: 9997 !important;
+    z-index: 9998 !important;
     transition: all 0.3s ease !important;
+    font-weight: 600 !important;
   }
 
   .floating-palette-btn:hover {
     transform: scale(1.1) !important;
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.7) !important;
+    box-shadow: 0 8px 28px rgba(59, 130, 246, 0.8) !important;
   }
 
   .floating-palette-btn:active {
     transform: scale(0.95) !important;
   }
+
+  .floating-palette-btn svg {
+    margin-bottom: 4px !important;
+  }
   
+  /* General mobile text size */
   .jee-main-test {
-    font-size: 0.9rem;
+    font-size: 0.95rem !important;
   }
 }
 
