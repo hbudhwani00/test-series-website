@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Card, Button, Badge } from '../../components/ui';
+import { Card } from '../../components/ui';
 import LatexRenderer from '../../components/LatexRenderer';
 import './JEEMainTest.css';
 import { API_URL } from '../../services/api';
@@ -47,6 +46,7 @@ const JEEMainTest = () => {
 
   useEffect(() => {
     fetchTest();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [testId]);
 
   // Enter fullscreen when test starts and prevent exit
@@ -191,6 +191,7 @@ const JEEMainTest = () => {
 
       return () => clearInterval(timer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showInstructions, timeRemaining]);
 
   // Fullscreen functions
@@ -362,12 +363,6 @@ const JEEMainTest = () => {
       setCurrentQuestionIndex(prev => prev + 1);
       const nextKey = (currentQuestionIndex + 1).toString();
       setVisited(prev => ({ ...prev, [nextKey]: true }));
-    }
-  };
-
-  const navigatePrevious = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
     }
   };
 
