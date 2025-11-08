@@ -168,6 +168,18 @@ body:-ms-fullscreen {
   order: 2;
 }
 
+/* Desktop - keep original button styles */
+.jee-palette-panel .grid-cols-5 {
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.jee-palette-panel .grid-cols-5 button {
+  aspect-ratio: 1;
+  font-size: 14px;
+  padding: 8px;
+}
+
 /* ===== MOBILE LAYOUT ===== */
 @media (max-width: 768px) {
   /* ===== MOBILE LAYOUT: Palette LEFT (20%), Questions RIGHT (78%) ===== */
