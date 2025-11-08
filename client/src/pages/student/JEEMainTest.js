@@ -586,7 +586,6 @@ const JEEMainTest = () => {
   }
 
   const currentQuestion = getCurrentQuestion();
-  const allQuestions = getAllQuestions();
 
   return (
     <div className="jee-main-test bg-gray-50" style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
