@@ -224,14 +224,15 @@ body:-ms-fullscreen {
   /* Question Palette Grid - 1 column (vertical stack) */
   .jee-palette-panel .grid-cols-5 {
     grid-template-columns: 1fr !important;
-    gap: 2px !important;
+    gap: 1px !important;
   }
 
   .jee-palette-panel .grid-cols-5 button {
-    font-size: 8px !important;
-    padding: 4px 2px !important;
-    min-height: 24px !important;
+    font-size: 7px !important;
+    padding: 2px !important;
+    min-height: 18px !important;
     width: 100% !important;
+    border-radius: 3px !important;
   }
 
   /* Legend - compact */
