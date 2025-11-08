@@ -213,10 +213,22 @@ body:-ms-fullscreen {
     min-height: 12px !important;
     max-height: 12px !important;
     width: 100% !important;
+    max-width: 100% !important;
     font-size: 8px !important;
     padding: 1px !important;
     border-radius: 2px !important;
     line-height: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* Force override all Tailwind button classes on mobile */
+  .jee-palette-panel button.question-palette-btn.w-full.aspect-square.rounded.font-bold.text-sm.transition-all {
+    aspect-ratio: unset !important;
+    height: 12px !important;
+    font-size: 8px !important;
+    padding: 1px !important;
   }
 
   .jee-palette-panel .question-palette-btn:hover {
