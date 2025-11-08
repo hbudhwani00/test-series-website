@@ -150,6 +150,25 @@ body:-ms-fullscreen {
 .jee-question-panel .space-y-2 > * + * {
   margin-top: 20px !important;
 }
+
+/* ===== DESKTOP LAYOUT (Default) ===== */
+.jee-test-layout {
+  display: grid;
+  grid-template-columns: 66% 32%;
+  gap: 16px;
+}
+
+.jee-question-panel {
+  grid-column: 1;
+  order: 1;
+}
+
+.jee-palette-panel {
+  grid-column: 2;
+  order: 2;
+}
+
+/* ===== MOBILE LAYOUT ===== */
 @media (max-width: 768px) {
   /* ===== MOBILE LAYOUT: Palette LEFT (20%), Questions RIGHT (78%) ===== */
   

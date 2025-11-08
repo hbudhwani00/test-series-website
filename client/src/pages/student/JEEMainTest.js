@@ -606,9 +606,9 @@ const JEEMainTest = () => {
       </div>
 
       <div className="container mx-auto p-4" style={{ flex: 1, overflow: 'auto' }}>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 jee-test-layout">
-          {/* Question Panel - LEFT (Desktop 66%, Mobile 60%) */}
-          <div className="lg:col-span-2 jee-question-panel">
+        <div className="jee-test-layout">
+          {/* Question Panel */}
+          <div className="jee-question-panel">
             <Card>
               {/* Question Header */}
               <div className="bg-gray-100 px-2 py-2 mb-4 border-b-2 border-gray-300">
@@ -853,8 +853,8 @@ const JEEMainTest = () => {
             </Card>
           </div>
 
-          {/* Palette Panel - RIGHT (Desktop 33%, Mobile 33%) */}
-          <div className="lg:col-span-1 jee-palette-panel">
+          {/* Palette Panel */}
+          <div className="jee-palette-panel">
             <Card className="sticky top-24">
               {/* Profile Section */}
               <div className="bg-gray-100 px-4 py-3 mb-4 border-b-2 border-gray-300">
