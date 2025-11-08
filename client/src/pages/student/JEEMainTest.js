@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { Card } from '../../components/ui';
+import { Card, Button } from '../../components/ui';
 import LatexRenderer from '../../components/LatexRenderer';
 import './JEEMainTest.css';
 import { API_URL } from '../../services/api';
