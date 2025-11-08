@@ -228,11 +228,11 @@ body:-ms-fullscreen {
   }
 
   .jee-palette-panel .grid-cols-5 button {
-    font-size: 8px !important;
+    font-size: 1px !important;
     padding: 2px !important;
-    min-height: 20px !important;
-    max-height: 20px !important;
-    height: 20px !important;
+    min-height: 2px !important;
+    max-height: 2px !important;
+    height: 2px !important;
     width: 100% !important;
     border-radius: 3px !important;
     line-height: normal !important;
