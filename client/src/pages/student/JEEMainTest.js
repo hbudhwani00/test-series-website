@@ -883,7 +883,7 @@ const JEEMainTest = () => {
               {/* Question Palette Grid - All 75 Questions */}
               <div className="mb-4">
                 <p className="text-xs font-semibold text-gray-600 mb-3 px-2">Question Palette:</p>
-                <div className="grid grid-cols-5 px-2 max-h-96 overflow-y-auto">
+                <div className="grid grid-cols-5 gap-2 px-2 max-h-96 overflow-y-auto question-palette-grid">
                   {getAllQuestions().map((q, index) => {
                     const status = getQuestionStatus(index);
                     const isActive = index === currentQuestionIndex;
@@ -892,9 +892,9 @@ const JEEMainTest = () => {
                       <button
                         key={index}
                         onClick={() => jumpToQuestion(index)}
-                        className={`w-full rounded font-bold transition-all ${
+                        className={`w-full aspect-square rounded font-bold text-sm transition-all question-palette-btn ${
                           getStatusColor(status)
-                        } ${isActive ? 'ring-2 ring-blue-400' : ''}`}
+                        } ${isActive ? 'ring-4 ring-blue-400 ring-offset-2' : ''} hover:scale-110`}
                       >
                         {q?.questionNumber || (index + 1)}
                       </button>

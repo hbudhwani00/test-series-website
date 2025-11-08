@@ -201,6 +201,33 @@ body:-ms-fullscreen {
     overflow-y: auto !important;
   }
 
+  /* Override desktop button styles for mobile */
+  .jee-palette-panel .question-palette-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1px !important;
+  }
+
+  .jee-palette-panel .question-palette-btn {
+    aspect-ratio: unset !important;
+    height: 12px !important;
+    min-height: 12px !important;
+    max-height: 12px !important;
+    width: 100% !important;
+    font-size: 8px !important;
+    padding: 1px !important;
+    border-radius: 2px !important;
+    line-height: 12px !important;
+  }
+
+  .jee-palette-panel .question-palette-btn:hover {
+    transform: none !important;
+  }
+
+  .jee-palette-panel .question-palette-btn.ring-4 {
+    ring-width: 2px !important;
+    ring-offset-width: 0px !important;
+  }
+
   /* Profile section - compact */
   .jee-palette-panel .bg-gray-100 {
     padding: 2px !important;
