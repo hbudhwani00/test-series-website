@@ -151,28 +151,28 @@ body:-ms-fullscreen {
   margin-top: 20px !important;
 }
 @media (max-width: 768px) {
-  /* MOBILE: Side-by-side layout - Questions LEFT (78%), Palette RIGHT (20%) */
+  /* MOBILE: Palette LEFT (20%), Questions RIGHT (78%) */
   .jee-test-layout {
     display: grid !important;
-    grid-template-columns: 78% 20% !important;
+    grid-template-columns: 20% 78% !important;
     gap: 6px !important;
   }
 
-  /* Question panel on LEFT - 78% width (MORE SPACE FOR READING) */
-  .jee-question-panel {
+  /* Palette panel on LEFT - 20% width (COMPACT), scrollable */
+  .jee-palette-panel {
     grid-column: 1 !important;
     order: 1 !important;
-    width: 100% !important;
-  }
-
-  /* Palette panel on RIGHT - 20% width (COMPACT), scrollable */
-  .jee-palette-panel {
-    grid-column: 2 !important;
-    order: 2 !important;
     position: sticky !important;
     top: 70px !important;
     max-height: calc(100vh - 80px) !important;
     overflow-y: auto !important;
+  }
+
+  /* Question panel on RIGHT - 78% width (MORE SPACE FOR READING) */
+  .jee-question-panel {
+    grid-column: 2 !important;
+    order: 2 !important;
+    width: 100% !important;
   }
 
   /* Palette grid - 1 column for narrow space */
