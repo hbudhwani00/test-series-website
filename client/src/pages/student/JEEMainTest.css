@@ -209,15 +209,15 @@ body:-ms-fullscreen {
 
   .jee-palette-panel .question-palette-btn {
     aspect-ratio: unset ;
-    height: 12px ;
-    min-height: 12px ;
-    max-height: 12px ;
-    width: 100% ;
-    max-width: 100% ;
-    font-size: 8px ;
+    height: 5px ;
+    min-height: 5px ;
+    max-height: 5px ;
+    width: 60% ;
+    max-width: 60% ;
+    font-size: 3px ;
     padding: 1px ;
     border-radius: 2px ;
-    line-height: 12px ;
+    line-height: 5px ;
     display: flex ;
     align-items: center ;
     justify-content: center ;
