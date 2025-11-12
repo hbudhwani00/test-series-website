@@ -734,9 +734,9 @@ const JEEMainTest = () => {
                         * Use decimal point if needed (e.g., 12.5, 0.33). Round off to 2 decimal places.
                       </p>
                       
-                      {/* Virtual Numpad - Below input */}
+                      {/* Virtual Numpad - Below input (3-column keypad) */}
                       <div className="bg-gray-100 p-3 rounded-lg virtual-numpad" style={{ width: '200px' }}>
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="virtual-numpad-grid">
                           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
                             <button
                               key={num}
@@ -746,22 +746,13 @@ const JEEMainTest = () => {
                                   handleAnswer(currentValue + num);
                                 }
                               }}
-                              className="bg-white hover:bg-blue-50 active:bg-blue-100 border border-gray-300 rounded py-3 text-lg font-semibold transition-colors"
+                              className="vn-btn"
                             >
                               {num}
                             </button>
                           ))}
-                          <button
-                            onClick={() => {
-                              const currentValue = answers[getQuestionKey()] || '';
-                              if (!currentValue.includes('.') && currentValue.length > 0 && currentValue.length < 5) {
-                                handleAnswer(currentValue + '.');
-                              }
-                            }}
-                            className="bg-white hover:bg-blue-50 active:bg-blue-100 border border-gray-300 rounded py-3 text-lg font-semibold transition-colors"
-                          >
-                            .
-                          </button>
+
+                          {/* Last row: 0 and Enter (Enter spans two columns) */}
                           <button
                             onClick={() => {
                               const currentValue = answers[getQuestionKey()] || '';
@@ -769,26 +760,36 @@ const JEEMainTest = () => {
                                 handleAnswer(currentValue + '0');
                               }
                             }}
-                            className="bg-white hover:bg-blue-50 active:bg-blue-100 border border-gray-300 rounded py-3 text-lg font-semibold transition-colors"
+                            className="vn-btn"
                           >
                             0
                           </button>
+
+                          <button
+                            onClick={() => handleAnswer('')}
+                            className="vn-btn enter-btn"
+                          >
+                            Enter
+                          </button>
+                        </div>
+
+                        <div className="mt-2 flex gap-2">
                           <button
                             onClick={() => {
                               const currentValue = answers[getQuestionKey()] || '';
                               handleAnswer(currentValue.slice(0, -1));
                             }}
-                            className="bg-red-500 hover:bg-red-600 active:bg-red-700 text-white border border-red-600 rounded py-3 text-sm font-semibold transition-colors"
+                            className="flex-1 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white border border-red-600 rounded py-2 text-sm font-semibold transition-colors"
                           >
                             ⌫
                           </button>
+                          <button
+                            onClick={() => handleAnswer('')}
+                            className="flex-1 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white border border-orange-600 rounded py-2 text-xs font-semibold transition-colors"
+                          >
+                            Clear All
+                          </button>
                         </div>
-                        <button
-                          onClick={() => handleAnswer('')}
-                          className="w-full mt-2 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white border border-orange-600 rounded py-2 text-xs font-semibold transition-colors"
-                        >
-                          Clear All
-                        </button>
                       </div>
                     </div>
                   )}

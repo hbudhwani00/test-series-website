@@ -532,18 +532,40 @@ body:-ms-fullscreen {
 .virtual-numpad {
   width: 200px;
 }
-.virtual-numpad .grid > button {
+
+/* new explicit grid for virtual numpad to ensure 3 columns on all screens */
+.virtual-numpad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.virtual-numpad .vn-btn {
   width: 100%;
   padding: 12px 0;
   font-size: 18px;
   border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid #d1d5db; /* tailwind gray-300 */
+  font-weight: 600;
+}
+
+.virtual-numpad .vn-btn:hover {
+  background: #eff6ff;
+}
+
+/* Enter button should be prominent and span two columns visually */
+.virtual-numpad .enter-btn {
+  grid-column: 2 / span 2; /* start at col 2 and span to col 3 */
+  background: #3b82f6;
+  color: white;
 }
 
 @media (max-width: 768px) {
   .virtual-numpad {
     width: 100% !important;
   }
-  .virtual-numpad .grid > button {
+  .virtual-numpad .vn-btn {
     padding: 10px 0;
     font-size: 16px;
   }
