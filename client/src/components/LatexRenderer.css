@@ -1,5 +1,8 @@
 .latex-content {
-  display: inline;
+  display: block;
+  /* Preserve user-entered newlines and spacing (Enter -> new line)
+     so stored text with \n renders as line breaks in the UI. */
+  white-space: pre-wrap;
 }
 
 .latex-inline {
