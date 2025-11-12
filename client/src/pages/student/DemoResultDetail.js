@@ -516,15 +516,19 @@ const DemoResultDetail = () => {
                                     {' • '}
                                     Marks: {answer.marksAwarded > 0 ? `+${answer.marksAwarded}` : answer.marksAwarded}
                                   </span>
-                                  
+
                                   <p className="question-text">
-                                    <LatexRenderer content={answer.questionId?.question || 'Question not available'} />
+                                    {/* Show question number (prefer snapshot) and question text (snapshot or populated) */}
+                                    <strong style={{ display: 'block', marginBottom: '6px' }}>
+                                      Q{answer.questionNumber || (qIdx + 1)}
+                                    </strong>
+                                    <LatexRenderer content={answer.questionText || answer.questionId?.question || 'Question not available'} />
                                   </p>
-                                  
-                                  {answer.questionId?.questionImage && (
+
+                                  {(answer.questionId?.questionImage || answer.questionImage) && (
                                     <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
                                       <img 
-                                        src={answer.questionId.questionImage} 
+                                        src={answer.questionImage || answer.questionId?.questionImage} 
                                         alt="Question diagram" 
                                         style={{ maxWidth: '100%', maxHeight: '320px', borderRadius: '8px' }} 
                                       />
@@ -546,7 +550,7 @@ const DemoResultDetail = () => {
                                       <span style={{ color: isUnattempted ? 'var(--orange-accent)' : 'var(--text-primary)' }}>
                                         {isUnattempted ? 
                                           'Not Attempted' : 
-                                          (answer.questionId?.questionType === 'numerical' ? 
+                                          ((answer.questionType || answer.questionId?.questionType) === 'numerical' ? 
                                             answer.userAnswer : 
                                             (typeof answer.userAnswer === 'string' && answer.userAnswer.length === 1 && answer.userAnswer.match(/[A-Z]/i) ?
                                               `Option ${answer.userAnswer.toUpperCase()}` :
@@ -562,10 +566,10 @@ const DemoResultDetail = () => {
                                     <div>
                                       <strong>Correct Answer: </strong>
                                       <span style={{ color: 'var(--success-green)', fontWeight: '600' }}>
-                                        {answer.questionId?.questionType === 'numerical' ? 
+                                        {((answer.questionType || answer.questionId?.questionType) === 'numerical') ? 
                                           answer.correctAnswer : 
                                           (typeof answer.correctAnswer === 'string' && answer.correctAnswer.length === 1 && answer.correctAnswer.match(/[A-Z]/i) ?
-                                            `Option ${answer.correctAnswer.toUpperCase()}` :
+                                            `Option ${answer.correctAnswer.toUpperCase()}` : 
                                             (typeof answer.correctAnswer === 'number' || !isNaN(answer.correctAnswer) ?
                                               `Option ${String.fromCharCode(65 + parseInt(answer.correctAnswer))}` :
                                               answer.correctAnswer
