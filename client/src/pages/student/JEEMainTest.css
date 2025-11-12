@@ -4,6 +4,12 @@
   font-family: 'Inter', sans-serif;
 }
 
+/* Ensure the main container can scroll when content is tall (desktop/fullscreen) */
+.jee-main-test .container {
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+
 /* Hide body overflow in fullscreen */
 body:fullscreen {
   overflow: auto;
@@ -519,5 +525,26 @@ body:-ms-fullscreen {
   .navigation-buttons,
   .timer {
     display: none;
+  }
+}
+
+/* Virtual numpad styling (numerical answers) */
+.virtual-numpad {
+  width: 200px;
+}
+.virtual-numpad .grid > button {
+  width: 100%;
+  padding: 12px 0;
+  font-size: 18px;
+  border-radius: 6px;
+}
+
+@media (max-width: 768px) {
+  .virtual-numpad {
+    width: 100% !important;
+  }
+  .virtual-numpad .grid > button {
+    padding: 10px 0;
+    font-size: 16px;
   }
 }

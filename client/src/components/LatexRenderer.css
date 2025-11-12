@@ -1,7 +1,7 @@
 .latex-content {
-  /* Use inline-block so the renderer preserves newlines but doesn't force full-line blocks
-     for inline content (keeps option layout intact). */
-  display: inline-block;
+  /* Default to inline so inline text and options keep their layout on test pages.
+     Preview areas (admin) explicitly force block-level rendering where needed. */
+  display: inline;
   white-space: pre-wrap;
 }
 

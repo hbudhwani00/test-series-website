@@ -735,7 +735,7 @@ const JEEMainTest = () => {
                       </p>
                       
                       {/* Virtual Numpad - Below input */}
-                      <div className="bg-gray-100 p-3 rounded-lg" style={{ width: '200px' }}>
+                      <div className="bg-gray-100 p-3 rounded-lg virtual-numpad" style={{ width: '200px' }}>
                         <div className="grid grid-cols-3 gap-2">
                           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
                             <button
