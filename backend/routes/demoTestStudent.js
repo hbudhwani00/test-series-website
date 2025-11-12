@@ -60,8 +60,11 @@ router.post('/submit', async (req, res) => {
       }
     }
 
-    // Get demo test with questions
-    const demoTest = await DemoTest.findById(testId).populate('questions');
+    // Get demo test with questions (ensure questions are sorted by questionNumber)
+    const demoTest = await DemoTest.findById(testId).populate({
+      path: 'questions',
+      options: { sort: { questionNumber: 1 } }
+    });
 
     if (!demoTest) {
       return res.status(404).json({ message: 'Demo test not found' });
@@ -110,7 +113,11 @@ router.post('/submit', async (req, res) => {
           topic: question.topic,
           subject: question.subject,
           correctAnswer: question.correctAnswer,
-          explanation: question.explanation
+          explanation: question.explanation,
+          // Snapshot image fields so result view can show images later
+          questionImage: question.questionImage || null,
+          optionImages: question.optionImages || [],
+          explanationImage: question.explanationImage || null
         });
         continue;
       }
@@ -150,7 +157,11 @@ router.post('/submit', async (req, res) => {
         topic: question.topic,
         subject: question.subject,
         correctAnswer: normalizedCorrectAnswer,
-        explanation: question.explanation
+        explanation: question.explanation,
+        // Snapshot image fields so result view can show images later
+        questionImage: question.questionImage || null,
+        optionImages: question.optionImages || [],
+        explanationImage: question.explanationImage || null
       });
     }
 

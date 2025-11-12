@@ -56,6 +56,11 @@ const resultSchema = new mongoose.Schema({
     subject: String,
     correctAnswer: mongoose.Schema.Types.Mixed,
     explanation: String
+    ,
+    // Snapshot image fields so results contain all data needed to render solutions
+    questionImage: { type: String, default: null },
+    optionImages: { type: [String], default: [] },
+    explanationImage: { type: String, default: null }
   }],
   score: {
     type: Number,
