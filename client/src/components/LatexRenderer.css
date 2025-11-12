@@ -1,14 +1,14 @@
 .latex-content {
-  display: block;
-  /* Preserve user-entered newlines and spacing (Enter -> new line)
-     so stored text with \n renders as line breaks in the UI. */
+  /* Use inline-block so the renderer preserves newlines but doesn't force full-line blocks
+     for inline content (keeps option layout intact). */
+  display: inline-block;
   white-space: pre-wrap;
 }
 
 .latex-inline {
-  display: inline-block;
+  display: inline;
   vertical-align: middle;
-  margin: 0 2px;
+  margin: 0 4px;
 }
 
 .latex-display {
@@ -38,5 +38,5 @@
 }
 
 .katex-html {
-  white-space: nowrap;
+  white-space: normal;
 }

@@ -69,7 +69,18 @@ const LatexRenderer = ({ content }) => {
     <span className="latex-content">
       {parts.map((part, index) => {
         if (part.type === 'text') {
-          return <span key={index}>{part.content}</span>;
+          // Escape HTML in plain text then convert newlines to <br/> so Enter shows as line breaks
+          const escapeHtml = (str) =>
+            String(str)
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#039;');
+
+          const html = escapeHtml(part.content).replace(/\n/g, '<br/>');
+
+          return <span key={index} dangerouslySetInnerHTML={{ __html: html }} />;
         } else {
           return (
             <span 
