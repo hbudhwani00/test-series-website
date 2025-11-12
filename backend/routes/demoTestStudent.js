@@ -105,6 +105,9 @@ router.post('/submit', async (req, res) => {
         unattempted++;
         evaluatedAnswers.push({
           questionId: question._id,
+          questionNumber: question.questionNumber || null,
+          questionText: question.question || '',
+          options: question.options || [],
           userAnswer: null,
           isCorrect: false,
           marksAwarded: 0,
@@ -149,6 +152,9 @@ router.post('/submit', async (req, res) => {
 
       evaluatedAnswers.push({
         questionId: question._id,
+        questionNumber: question.questionNumber || null,
+        questionText: question.question || '',
+        options: question.options || [],
         userAnswer: normalizedUserAnswer,
         isCorrect,
         marksAwarded,

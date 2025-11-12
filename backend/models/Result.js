@@ -61,6 +61,11 @@ const resultSchema = new mongoose.Schema({
     questionImage: { type: String, default: null },
     optionImages: { type: [String], default: [] },
     explanationImage: { type: String, default: null }
+    ,
+    // Snapshot question metadata for result/dashboard rendering
+    questionNumber: { type: Number, default: null },
+    questionText: { type: String, default: '' },
+    options: { type: [String], default: [] }
   }],
   score: {
     type: Number,
