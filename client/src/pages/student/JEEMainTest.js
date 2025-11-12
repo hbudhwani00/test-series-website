@@ -7,6 +7,17 @@ import LatexRenderer from '../../components/LatexRenderer';
 import './JEEMainTest.css';
 import { API_URL } from '../../services/api';
 
+// Helper to ensure option/question image URLs are absolute and publicly accessible
+const resolveImageUrl = (url) => {
+  if (!url) return null;
+  try {
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  } catch (e) {
+    // ignore
+  }
+  return `${API_URL.replace('/api', '')}${url}`;
+};
+
 const JEEMainTest = () => {
   const { testId } = useParams();
   const navigate = useNavigate();
@@ -588,24 +599,8 @@ const JEEMainTest = () => {
   const currentQuestion = getCurrentQuestion();
 
   return (
-    <div className="jee-main-test bg-gray-50" style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* Top Header - No Navbar interference */}
-      <div className="bg-gradient-to-r from-primary to-blue-700 text-white p-4 shadow-lg" style={{ flexShrink: 0 }}>
-        <div className="container mx-auto flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-bold">{test?.title}</h1>
-            <p className="text-sm">JEE Main Pattern - 75 Questions, 300 Marks</p>
-          </div>
-          <div className="text-right">
-            <div className={`text-2xl font-bold ${timeRemaining < 600 ? 'text-red-300' : ''}`}>
-              ⏰ {formatTime(timeRemaining)}
-            </div>
-            <p className="text-xs">Time Remaining</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto p-4" style={{ flex: 1, overflow: 'auto' }}>
+    <div className="jee-main-test bg-gray-50 min-h-screen">
+      <div className="container mx-auto p-4">
         <div className="jee-test-layout">
           {/* Question Panel */}
           <div className="jee-question-panel">
@@ -657,7 +652,7 @@ const JEEMainTest = () => {
                           {currentQuestion.questionImage && (
                             <div className="mt-4">
                               <img 
-                                src={currentQuestion.questionImage} 
+                                src={resolveImageUrl(currentQuestion.questionImage)} 
                                 alt="Question diagram" 
                                 className="max-w-full max-h-80 object-contain border rounded shadow-sm"
                               />
@@ -705,7 +700,7 @@ const JEEMainTest = () => {
                               {currentQuestion.optionImages && currentQuestion.optionImages[index] && (
                                 <div className="mt-2 ml-8">
                                   <img 
-                                    src={currentQuestion.optionImages[index]} 
+                                    src={resolveImageUrl(currentQuestion.optionImages[index])} 
                                     alt={`Option ${optionLabel}`} 
                                     className="max-w-sm max-h-40 object-contain border rounded"
                                   />
@@ -815,7 +810,7 @@ const JEEMainTest = () => {
                       onClick={handleMarkForReview}
                       className="px-5 py-2 bg-orange-500 text-white rounded font-medium hover:bg-orange-600 transition-all"
                     >
-                      Mark for Review & Next
+                      Mark for Review
                     </button>
                     <button
                       onClick={handleClearResponse}
@@ -852,6 +847,7 @@ const JEEMainTest = () => {
               </div>
             </Card>
           </div>
+                  
 
           {/* Palette Panel */}
           <div className="jee-palette-panel">
@@ -939,4 +935,3 @@ const JEEMainTest = () => {
 };
 
 export default JEEMainTest;
-

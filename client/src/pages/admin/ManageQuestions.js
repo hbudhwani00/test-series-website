@@ -124,7 +124,7 @@ const ManageQuestions = () => {
                   {q.questionImage && (
                     <div className="mt-2">
                       <img 
-                        src={q.questionImage} 
+                        src={(q.questionImage?.startsWith('http') ? q.questionImage : `${process.env.REACT_APP_API_BASE || ''}${q.questionImage}`)} 
                         alt="Question diagram" 
                         className="max-w-md max-h-48 object-contain border rounded"
                       />
@@ -139,7 +139,7 @@ const ManageQuestions = () => {
                         {q.optionImages && q.optionImages[idx] && (
                           <div className="ml-4 mt-1">
                             <img 
-                              src={q.optionImages[idx]} 
+                              src={(q.optionImages[idx]?.startsWith('http') ? q.optionImages[idx] : `${process.env.REACT_APP_API_BASE || ''}${q.optionImages[idx]}`)} 
                               alt={`Option ${String.fromCharCode(65 + idx)}`} 
                               className="max-w-xs max-h-24 object-contain border rounded"
                             />

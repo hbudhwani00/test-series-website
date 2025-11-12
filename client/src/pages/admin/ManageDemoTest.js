@@ -13,7 +13,7 @@ const ManageDemoTest = () => {
   const [loading, setLoading] = useState(true);
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [bulkQuestions, setBulkQuestions] = useState('');
-  const [allQuestions, setAllQuestions] = useState([]); // Store all questions from DB
+  const [allQuestions, setAllQuestions] = useState([]);
   
   const [questionForm, setQuestionForm] = useState({
     examType: 'JEE',
@@ -36,7 +36,6 @@ const ManageDemoTest = () => {
     negativeMarks: -1
   });
 
-  // Image size state (percentage of original size)
   const [imageSizes, setImageSizes] = useState({
     question: 100,
     option0: 100,
@@ -48,7 +47,7 @@ const ManageDemoTest = () => {
 
   useEffect(() => {
     fetchDemoTest();
-    fetchAllQuestions(); // Fetch all questions for auto-fill
+    fetchAllQuestions();
   }, []);
 
   const fetchAllQuestions = async () => {
@@ -106,11 +105,9 @@ const ManageDemoTest = () => {
     }
   };
 
-  // Check for duplicate question
   const checkDuplicate = (questionText) => {
     const normalizedInput = questionText.trim().toLowerCase();
     
-    // Check in demo test questions
     if (demoTest?.questions) {
       const duplicate = demoTest.questions.find(
         q => q.question.trim().toLowerCase() === normalizedInput
@@ -121,12 +118,10 @@ const ManageDemoTest = () => {
     return { isDuplicate: false };
   };
 
-  // Auto-fill from existing questions
   const handleQuestionTextChange = (e) => {
     const questionText = e.target.value;
     setQuestionForm({ ...questionForm, question: questionText });
     
-    // If text is long enough, try to find matching question
     if (questionText.trim().length > 20) {
       const normalizedInput = questionText.trim().toLowerCase();
       const matchingQuestion = allQuestions.find(
@@ -134,7 +129,6 @@ const ManageDemoTest = () => {
       );
       
       if (matchingQuestion) {
-        // Auto-fill all fields
         toast.info('Question found! Auto-filling details...', { autoClose: 2000 });
         setQuestionForm({
           ...questionForm,
@@ -157,17 +151,14 @@ const ManageDemoTest = () => {
     }
   };
 
-  // Handle image upload
   const handleImageUpload = async (file, type, index = null) => {
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast.error('Please upload an image file');
       return;
     }
 
-    // Validate file size (5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Image size should be less than 5MB');
       return;
@@ -188,7 +179,6 @@ const ManageDemoTest = () => {
       const imageUrl = response.data.imageUrl;
       const fullImageUrl = `${API_URL.replace('/api', '')}${imageUrl}`;
 
-      // Update the appropriate field based on type
       if (type === 'question') {
         setQuestionForm(prev => ({ ...prev, questionImage: fullImageUrl }));
         toast.success('Question image uploaded');
@@ -207,15 +197,13 @@ const ManageDemoTest = () => {
     }
   };
 
-  // Handle paste event for images
   const handlePaste = async (e, type, index = null) => {
     const items = e.clipboardData?.items;
     if (!items) return;
 
-    // Look for image in clipboard
     for (let i = 0; i < items.length; i++) {
       if (items[i].type.indexOf('image') !== -1) {
-        e.preventDefault(); // Prevent default paste behavior for images
+        e.preventDefault();
         
         const blob = items[i].getAsFile();
         if (blob) {
@@ -250,7 +238,6 @@ const ManageDemoTest = () => {
   const handleAddQuestion = async (e) => {
     e.preventDefault();
     
-    // Check for duplicates before adding
     if (!editingQuestionId) {
       const duplicateCheck = checkDuplicate(questionForm.question);
       if (duplicateCheck.isDuplicate) {
@@ -262,20 +249,32 @@ const ManageDemoTest = () => {
     try {
       const token = localStorage.getItem('token');
       
+      // FIXED: Include all image URLs in the payload
+      const payload = {
+        ...questionForm,
+        questionImage: questionForm.questionImage || '',
+        optionImages: questionForm.optionImages || ['', '', '', ''],
+        explanationImage: questionForm.explanationImage || ''
+      };
+
+      console.log('Submitting question with images:', {
+        questionImage: payload.questionImage,
+        optionImages: payload.optionImages,
+        explanationImage: payload.explanationImage
+      });
+      
       if (editingQuestionId) {
-        // Update existing question
         await axios.put(
           `${API_URL}/admin/demo-test/update-question/${editingQuestionId}`,
-          questionForm,
+          payload,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         toast.success('Question updated successfully!');
         setEditingQuestionId(null);
       } else {
-        // Add new question
         await axios.post(
           `${API_URL}/admin/demo-test/add-question`,
-          questionForm,
+          payload,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         toast.success('Question added successfully!');
@@ -283,6 +282,8 @@ const ManageDemoTest = () => {
       
       setShowQuestionForm(false);
       setShowPreview(false);
+      
+      // Reset form
       setQuestionForm({
         examType: 'JEE',
         subject: 'Physics',
@@ -293,15 +294,30 @@ const ManageDemoTest = () => {
         section: 'A',
         questionNumber: '',
         question: '',
+        questionImage: '',
         options: ['', '', '', ''],
+        optionImages: ['', '', '', ''],
         correctAnswer: '',
         explanation: '',
+        explanationImage: '',
         difficulty: 'medium',
         marks: 4,
         negativeMarks: -1
       });
+      
+      // Reset image sizes
+      setImageSizes({
+        question: 100,
+        option0: 100,
+        option1: 100,
+        option2: 100,
+        option3: 100,
+        explanation: 100
+      });
+      
       fetchDemoTest();
     } catch (error) {
+      console.error('Error saving question:', error);
       toast.error(error.response?.data?.message || 'Failed to save question');
     }
   };
@@ -318,9 +334,12 @@ const ManageDemoTest = () => {
       section: question.section,
       questionNumber: question.questionNumber || '',
       question: question.question,
+      questionImage: question.questionImage || '',
       options: question.options.length ? question.options : ['', '', '', ''],
+      optionImages: question.optionImages?.length ? question.optionImages : ['', '', '', ''],
       correctAnswer: question.correctAnswer,
       explanation: question.explanation || '',
+      explanationImage: question.explanationImage || '',
       difficulty: question.difficulty,
       marks: question.marks,
       negativeMarks: question.negativeMarks
@@ -344,12 +363,23 @@ const ManageDemoTest = () => {
       section: 'A',
       questionNumber: '',
       question: '',
+      questionImage: '',
       options: ['', '', '', ''],
+      optionImages: ['', '', '', ''],
       correctAnswer: '',
       explanation: '',
+      explanationImage: '',
       difficulty: 'medium',
       marks: 4,
       negativeMarks: -1
+    });
+    setImageSizes({
+      question: 100,
+      option0: 100,
+      option1: 100,
+      option2: 100,
+      option3: 100,
+      explanation: 100
     });
   };
 
@@ -376,7 +406,6 @@ const ManageDemoTest = () => {
     }
 
     try {
-      // Parse question numbers from input
       const questionNumbers = bulkQuestions
         .split(/[\n,]/)
         .map(num => num.trim())
@@ -388,14 +417,12 @@ const ManageDemoTest = () => {
         return;
       }
 
-      // Find questions from allQuestions that match the question numbers
       const questionsToAdd = [];
       const notFound = [];
 
       for (const qNum of questionNumbers) {
         const found = allQuestions.find(q => q.questionNumber === qNum);
         if (found) {
-          // Check if already in demo test
           const duplicate = demoTest.questions.find(
             dq => dq.question.trim().toLowerCase() === found.question.trim().toLowerCase()
           );
@@ -412,7 +439,6 @@ const ManageDemoTest = () => {
         return;
       }
 
-      // Add questions one by one
       const token = localStorage.getItem('token');
       let successCount = 0;
 
@@ -625,6 +651,33 @@ const ManageDemoTest = () => {
                     rows="4"
                     required
                   />
+                  {questionForm.questionImage && (
+                    <div style={{ marginTop: '10px', padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                        <label style={{ fontSize: '12px' }}>Size: {imageSizes.question}%</label>
+                        <input
+                          type="range"
+                          min="20"
+                          max="150"
+                          value={imageSizes.question}
+                          onChange={(e) => handleImageSizeChange('question', null, e.target.value)}
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage('question')}
+                          style={{ padding: '5px 10px', background: '#f44336', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <img 
+                        src={questionForm.questionImage} 
+                        alt="Question" 
+                        style={{ width: `${imageSizes.question}%`, maxWidth: '100%' }}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {questionForm.questionType === 'single' && (
@@ -641,9 +694,36 @@ const ManageDemoTest = () => {
                             setQuestionForm({ ...questionForm, options: newOptions });
                           }}
                           onPaste={(e) => handlePaste(e, 'option', index)}
-                          placeholder={`Option ${index + 1} (or paste image)`}
+                          placeholder={`Option ${String.fromCharCode(65 + index)} (or paste image)`}
                           required
                         />
+                        {questionForm.optionImages[index] && (
+                          <div style={{ marginTop: '10px', padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                              <label style={{ fontSize: '12px' }}>Size: {imageSizes[`option${index}`]}%</label>
+                              <input
+                                type="range"
+                                min="20"
+                                max="150"
+                                value={imageSizes[`option${index}`]}
+                                onChange={(e) => handleImageSizeChange('option', index, e.target.value)}
+                                style={{ flex: 1 }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeImage('option', index)}
+                                style={{ padding: '5px 10px', background: '#f44336', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' }}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                            <img 
+                              src={questionForm.optionImages[index]} 
+                              alt={`Option ${String.fromCharCode(65 + index)}`} 
+                              style={{ width: `${imageSizes[`option${index}`]}%`, maxWidth: '100%' }}
+                            />
+                          </div>
+                        )}
                       </div>
                     ))}
                   </>
@@ -685,6 +765,33 @@ const ManageDemoTest = () => {
                     rows="3"
                     required
                   />
+                  {questionForm.explanationImage && (
+                    <div style={{ marginTop: '10px', padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                        <label style={{ fontSize: '12px' }}>Size: {imageSizes.explanation}%</label>
+                        <input
+                          type="range"
+                          min="20"
+                          max="150"
+                          value={imageSizes.explanation}
+                          onChange={(e) => handleImageSizeChange('explanation', null, e.target.value)}
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage('explanation')}
+                          style={{ padding: '5px 10px', background: '#f44336', color: 'white', border: 'none', borderRadius: '3px', cursor: 'pointer' }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                      <img 
+                        src={questionForm.explanationImage} 
+                        alt="Solution" 
+                        style={{ width: `${imageSizes.explanation}%`, maxWidth: '100%' }}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="form-actions">
@@ -734,25 +841,7 @@ const ManageDemoTest = () => {
                           )}
                         </div>
                         {questionForm.questionImage && (
-                          <div className="preview-image mt-3 p-3 border rounded bg-gray-50">
-                            <div className="mb-2 flex items-center gap-3">
-                              <label className="text-sm font-medium text-gray-700">Image Size: {imageSizes.question}%</label>
-                              <input
-                                type="range"
-                                min="20"
-                                max="150"
-                                value={imageSizes.question}
-                                onChange={(e) => handleImageSizeChange('question', null, e.target.value)}
-                                className="flex-1"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => removeImage('question')}
-                                className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
-                              >
-                                Remove
-                              </button>
-                            </div>
+                          <div style={{ marginTop: '15px' }}>
                             <img 
                               src={questionForm.questionImage} 
                               alt="Question diagram" 
@@ -770,41 +859,25 @@ const ManageDemoTest = () => {
                               className={`preview-option ${questionForm.correctAnswer == index ? 'correct-answer' : ''}`}
                             >
                               <span className="option-label">{String.fromCharCode(65 + index)})</span>
-                              <span className="option-text">
-                                {option ? (
-                                  <LatexRenderer content={option} />
-                                ) : (
-                                  <em>Option {index + 1} will appear here...</em>
-                                )}
-                              </span>
-                              {questionForm.correctAnswer == index && <span className="correct-indicator">✓ Correct</span>}
-                              {questionForm.optionImages && questionForm.optionImages[index] && (
-                                <div className="option-image mt-2 p-2 border rounded bg-gray-50">
-                                  <div className="mb-2 flex items-center gap-2">
-                                    <label className="text-xs font-medium text-gray-700">Size: {imageSizes[`option${index}`]}%</label>
-                                    <input
-                                      type="range"
-                                      min="20"
-                                      max="150"
-                                      value={imageSizes[`option${index}`]}
-                                      onChange={(e) => handleImageSizeChange('option', index, e.target.value)}
-                                      className="flex-1"
+                              <div style={{ flex: 1 }}>
+                                <span className="option-text">
+                                  {option ? (
+                                    <LatexRenderer content={option} />
+                                  ) : (
+                                    <em>Option {index + 1} will appear here...</em>
+                                  )}
+                                </span>
+                                {questionForm.optionImages && questionForm.optionImages[index] && (
+                                  <div style={{ marginTop: '10px' }}>
+                                    <img 
+                                      src={questionForm.optionImages[index]} 
+                                      alt={`Option ${String.fromCharCode(65 + index)}`} 
+                                      style={{ width: `${imageSizes[`option${index}`]}%`, maxWidth: '100%', objectFit: 'contain' }}
                                     />
-                                    <button
-                                      type="button"
-                                      onClick={() => removeImage('option', index)}
-                                      className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
-                                    >
-                                      Remove
-                                    </button>
                                   </div>
-                                  <img 
-                                    src={questionForm.optionImages[index]} 
-                                    alt={`Option ${String.fromCharCode(65 + index)}`} 
-                                    style={{ width: `${imageSizes[`option${index}`]}%`, maxWidth: '100%', objectFit: 'contain' }}
-                                  />
-                                </div>
-                              )}
+                                )}
+                              </div>
+                              {questionForm.correctAnswer == index && <span className="correct-indicator">✓ Correct</span>}
                             </div>
                           ))}
                         </div>
@@ -832,25 +905,7 @@ const ManageDemoTest = () => {
                           )}
                         </div>
                         {questionForm.explanationImage && (
-                          <div className="preview-image mt-3 p-3 border rounded bg-gray-50">
-                            <div className="mb-2 flex items-center gap-3">
-                              <label className="text-sm font-medium text-gray-700">Image Size: {imageSizes.explanation}%</label>
-                              <input
-                                type="range"
-                                min="20"
-                                max="150"
-                                value={imageSizes.explanation}
-                                onChange={(e) => handleImageSizeChange('explanation', null, e.target.value)}
-                                className="flex-1"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => removeImage('explanation')}
-                                className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
-                              >
-                                Remove
-                              </button>
-                            </div>
+                          <div style={{ marginTop: '15px' }}>
                             <img 
                               src={questionForm.explanationImage} 
                               alt="Solution diagram" 
@@ -895,11 +950,23 @@ const ManageDemoTest = () => {
                   </div>
                   <div className="question-text">
                     <LatexRenderer content={q.question} />
+                    {q.questionImage && (
+                      <div style={{ marginTop: '10px' }}>
+                        <img 
+                          src={q.questionImage} 
+                          alt="Question" 
+                          style={{ maxWidth: '400px', width: '100%' }}
+                        />
+                      </div>
+                    )}
                   </div>
                   <div className="question-footer">
                     <span>Type: {q.questionType}</span>
                     <span>Section: {q.section}</span>
                     <span>Marks: {q.marks}</span>
+                    {(q.questionImage || q.optionImages?.some(img => img) || q.explanationImage) && (
+                      <span style={{ color: '#4CAF50', fontWeight: 'bold' }}>📷 Has Images</span>
+                    )}
                   </div>
                 </div>
               ))
@@ -914,4 +981,3 @@ const ManageDemoTest = () => {
 };
 
 export default ManageDemoTest;
-

@@ -44,7 +44,9 @@ router.post('/create', auth, adminAuth, async (req, res) => {
       
       const question = new Question({
         question: q.question,
+        questionImage: typeof q.questionImage !== 'undefined' ? (q.questionImage && typeof q.questionImage === 'string' && !q.questionImage.startsWith('http') ? `${req.protocol}://${req.get('host')}${q.questionImage}` : q.questionImage) : null,
         options: q.options || [],
+        optionImages: typeof q.optionImages !== 'undefined' ? (Array.isArray(q.optionImages) ? q.optionImages.map(img => (img && typeof img === 'string' && !img.startsWith('http') ? `${req.protocol}://${req.get('host')}${img}` : img)) : q.optionImages) : [],
         correctAnswer: q.correctAnswer,
         marks: q.marks || 4,
         hasNegativeMarking: q.hasNegativeMarking !== undefined ? q.hasNegativeMarking : true,
@@ -53,6 +55,7 @@ router.post('/create', auth, adminAuth, async (req, res) => {
         chapter: chapter || q.chapter,
         topic: q.topic || 'General',
         explanation: q.explanation || '',
+        explanationImage: q.explanationImage || null,
         source: q.source || 'Practice',
         questionType: mappedQuestionType,
         questionNumber: q.questionNumber || (createdQuestions.length + 1),
@@ -216,7 +219,9 @@ router.put('/:id', auth, adminAuth, async (req, res) => {
         
         const question = new Question({
           question: q.question,
+          questionImage: typeof q.questionImage !== 'undefined' ? (q.questionImage && typeof q.questionImage === 'string' && !q.questionImage.startsWith('http') ? `${req.protocol}://${req.get('host')}${q.questionImage}` : q.questionImage) : null,
           options: q.options || [],
+          optionImages: typeof q.optionImages !== 'undefined' ? (Array.isArray(q.optionImages) ? q.optionImages.map(img => (img && typeof img === 'string' && !img.startsWith('http') ? `${req.protocol}://${req.get('host')}${img}` : img)) : q.optionImages) : [],
           correctAnswer: q.correctAnswer,
           marks: q.marks || 4,
           hasNegativeMarking: q.hasNegativeMarking !== undefined ? q.hasNegativeMarking : true,
@@ -225,6 +230,7 @@ router.put('/:id', auth, adminAuth, async (req, res) => {
           chapter: chapter || q.chapter,
           topic: q.topic || 'General',
           explanation: q.explanation || '',
+          explanationImage: q.explanationImage || null,
           source: q.source || 'Practice',
           questionType: mappedQuestionType,
           questionNumber: q.questionNumber || (createdQuestions.length + 1),

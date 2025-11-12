@@ -1,9 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { Card, Button } from '../../components/ui';
+import { API_URL } from '../../services/api';
 
-const API_URL = 'https://test-series-backend-dyfc.onrender.com/api';  // ✅ ADD THIS
+// Helper to normalize image URLs
+const resolveImageUrl = (url) => {
+  if (!url) return null;
+  try {
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  } catch (e) {
+    // ignore
+  }
+  return `${API_URL.replace('/api', '')}${url}`;
+};
+
+// API_URL is imported from services/api
 
 const UploadQuestion = () => {
   const [formData, setFormData] = useState({
@@ -144,6 +156,42 @@ const UploadQuestion = () => {
       }
     }
   };
+
+  // Global paste handler: support pasting images even when plain text inputs are focused.
+  useEffect(() => {
+    const onGlobalPaste = async (e) => {
+      try {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+
+        // Find first image
+        let blob = null;
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type && items[i].type.indexOf('image') !== -1) {
+            blob = items[i].getAsFile();
+            break;
+          }
+        }
+        if (!blob) return;
+
+        // Determine focused element and its data attributes
+        const active = document.activeElement;
+        const pasteType = active?.dataset?.pasteType || null;
+        const pasteIndex = active?.dataset?.pasteIndex ? Number(active.dataset.pasteIndex) : null;
+
+        if (pasteType) {
+          e.preventDefault();
+          toast.info('Uploading pasted image...');
+          await handleImageUpload(blob, pasteType, pasteIndex);
+        }
+      } catch (err) {
+        // ignore
+      }
+    };
+
+    window.addEventListener('paste', onGlobalPaste);
+    return () => window.removeEventListener('paste', onGlobalPaste);
+  }, []);
 
   const handleNumericalRangeChange = (field, value) => {
     setFormData(prev => ({
@@ -389,7 +437,7 @@ const UploadQuestion = () => {
                   </button>
                 )}
               </div>
-              {formData.questionImage && (
+                  {formData.questionImage && (
                 <div className="mt-3 p-3 border rounded bg-gray-50">
                   <div className="mb-2 flex items-center gap-3">
                     <label className="text-sm font-medium text-gray-700">Image Size: {imageSizes.question}%</label>
@@ -403,7 +451,7 @@ const UploadQuestion = () => {
                     />
                   </div>
                   <img 
-                    src={formData.questionImage} 
+                    src={resolveImageUrl(formData.questionImage)} 
                     alt="Question diagram" 
                     style={{ width: `${imageSizes.question}%`, maxWidth: '100%' }}
                     className="object-contain border rounded bg-white"
@@ -427,6 +475,8 @@ const UploadQuestion = () => {
                           value={option}
                           onChange={(e) => handleOptionChange(index, e.target.value)}
                           onPaste={(e) => handlePaste(e, 'option', index)}
+                          data-paste-type="option"
+                          data-paste-index={index}
                           className="flex-1 px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500"
                           placeholder={`Option ${String.fromCharCode(65 + index)} (or paste image)`}
                           required
@@ -440,7 +490,7 @@ const UploadQuestion = () => {
                           className="flex-1 px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 text-sm"
                           disabled={uploadingImage}
                         />
-                        {formData.optionImages[index] && (
+                          {formData.optionImages[index] && (
                           <button
                             type="button"
                             onClick={() => removeImage('option', index)}
@@ -464,7 +514,7 @@ const UploadQuestion = () => {
                             />
                           </div>
                           <img 
-                            src={formData.optionImages[index]} 
+                            src={resolveImageUrl(formData.optionImages[index])} 
                             alt={`Option ${String.fromCharCode(65 + index)}`} 
                             style={{ width: `${imageSizes[`option${index}`]}%`, maxWidth: '100%' }}
                             className="object-contain border rounded bg-white"
