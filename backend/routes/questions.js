@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+// const multer = require('multer');
+// const path = require('path');
+// const fs = require('fs');
 const Question = require('../models/Question');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
@@ -24,24 +24,24 @@ if (!fs.existsSync(uploadsDir)) {
 //   }
 // });
 
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|svg/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
+// const upload = multer({
+//   storage: storage,
+//   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+//   fileFilter: (req, file, cb) => {
+//     const allowedTypes = /jpeg|jpg|png|gif|svg/;
+//     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+//     const mimetype = allowedTypes.test(file.mimetype);
     
-    if (extname && mimetype) {
-      return cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed!'));
-    }
-  }
-});
+//     if (extname && mimetype) {
+//       return cb(null, true);
+//     } else {
+//       cb(new Error('Only image files are allowed!'));
+//     }
+//   }
+// });
 
 // Image upload endpoint
-import upload from '../middleware/upload.js'; // <-- NEW IMPORT
+const upload = require('../middleware/upload'); // <-- NEW IMPORT
 
 router.post('/upload-image', auth, upload.single('image'), async (req, res) => {
   try {
