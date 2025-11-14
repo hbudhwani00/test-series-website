@@ -41,6 +41,8 @@ const upload = multer({
 });
 
 // Image upload endpoint
+import upload from '../middleware/upload.js'; // <-- NEW IMPORT
+
 router.post('/upload-image', auth, upload.single('image'), async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);
@@ -52,8 +54,15 @@ router.post('/upload-image', auth, upload.single('image'), async (req, res) => {
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    const imageUrl = `/uploads/${req.file.filename}`;
-    res.json({ imageUrl, message: 'Image uploaded successfully' });
+    // S3 URL returned by multer-s3
+    const imageUrl = req.file.location;
+
+    res.json({
+      success: true,
+      imageUrl,
+      message: 'Image uploaded successfully'
+    });
+
   } catch (error) {
     console.error('Error uploading image:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
