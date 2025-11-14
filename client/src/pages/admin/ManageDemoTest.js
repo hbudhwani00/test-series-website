@@ -177,7 +177,7 @@ const ManageDemoTest = () => {
       });
 
       const imageUrl = response.data.imageUrl;
-      const fullImageUrl = `${API_URL.replace('/api', '')}${imageUrl}`;
+      const fullImageUrl = imageUrl;   // already full S3 URL
 
       if (type === 'question') {
         setQuestionForm(prev => ({ ...prev, questionImage: fullImageUrl }));
