@@ -7,11 +7,7 @@ const Question = require('../models/Question');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+
 
 // Configure multer for image uploads
 // const storage = multer.diskStorage({
