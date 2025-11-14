@@ -15,7 +15,6 @@ const upload = multer({
   storage: multerS3({
     s3,
     bucket: process.env.S3_BUCKET_NAME,
-    acl: 'public-read',
     key: (req, file, cb) => {
       const randomName = crypto.randomBytes(16).toString('hex');
       const ext = file.originalname.split('.').pop();
