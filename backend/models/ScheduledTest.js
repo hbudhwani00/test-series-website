@@ -9,10 +9,21 @@ const scheduledTestSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Test'
   },
-  questions: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Question'
-  }],
+ questions: [{
+  questionNumber: Number,
+  question: { type: String, required: true },
+  options: [String],
+  correctAnswer: mongoose.Schema.Types.Mixed,
+  marks: { type: Number, default: 4 },
+  hasNegativeMarking: { type: Boolean, default: true },
+  difficulty: { type: String, default: 'medium' },
+  subject: { type: String, default: '' },
+  chapter: { type: String, default: '' },
+  topic: { type: String, default: '' },
+  questionType: { type: String, default: 'mcq' },
+  source: { type: String, default: 'Practice' },
+  explanation: { type: String, default: '' }
+}],
   duration: {
     type: Number,
     required: true
