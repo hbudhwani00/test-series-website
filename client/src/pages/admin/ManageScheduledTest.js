@@ -970,25 +970,22 @@ const ManageScheduledTest = () => {
                   )}
                   {/* Added Questions List */}
                   {questions.length > 0 && (
-                    <div className="added-questions">
-                      <h4>Added Questions:</h4>
-                      <div className="questions-list">
-                        {questions.map((q, idx) => (
-                          <div key={idx} className="question-item" style={{
-                            background: editingQuestionIndex === idx ? '#fff3cd' : 'white',
-                            border: editingQuestionIndex === idx ? '2px solid #ffc107' : '1px solid #e5e7eb'
-                          }}>
-                            <div className="question-number">Q{q.questionNumber}</div>
-                            <div className="question-preview">
-                              <strong>{q.question.substring(0, 100)}...</strong>
-                              <div className="question-meta">
-                                <span>{q.subject}</span>
-                                <span>{q.chapter}</span>
-                                <span>{q.topic}</span>
-                                <span>{q.marks} marks</span>
-                                <span>{q.questionType === 'mcq' ? 'MCQ' : 'Numerical'}</span>
-                              </div>
-                            </div>
+  <div className="added-questions">
+    <h4>Added Questions:</h4>
+    <div className="questions-list">
+      {questions.map((q, idx) => (
+        <div key={idx} className="question-item">
+          <div className="question-number">Q{q?.questionNumber || idx + 1}</div>
+          <div className="question-preview">
+            <strong>{q?.question ? q.question.substring(0, 100) : 'No question text'}...</strong>
+            <div className="question-meta">
+              <span>{q?.subject || 'N/A'}</span>
+              <span>{q?.chapter || 'N/A'}</span>
+              <span>{q?.topic || 'N/A'}</span>
+              <span>{q?.marks || 0} marks</span>
+              <span>{q?.questionType === 'mcq' ? 'MCQ' : 'Numerical'}</span>
+            </div>
+          </div>
                             <div style={{ display: 'flex', gap: '5px' }}>
                               <button 
                                 className="btn btn-primary btn-sm" 
