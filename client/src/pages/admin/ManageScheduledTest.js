@@ -600,7 +600,7 @@ const ManageScheduledTest = () => {
                     <div className="form-group">
                       <label>Start Date *</label>
                       <input
-                        type="date"
+                        type="datetime-local"
                         value={testData.startDate}
                         onChange={(e) => setTestData({ ...testData, startDate: e.target.value })}
                         min={new Date().toISOString().split('T')[0]}

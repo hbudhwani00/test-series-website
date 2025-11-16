@@ -5,6 +5,30 @@ const ScheduledTest = require('../models/ScheduledTest');
 const Question = require('../models/Question');
 const Result = require('../models/Result');
 
+function generateScheduledDates(scheduleType, startDate, endDate) {
+  const dates = [];
+  const start = new Date(startDate);
+  
+  if (scheduleType === 'one-time') {
+    dates.push(start);
+  } else if (scheduleType === 'weekly') {
+    const end = endDate ? new Date(endDate) : new Date(start.getTime() + 90 * 24 * 60 * 60 * 1000);
+    let current = new Date(start);
+    while (current <= end) {
+      dates.push(new Date(current));
+      current.setDate(current.getDate() + 7);
+    }
+  } else if (scheduleType === 'alternate-days') {
+    const end = endDate ? new Date(endDate) : new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
+    let current = new Date(start);
+    while (current <= end) {
+      dates.push(new Date(current));
+      current.setDate(current.getDate() + 2);
+    }
+  }
+  return dates;
+}
+
 // Admin: Create Scheduled Test with Manual Questions
 router.post('/create', auth, adminAuth, async (req, res) => {
   try {
@@ -174,96 +198,83 @@ router.get('/:id/full', auth, adminAuth, async (req, res) => {
   }
 });
 
-// Admin: Update Scheduled Test
-router.put('/:id', auth, adminAuth, async (req, res) => {
+// ✅ This WILL work
+router.put('/:id', authMiddleware, async (req, res) => {
   try {
-    const { 
-      title, 
-      examType,
-      subject,
-      chapter,
-      duration, 
-      totalMarks, 
-      isActive, 
+    const { id } = req.params;
+    const {
+      title, examType, subject, chapter,
+      duration, totalMarks, testType,
+      scheduleType, startDate, endDate,
+      questions
+    } = req.body;
+
+    // ✅ FIX 1: Regenerate scheduled dates
+    const scheduledDates = generateScheduledDates(
       scheduleType, 
       startDate, 
-      endDate,
-      questions // Array of question objects
-    } = req.body;
-    
-    const scheduledTest = await ScheduledTest.findById(req.params.id);
-    
-    if (!scheduledTest) {
-      return res.status(404).json({ message: 'Scheduled test not found' });
-    }
+      endDate
+    );
 
-    // If questions are provided, update them
-    if (questions && questions.length > 0) {
-      // Delete old questions
-      await Question.deleteMany({ _id: { $in: scheduledTest.questions } });
-
-      // Create new questions
-      const createdQuestions = [];
-      for (const q of questions) {
-        // Map examType from JEE_MAIN/NEET to JEE/NEET
-        let mappedExamType = examType || 'JEE';
-        if (mappedExamType === 'JEE_MAIN' || mappedExamType === 'JEE_MAIN_ADVANCED') {
-          mappedExamType = 'JEE';
-        }
-        
-        // Map questionType from mcq/numerical to single/numerical
-        let mappedQuestionType = q.questionType || 'single';
-        if (mappedQuestionType === 'mcq') {
-          mappedQuestionType = 'single';
-        }
-        
-        const question = new Question({
+    // ✅ FIX 2: Use {new: true} option
+    const updatedTest = await ScheduledTest.findByIdAndUpdate(
+      id,
+      {
+        title,
+        examType,
+        subject: subject || 'All',
+        chapter: chapter || 'All',
+        duration,
+        totalMarks,
+        testType,
+        scheduleType,
+        startDate: new Date(startDate),  // ✅ Convert to Date
+        endDate: endDate ? new Date(endDate) : null,
+        scheduledDates,  // ✅ Use regenerated dates
+        questions: questions.map(q => ({
+          questionNumber: q.questionNumber,
           question: q.question,
-          questionImage: typeof q.questionImage !== 'undefined' ? (q.questionImage && typeof q.questionImage === 'string' && !q.questionImage.startsWith('http') ? `${req.protocol}://${req.get('host')}${q.questionImage}` : q.questionImage) : null,
           options: q.options || [],
-          optionImages: typeof q.optionImages !== 'undefined' ? (Array.isArray(q.optionImages) ? q.optionImages.map(img => (img && typeof img === 'string' && !img.startsWith('http') ? `${req.protocol}://${req.get('host')}${img}` : img)) : q.optionImages) : [],
           correctAnswer: q.correctAnswer,
-          marks: q.marks || 4,
-          hasNegativeMarking: q.hasNegativeMarking !== undefined ? q.hasNegativeMarking : true,
+          marks: q.marks,
+          hasNegativeMarking: q.hasNegativeMarking !== false,
           difficulty: q.difficulty || 'medium',
-          subject: subject || q.subject,
-          chapter: chapter || q.chapter,
-          topic: q.topic || 'General',
-          explanation: q.explanation || '',
-          explanationImage: q.explanationImage || null,
+          subject: q.subject || subject || 'General',
+          chapter: q.chapter || 'Not Specified',
+          topic: q.topic || '',
+          questionType: q.questionType || 'mcq',
           source: q.source || 'Practice',
-          questionType: mappedQuestionType,
-          questionNumber: q.questionNumber || (createdQuestions.length + 1),
-          examType: mappedExamType,
-          section: mappedQuestionType === 'numerical' ? 'B' : 'A'
-        });
-        
-        const savedQuestion = await question.save();
-        createdQuestions.push(savedQuestion._id);
+          explanation: q.explanation || ''
+        })),
+        updatedAt: new Date()
+      },
+      { 
+        new: true,  // ✅ FIX 3: Return UPDATED document
+        runValidators: true
       }
+    );
 
-      // Update test with new questions
-      scheduledTest.questions = createdQuestions;
+    if (!updatedTest) {
+      return res.status(404).json({
+        success: false,
+        message: 'Test not found'
+      });
     }
 
-    // Update other fields
-    if (title) scheduledTest.title = title;
-    if (examType) scheduledTest.examType = examType;
-    if (subject !== undefined) scheduledTest.subject = subject;
-    if (chapter !== undefined) scheduledTest.chapter = chapter;
-    if (duration) scheduledTest.duration = duration;
-    if (totalMarks) scheduledTest.totalMarks = totalMarks;
-    if (isActive !== undefined) scheduledTest.isActive = isActive;
-    if (scheduleType) scheduledTest.scheduleType = scheduleType;
-    if (startDate) scheduledTest.startDate = startDate;
-    if (endDate !== undefined) scheduledTest.endDate = endDate;
+    res.json({
+      success: true,
+      message: 'Test updated successfully',
+      scheduledTest: updatedTest,
+      totalQuestions: questions.length,
+      totalScheduledDates: scheduledDates.length
+    });
 
-    await scheduledTest.save();
-
-    res.json({ message: 'Scheduled test updated successfully', scheduledTest });
   } catch (error) {
     console.error('Error updating scheduled test:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to update test'
+    });
   }
 });
 
