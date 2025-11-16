@@ -202,6 +202,8 @@ body:-ms-fullscreen {
   padding: 8px;
 }
 
+
+
 /* ===== MOBILE LAYOUT ===== */
 @media (max-width: 768px) {
   /* ===== MOBILE LAYOUT: Palette LEFT (20%), Questions RIGHT (78%) ===== */

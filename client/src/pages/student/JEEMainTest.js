@@ -383,6 +383,42 @@ const JEEMainTest = () => {
     setVisited(prev => ({ ...prev, [key]: true }));
   };
 
+  // Jump to the first question of a given subject (Physics/Chemistry/Mathematics)
+  const jumpToSubject = (subject) => {
+    const allQuestions = getAllQuestions();
+    // Try to find a question that already has a subject field (structured test)
+    let idx = allQuestions.findIndex(q => q.subject === subject);
+    if (idx !== -1) {
+      jumpToQuestion(idx);
+      return;
+    }
+
+    // Fallback for flat/demo tests: compute start index using per-subject count
+    const total = allQuestions.length;
+    // Prefer 25 if full JEE (75 questions), otherwise split evenly
+    const per = total >= 75 ? 25 : Math.ceil(total / 3);
+    const subjects = ['Physics', 'Chemistry', 'Mathematics'];
+    const sIndex = subjects.indexOf(subject);
+    if (sIndex === -1) return;
+    idx = Math.min(sIndex * per, Math.max(0, total - 1));
+    jumpToQuestion(idx);
+  };
+
+  // Determine subject name for a given question index (used to mark active tab)
+  const getSubjectForIndex = (index) => {
+    const allQuestions = getAllQuestions();
+    if (!allQuestions || allQuestions.length === 0) return null;
+    const q = allQuestions[index];
+    if (q && q.subject) return q.subject;
+
+    // Fallback when subject not present (demo/flat): derive by ranges
+    const total = allQuestions.length;
+    const per = total >= 75 ? 25 : Math.ceil(total / 3);
+    if (index < per) return 'Physics';
+    if (index < per * 2) return 'Chemistry';
+    return 'Mathematics';
+  };
+
   const getQuestionStatus = (index) => {
     const key = index.toString();
     
@@ -626,6 +662,21 @@ const JEEMainTest = () => {
                       Marks: +4
                     </span>
                   </div>
+                </div>
+              </div>
+
+              {/* Section Tabs - jump to subject start */}
+              <div className="px-2 mb-4">
+                <div className="flex gap-2">
+                  {['Physics', 'Chemistry', 'Mathematics'].map((sub) => (
+                    <button
+                      key={sub}
+                      onClick={() => jumpToSubject(sub)}
+                      className={`px-3 py-1 rounded-md font-semibold transition-all ${getSubjectForIndex(currentQuestionIndex) === sub ? 'bg-blue-600 text-white shadow' : 'bg-white border border-gray-300 text-gray-800 hover:bg-blue-50'}`}
+                    >
+                      {sub}
+                    </button>
+                  ))}
                 </div>
               </div>
 

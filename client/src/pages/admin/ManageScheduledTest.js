@@ -3,6 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 import './ManageDemoTest.css';
+import LatexRenderer from '../../components/LatexRenderer';
 
 const API_URL = 'https://test-series-backend-dyfc.onrender.com/api';
 
@@ -45,6 +46,8 @@ const ManageScheduledTest = () => {
     questionType: 'mcq',
     source: 'Practice'
   });
+  const [showPreview, setShowPreview] = useState(false);
+  const [imageSizes, setImageSizes] = useState({ question: 100, option0: 100, option1: 100, option2: 100, option3: 100, explanation: 100 });
 
   useEffect(() => {
     fetchTests();
@@ -878,7 +881,7 @@ const ManageScheduledTest = () => {
                       />
                     </div>
 
-                    <div style={{ display: 'flex', gap: '10px' }}>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                       <button type="button" className="btn btn-primary" onClick={handleAddQuestion}>
                         {editingQuestionIndex !== null ? '✓ Update Question' : '+ Add Question'}
                       </button>
@@ -887,9 +890,84 @@ const ManageScheduledTest = () => {
                           Cancel
                         </button>
                       )}
+                      <button type="button" className="btn btn-secondary" onClick={() => setShowPreview(!showPreview)}>
+                        {showPreview ? 'Hide Preview' : '👁️ Preview Question'}
+                      </button>
                     </div>
+
+                    {/* Preview inserted below when toggled */}
                   </div>
 
+                  {/* Preview (how student will see current question) */}
+                  {showPreview && (
+                    <div className="question-preview" style={{ marginTop: 16 }}>
+                      <h4>📋 Preview - How Students Will See This</h4>
+                      <div className="preview-container">
+                        <div className="preview-header" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                          <span className="preview-number">Q{currentQuestion.questionNumber || '?'}</span>
+                          <span className="preview-badge">{currentQuestion.subject}</span>
+                          <span className="preview-badge">{currentQuestion.chapter}</span>
+                          <span className="preview-badge">{currentQuestion.topic}</span>
+                          <span className="preview-marks">{currentQuestion.marks} marks</span>
+                          {currentQuestion.hasNegativeMarking && <span className="preview-negative">(-1 for wrong)</span>}
+                        </div>
+
+                        <div className="preview-question" style={{ marginTop: 8 }}>
+                          <div className="preview-question-text">
+                            {currentQuestion.question ? (
+                              <LatexRenderer content={currentQuestion.question} />
+                            ) : (
+                              <em>Question text will appear here...</em>
+                            )}
+                          </div>
+                          {currentQuestion.questionImage && (
+                            <div style={{ marginTop: '12px' }}>
+                              <img src={currentQuestion.questionImage} alt="Question diagram" style={{ width: '100%', maxWidth: '600px', objectFit: 'contain' }} />
+                            </div>
+                          )}
+                        </div>
+
+                        {currentQuestion.questionType === 'mcq' && (
+                          <div className="preview-options" style={{ marginTop: 12 }}>
+                            {currentQuestion.options.map((option, index) => (
+                              <div key={index} className={`preview-option ${currentQuestion.correctAnswer === index ? 'correct-answer' : ''}`} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginTop: 8 }}>
+                                <span className="option-label">{String.fromCharCode(65 + index)})</span>
+                                <div style={{ flex: 1 }}>
+                                  <div className="option-text">
+                                    {option ? <LatexRenderer content={option} /> : <em>Option {index + 1} will appear here...</em>}
+                                  </div>
+                                  {currentQuestion.optionImages && currentQuestion.optionImages[index] && (
+                                    <div style={{ marginTop: 8 }}>
+                                      <img src={currentQuestion.optionImages[index]} alt={`Option ${index}`} style={{ width: '100%', maxWidth: '400px', objectFit: 'contain' }} />
+                                    </div>
+                                  )}
+                                </div>
+                                {currentQuestion.correctAnswer === index && <span style={{ color: '#059669', fontWeight: 700 }}>✓ Correct</span>}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {currentQuestion.questionType !== 'mcq' && (
+                          <div style={{ marginTop: 12 }}>
+                            <input type="text" placeholder="Student will type numerical answer here..." disabled style={{ width: '100%', maxWidth: 320, padding: '10px', borderRadius: 6, border: '1px solid #e5e7eb' }} />
+                          </div>
+                        )}
+
+                        <div className="preview-solution" style={{ marginTop: 16 }}>
+                          <h5>Solution:</h5>
+                          <div>
+                            {currentQuestion.explanation ? <LatexRenderer content={currentQuestion.explanation} /> : <em>Solution will appear here...</em>}
+                          </div>
+                          {currentQuestion.explanationImage && (
+                            <div style={{ marginTop: 12 }}>
+                              <img src={currentQuestion.explanationImage} alt="Solution" style={{ width: '100%', maxWidth: 600, objectFit: 'contain' }} />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {/* Added Questions List */}
                   {questions.length > 0 && (
                     <div className="added-questions">

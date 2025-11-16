@@ -139,155 +139,104 @@ const ScheduledTestPage = () => {
   const attemptedCount = Object.keys(answers).length;
 
   return (
-    <div className="jee-test-container">
-      {/* Header */}
-      {!isFullscreen && (
-        <div className="test-header">
-          <div className="test-title">
-            <h2>{test.title}</h2>
-            <p>{test.examType} • {test.subject || 'All Subjects'}</p>
-          </div>
-          <div className="test-stats">
-            <div className="timer">
-              <span className="timer-icon">⏱️</span>
-              <span className={timeRemaining < 300 ? 'time-critical' : ''}>{formatTime(timeRemaining)}</span>
+    <div className="jee-main-test bg-gray-50 min-h-screen">
+      <div className="container mx-auto p-4">
+        <div className="jee-test-layout">
+          {/* Question Panel */}
+          <div className="jee-question-panel">
+            <div className="bg-gray-100 px-2 py-2 mb-4 border-b-2 border-gray-300">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-xs font-bold text-gray-800">{test.subject || 'All Subjects'}</h3>
+                  <p className="text-xs text-gray-600">{test.title} • {test.examType}</p>
+                </div>
+                <div className="flex gap-2 items-center">
+                  <div className="px-3 py-1 rounded text-xs font-semibold bg-green-100 text-green-800">Time: {formatTime(timeRemaining)}</div>
+                  <button className="px-4 py-2 bg-red-600 text-white rounded" onClick={handleSubmit}>Submit Test</button>
+                </div>
+              </div>
             </div>
-            <button className="btn btn-primary btn-sm" onClick={toggleFullscreen}>
-              🖥️ Fullscreen
-            </button>
-            <button className="btn btn-danger btn-sm" onClick={handleSubmit}>
-              Submit Test
-            </button>
-          </div>
-        </div>
-      )}
 
-      <div className="test-content">
-        {/* Sidebar - Question Palette */}
-        <div className="question-palette">
-          <h3>Questions</h3>
-          <div className="palette-stats">
-            <p>Attempted: {attemptedCount}/{totalQuestions}</p>
-          </div>
-          <div className="palette-grid">
-            {test.questions.map((q, idx) => (
-              <button
-                key={idx}
-                className={`palette-btn ${currentQuestionIndex === idx ? 'active' : ''} ${answers[idx] !== undefined ? 'attempted' : ''}`}
-                onClick={() => setCurrentQuestionIndex(idx)}
-              >
-                {q.questionNumber || idx + 1}
-              </button>
-            ))}
-          </div>
-          <div className="palette-legend">
-            <div><span className="legend-box attempted"></span> Attempted</div>
-            <div><span className="legend-box unattempted"></span> Unattempted</div>
-            <div><span className="legend-box active"></span> Current</div>
-          </div>
-        </div>
+            <div className="px-4">
+              <div className="mb-6">
+                <p className="text-xs text-gray-600">Question {currentQuestion.questionNumber || (currentQuestionIndex + 1)}:</p>
+                <div className="text-base leading-relaxed mb-6 min-h-[100px]">
+                  <LatexRenderer content={currentQuestion.question} />
+                  {currentQuestion.questionImage && (
+                    <div className="mt-4">
+                      <img src={currentQuestion.questionImage} alt="Question diagram" className="max-w-full max-h-80 object-contain border rounded shadow-sm" />
+                    </div>
+                  )}
+                </div>
+              </div>
 
-        {/* Main Question Area */}
-        <div className="question-area">
-          <div className="question-header">
-            <h3>Question {currentQuestion.questionNumber || currentQuestionIndex + 1}</h3>
-            <div className="question-meta">
-              <span className="badge">{currentQuestion.subject}</span>
-              <span className="badge">{currentQuestion.chapter}</span>
-              <span className="badge">{currentQuestion.marks} marks</span>
-              {currentQuestion.hasNegativeMarking && <span className="badge badge-danger">-1 for wrong</span>}
-            </div>
-          </div>
-
-          <div className="question-content">
-            <div className="question-text">
-              <LatexRenderer content={currentQuestion.question} />
-              {currentQuestion.questionImage && (
-                <div style={{ marginTop: '1rem' }}>
-                  <img 
-                    src={currentQuestion.questionImage} 
-                    alt="Question diagram" 
-                    style={{ maxWidth: '100%', maxHeight: '320px', objectFit: 'contain', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-                  />
+              {currentQuestion.questionType === 'mcq' && (
+                <div className="space-y-6 mb-6">
+                  {currentQuestion.options.map((option, idx) => (
+                    <div key={idx} onClick={() => handleAnswerSelect(idx)} className={`flex items-start p-3 rounded border-2 cursor-pointer transition-all ${answers[currentQuestionIndex] === String.fromCharCode(65 + idx) ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-blue-300 hover:bg-gray-50'}`}>
+                      <div className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center mr-3 mt-0.5 ${answers[currentQuestionIndex] === String.fromCharCode(65 + idx) ? 'border-blue-500 bg-blue-500' : 'border-gray-400 bg-white'}`}>
+                        {answers[currentQuestionIndex] === String.fromCharCode(65 + idx) && <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>}
+                      </div>
+                      <div className="flex-1">
+                        <span className="font-semibold mr-2">({String.fromCharCode(65 + idx)})</span>
+                        <LatexRenderer content={option} />
+                        {currentQuestion.optionImages && currentQuestion.optionImages[idx] && (
+                          <div className="mt-2 ml-8">
+                            <img src={currentQuestion.optionImages[idx]} alt={`Option ${String.fromCharCode(65 + idx)}`} className="max-w-sm max-h-40 object-contain border rounded" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
+
+              {currentQuestion.questionType !== 'mcq' && (
+                <div className="mb-6">
+                  <label className="block text-sm font-medium mb-2 text-gray-700">Enter your answer (numerical):</label>
+                  <input type="text" value={answers[currentQuestionIndex] || ''} onChange={(e) => handleNumericalAnswer(e.target.value)} className="w-full max-w-xs px-4 py-3 border-2 border-gray-300 rounded focus:border-blue-500 focus:outline-none text-xl text-center font-semibold" />
+                </div>
+              )}
+
+              <div className="border-t-2 border-gray-200 px-4 py-4 mt-6">
+                <div className="flex gap-2">
+                  <button onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))} className="px-5 py-2 bg-gray-200 text-gray-700 rounded">Previous</button>
+                  <button onClick={() => setAnswers({ ...answers, [currentQuestionIndex]: answers[currentQuestionIndex] || null })} className="px-5 py-2 bg-gray-200 text-gray-700 rounded">Clear Response</button>
+                  <button onClick={() => setCurrentQuestionIndex(Math.min(totalQuestions - 1, currentQuestionIndex + 1))} className="px-5 py-2 bg-blue-600 text-white rounded">Next →</button>
+                </div>
+              </div>
             </div>
-            
-            {currentQuestion.questionType === 'mcq' ? (
-              <div className="options">
-                {currentQuestion.options.map((option, idx) => (
-                  <div
-                    key={idx}
-                    className={`option ${answers[currentQuestionIndex] === String.fromCharCode(65 + idx) ? 'selected' : ''}`}
-                    onClick={() => handleAnswerSelect(idx)}
-                  >
-                    <span className="option-label">{String.fromCharCode(65 + idx)}.</span>
-                    <span className="option-text">
-                      <LatexRenderer content={option} />
-                      {currentQuestion.optionImages && currentQuestion.optionImages[idx] && (
-                        <div style={{ marginTop: '0.5rem', marginLeft: '1.5rem' }}>
-                          <img 
-                            src={currentQuestion.optionImages[idx]} 
-                            alt={`Option ${String.fromCharCode(65 + idx)}`} 
-                            style={{ maxWidth: '300px', maxHeight: '160px', objectFit: 'contain', border: '1px solid #e5e7eb', borderRadius: '4px' }}
-                          />
-                        </div>
-                      )}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="numerical-answer">
-                <label>Enter your answer:</label>
-                <input
-                  type="number"
-                  step="any"
-                  value={answers[currentQuestionIndex] || ''}
-                  onChange={(e) => handleNumericalAnswer(e.target.value)}
-                  placeholder="Enter numerical answer"
-                  className="numerical-input"
-                />
-              </div>
-            )}
           </div>
 
-          <div className="question-navigation">
-            <button
-              className="btn btn-outline"
-              onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
-              disabled={currentQuestionIndex === 0}
-            >
-              ← Previous
-            </button>
-            <button
-              className="btn btn-outline"
-              onClick={() => setAnswers({ ...answers, [currentQuestionIndex]: answers[currentQuestionIndex] || null })}
-            >
-              Clear Response
-            </button>
-            <button
-              className="btn btn-outline"
-              onClick={() => setCurrentQuestionIndex(Math.min(totalQuestions - 1, currentQuestionIndex + 1))}
-              disabled={currentQuestionIndex === totalQuestions - 1}
-            >
-              Next →
-            </button>
+          {/* Palette Panel */}
+          <div className="jee-palette-panel">
+            <div className="sticky top-24 bg-white p-4 border rounded">
+              <div className="mb-4 px-2">
+                <button onClick={toggleFullscreen} className="w-full bg-gray-100 py-2 rounded mb-2">{isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}</button>
+                <button onClick={handleSubmit} className="w-full bg-red-600 text-white py-2 rounded">SUBMIT TEST</button>
+              </div>
+
+              <div className="bg-gray-800 text-white px-4 py-3 mb-4 text-center">
+                <p className="text-xs mb-1">Time Left</p>
+                <div className={`text-2xl font-bold ${timeRemaining < 600 ? 'text-red-400' : ''}`}>{formatTime(timeRemaining)}</div>
+              </div>
+
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-gray-600 mb-3 px-2">Question Palette:</p>
+                <div className="grid grid-cols-5 gap-2 px-2 max-h-96 overflow-y-auto question-palette-grid">
+                  {test.questions.map((q, index) => (
+                    <button key={index} onClick={() => setCurrentQuestionIndex(index)} className={`w-full aspect-square rounded font-bold text-sm transition-all question-palette-btn ${currentQuestionIndex === index ? 'ring-4 ring-blue-400 ring-offset-2' : ''} ${answers[index] !== undefined ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-700'}`}>
+                      {q.questionNumber || (index + 1)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+
+            </div>
           </div>
         </div>
       </div>
-
-      {isFullscreen && (
-        <div className="fullscreen-controls">
-          <div className="timer-fullscreen">⏱️ {formatTime(timeRemaining)}</div>
-          <button className="btn btn-sm btn-outline" onClick={toggleFullscreen}>
-            Exit Fullscreen
-          </button>
-          <button className="btn btn-sm btn-danger" onClick={handleSubmit}>
-            Submit
-          </button>
-        </div>
-      )}
     </div>
   );
 };
