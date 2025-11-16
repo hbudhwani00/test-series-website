@@ -199,7 +199,7 @@ router.get('/:id/full', auth, adminAuth, async (req, res) => {
 });
 
 // ✅ This WILL work
-router.put('/:id', authMiddleware, async (req, res) => {
+router.put('/:id', adminAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const {
