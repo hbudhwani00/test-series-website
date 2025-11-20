@@ -12,6 +12,67 @@ const makeAbsolute = (req, url) => {
   return `${req.protocol}://${req.get('host')}${url}`;
 };
 
+// Initialize default NEET Demo Test (runs once)
+router.post('/initialize', async (req, res) => {
+  try {
+    // Check if NEET test already exists
+    const existingTest = await NEETDemoTest.findOne({ isActive: true });
+    
+    if (existingTest) {
+      return res.status(200).json({
+        message: 'NEET demo test already initialized',
+        neetTest: existingTest
+      });
+    }
+
+    // Create default NEET demo test
+    const neetTest = new NEETDemoTest({
+      title: 'NEET Demo Test',
+      description: 'Experience the NEET exam with our sample test. 180 questions covering Physics, Chemistry, and Biology.',
+      duration: 12000, // 200 minutes in seconds
+      totalMarks: 720, // 180 questions * 4 marks
+      questions: [],
+      isActive: true
+    });
+
+    await neetTest.save();
+
+    res.status(201).json({
+      message: 'NEET demo test initialized successfully',
+      neetTest
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Verify/Get NEET Demo Test Status
+router.get('/status', async (req, res) => {
+  try {
+    const neetTest = await NEETDemoTest.findOne({ isActive: true }).select('_id title totalMarks questions');
+    
+    if (!neetTest) {
+      return res.status(404).json({
+        message: 'No active NEET demo test found',
+        exists: false
+      });
+    }
+
+    res.json({
+      message: 'NEET demo test found',
+      exists: true,
+      testId: neetTest._id,
+      title: neetTest.title,
+      totalMarks: neetTest.totalMarks,
+      questionCount: neetTest.questions.length
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Create NEET Demo Test
 router.post('/create', adminAuth, async (req, res) => {
   try {

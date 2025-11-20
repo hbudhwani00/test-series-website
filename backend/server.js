@@ -18,8 +18,38 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
-.then(() => console.log('MongoDB Connected Successfully'))
+.then(() => {
+  console.log('MongoDB Connected Successfully');
+  // Initialize NEET demo test on startup
+  initializeNEETDemoTest();
+})
 .catch((err) => console.error('MongoDB Connection Error:', err));
+
+// Initialize NEET Demo Test
+const initializeNEETDemoTest = async () => {
+  try {
+    const NEETDemoTest = require('./models/NEETDemoTest');
+    const existingTest = await NEETDemoTest.findOne({ isActive: true });
+    
+    if (!existingTest) {
+      const neetTest = new NEETDemoTest({
+        title: 'NEET Demo Test',
+        description: 'Experience the NEET exam with our sample test. 180 questions covering Physics, Chemistry, and Biology.',
+        duration: 12000, // 200 minutes in seconds
+        totalMarks: 720, // 180 questions * 4 marks
+        questions: [],
+        isActive: true
+      });
+      
+      await neetTest.save();
+      console.log('NEET demo test initialized successfully');
+    } else {
+      console.log('NEET demo test already exists');
+    }
+  } catch (error) {
+    console.error('Error initializing NEET demo test:', error);
+  }
+};
 
 // Health check route
 app.get('/', (req, res) => {

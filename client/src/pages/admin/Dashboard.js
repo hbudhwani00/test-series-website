@@ -88,7 +88,10 @@ const AdminDashboard = () => {
         <div className="card quick-actions">
           <h3>Quick Actions</h3>
           <Link to="/admin/demo-test" className="btn btn-primary">
-            📋 Manage Demo Test
+            📋 Manage Demo Test (JEE)
+          </Link>
+          <Link to="/admin/neet-demo-test" className="btn btn-primary">
+            📋 Manage Demo Test (NEET)
           </Link>
           <Link to="/admin/demo-leads" className="btn btn-success">
             📊 View Demo Leads

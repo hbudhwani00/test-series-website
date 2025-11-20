@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,22 @@ import './DemoTestSelectionModal.css';
 
 const DemoTestSelectionModal = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
+
+  // Initialize NEET test when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      initializeNEETTest();
+    }
+  }, [isOpen]);
+
+  const initializeNEETTest = async () => {
+    try {
+      await axios.post(`${API_URL}/demo/neet-test/initialize`);
+    } catch (error) {
+      // Silently fail - test may already exist
+      console.log('NEET test initialization check completed');
+    }
+  };
 
   const handleSelectExam = async (examType) => {
     try {
@@ -22,7 +38,7 @@ const DemoTestSelectionModal = ({ isOpen, onClose }) => {
         // Fetch active NEET demo test
         const response = await axios.get(`${API_URL}/demo/neet-test`);
         if (!response.data.neetTest) {
-          toast.error('NEET demo test not available yet. Please try JEE.');
+          toast.error('NEET demo test not available. Please try again.');
           return;
         }
         navigate(`/student/neet-demo-test/${response.data.neetTest._id}`);
@@ -30,7 +46,8 @@ const DemoTestSelectionModal = ({ isOpen, onClose }) => {
       onClose();
     } catch (error) {
       console.error('Error loading demo test:', error);
-      toast.error(error.response?.data?.message || 'Failed to load demo test');
+      const errorMsg = error.response?.data?.message || error.message || 'Failed to load demo test';
+      toast.error(errorMsg);
     }
   };
 
