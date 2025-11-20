@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import DemoTestSelectionModal from '../components/DemoTestSelectionModal';
 import './Home.css';
 import './HomeModern.css';
 
 const Home = () => {
   const { user } = useAuth();
+  const [showDemoModal, setShowDemoModal] = useState(false);
 
   return (
     <div className="home-page">
@@ -58,9 +60,9 @@ const Home = () => {
           <div className="hero-cta-modern">
             {!user ? (
               <>
-                <Link to="/demo-tests" className="cta-button-modern cta-primary-modern">
+                <button onClick={() => setShowDemoModal(true)} className="cta-button-modern cta-primary-modern">
                   <span>🎯 Try First Free Test</span>
-                </Link>
+                </button>
                 <Link to="/register" className="cta-button-modern cta-secondary-modern">
                   <span>Get Started Free</span>
                 </Link>
@@ -221,10 +223,10 @@ const Home = () => {
           </div>
 
           <div className="how-it-works-cta-modern">
-            <Link to="/demo-tests" className="cta-button-large">
+            <button onClick={() => setShowDemoModal(true)} className="cta-button-large">
               <span>Start Your Free Assessment</span>
               <span className="cta-arrow">→</span>
-            </Link>
+            </button>
           </div>
         </div>
       </section>
@@ -489,9 +491,9 @@ const Home = () => {
             <h2>Ready to Transform Your Preparation?</h2>
             <p>Join thousands of students who improved their scores with AI-powered learning</p>
             <div className="cta-buttons">
-              <Link to="/demo-tests" className="cta-button cta-white">
+              <button onClick={() => setShowDemoModal(true)} className="cta-button cta-white">
                 <span>🎯 Try Free Demo</span>
-              </Link>
+              </button>
               <Link to="/register" className="cta-button cta-outlined">
                 <span>Start Free Trial</span>
                 <span className="cta-arrow">→</span>
@@ -501,6 +503,12 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Demo Test Selection Modal */}
+      <DemoTestSelectionModal 
+        isOpen={showDemoModal} 
+        onClose={() => setShowDemoModal(false)} 
+      />
     </div>
   );
 };

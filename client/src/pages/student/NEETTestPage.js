@@ -23,6 +23,27 @@ const NEETTestPage = () => {
     fetchTest();
   }, [testId]);
 
+  // Auto-enter fullscreen when test loads
+  useEffect(() => {
+    const enterFullscreen = async () => {
+      if (test && !isFullscreen) {
+        try {
+          const elem = document.documentElement;
+          if (elem.requestFullscreen) {
+            await elem.requestFullscreen();
+          } else if (elem.webkitRequestFullscreen) {
+            await elem.webkitRequestFullscreen();
+          }
+          setIsFullscreen(true);
+        } catch (error) {
+          console.error('Auto fullscreen error:', error);
+        }
+      }
+    };
+    
+    enterFullscreen();
+  }, [test]);
+
   useEffect(() => {
     if (!test || timeRemaining <= 0) return;
 
@@ -42,15 +63,20 @@ const NEETTestPage = () => {
   const fetchTest = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/demo/neet-test${testId ? `/${testId}` : ''}`);
+      // Fetch by testId if provided, otherwise fetch active test
+      const url = testId 
+        ? `${API_URL}/demo/neet-test/test/${testId}`
+        : `${API_URL}/demo/neet-test`;
       
-      if (!response.data.test) {
+      const response = await axios.get(url);
+      
+      if (!response.data.neetTest) {
         toast.error('NEET demo test not found');
         navigate('/demo-tests');
         return;
       }
 
-      setTest(response.data.test);
+      setTest(response.data.neetTest);
     } catch (error) {
       console.error('Error fetching NEET test:', error);
       toast.error(error.response?.data?.message || 'Failed to load test');
@@ -69,12 +95,26 @@ const NEETTestPage = () => {
     return `${hours}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
-  const handleAnswerSelect = (optionIndex) => {
-    const answerValue = String.fromCharCode(65 + optionIndex); // A, B, C, D
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestionIndex]: answerValue
-    }));
+  const handleAnswerSelect = (questionIndexOrOptionIndex, answerLetter) => {
+    // Handle both cases: from question panel (just optionIndex) or from OMR (index, letter)
+    if (answerLetter) {
+      // Called from OMR sheet with (questionIndex, 'A'/'B'/'C'/'D')
+      setAnswers(prev => ({
+        ...prev,
+        [questionIndexOrOptionIndex]: answerLetter
+      }));
+      // Auto-navigate to the question when marked from OMR
+      if (questionIndexOrOptionIndex !== currentQuestionIndex) {
+        setCurrentQuestionIndex(questionIndexOrOptionIndex);
+      }
+    } else {
+      // Called from question panel with just optionIndex
+      const answerValue = String.fromCharCode(65 + questionIndexOrOptionIndex); // A, B, C, D
+      setAnswers(prev => ({
+        ...prev,
+        [currentQuestionIndex]: answerValue
+      }));
+    }
   };
 
   const toggleMarkForReview = () => {
@@ -181,9 +221,6 @@ const NEETTestPage = () => {
           </div>
         </div>
         <div className="header-right">
-          <button className="header-btn" onClick={toggleFullscreen}>
-            {isFullscreen ? '⛔ Exit' : '🖥️'} Fullscreen
-          </button>
           <button className="header-btn submit-btn" onClick={handleSubmit}>
             Submit Test
           </button>
@@ -192,98 +229,288 @@ const NEETTestPage = () => {
 
       {/* Main Content Area */}
       <div className="neet-test-content">
-        {/* Question Panel (75%) */}
+        {/* Question Panel (80%) - All Questions Scrollable */}
         <div className="neet-question-panel">
-          <div className="question-header">
-            <h3>Question {currentQuestionIndex + 1} of {test.questions.length}</h3>
-            <div className="question-meta">
-              <span className="badge">{currentQuestion.subject}</span>
-              <span className="badge">{currentQuestion.chapter}</span>
-              <span className="marks">4 marks</span>
-            </div>
-          </div>
-
-          {/* Question Text & Image */}
-          <div className="question-content">
-            <div className="question-text">
-              <LatexRenderer content={currentQuestion.question} />
-              {currentQuestion.questionImage && (
-                <div className="question-image-container">
-                  <img 
-                    src={currentQuestion.questionImage} 
-                    alt="Question" 
-                    className="question-image"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Options */}
-            <div className="options-container">
-              {currentQuestion.options.map((option, idx) => {
-                const isSelected = answers[currentQuestionIndex] === String.fromCharCode(65 + idx);
+          <div className="all-questions-container">
+            {/* Physics Section */}
+            <div className="subject-section">
+              <div className="subject-header">PHYSICS (Q1-45)</div>
+              {test.questions.slice(0, 45).map((question, idx) => {
+                const qIndex = idx;
+                const isSelected = (optIdx) => answers[qIndex] === String.fromCharCode(65 + optIdx);
+                
                 return (
-                  <div
-                    key={idx}
-                    className={`option ${isSelected ? 'selected' : ''}`}
-                    onClick={() => handleAnswerSelect(idx)}
+                  <div 
+                    key={qIndex} 
+                    className={`question-card ${qIndex === currentQuestionIndex ? 'active-question' : ''}`}
+                    id={`question-${qIndex}`}
                   >
-                    <div className="option-bubble">
-                      {isSelected && <span className="check-mark">✓</span>}
+                    <div className="question-header-card">
+                      <h3>Question {qIndex + 1}</h3>
+                      <div className="question-meta">
+                        <span className="badge">{question.subject}</span>
+                        <span className="marks">4 marks</span>
+                      </div>
                     </div>
-                    <div className="option-content">
-                      <span className="option-label">{String.fromCharCode(65 + idx)}.</span>
-                      <LatexRenderer content={option} />
-                      {currentQuestion.optionImages && currentQuestion.optionImages[idx] && (
-                        <img 
-                          src={currentQuestion.optionImages[idx]} 
-                          alt={`Option ${String.fromCharCode(65 + idx)}`}
-                          className="option-image"
-                        />
-                      )}
+
+                    <div className="question-content">
+                      <div className="question-text">
+                        <div style={{display: 'flex', alignItems: 'flex-start', gap: '6px'}}>
+                          <strong style={{color: '#2D3E82', flexShrink: 0}}>Q{qIndex + 1}.</strong>
+                          <span style={{flex: 1}}><LatexRenderer content={question.question} /></span>
+                        </div>
+                        {question.questionImage && (
+                          <div className="question-image-container">
+                            <img 
+                              src={question.questionImage} 
+                              alt={`Question ${qIndex + 1}`} 
+                              className="question-image"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Options */}
+                      <div className="options-container">
+                        {question.options.map((option, idx) => (
+                          <div
+                            key={idx}
+                            className={`option ${isSelected(idx) ? 'selected' : ''}`}
+                            onClick={() => {
+                              const answerLetter = String.fromCharCode(65 + idx);
+                              setAnswers(prev => ({
+                                ...prev,
+                                [qIndex]: answerLetter
+                              }));
+                            }}
+                          >
+                            <div className="option-bubble">
+                              {isSelected(idx) && <span className="check-mark">✓</span>}
+                            </div>
+                            <div className="option-content" style={{display: 'flex', alignItems: 'flex-start', gap: '6px', flex: 1}}>
+                              <span className="option-label" style={{flexShrink: 0}}>{String.fromCharCode(65 + idx)}.</span>
+                              <span style={{flex: 1}}>
+                                <LatexRenderer content={option} />
+                                {question.optionImages && question.optionImages[idx] && (
+                                  <img 
+                                    src={question.optionImages[idx]} 
+                                    alt={`Option ${String.fromCharCode(65 + idx)}`}
+                                    className="option-image"
+                                  />
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Mark for Review Button - Bottom Right */}
+                      <div style={{display: 'flex', justifyContent: 'flex-end', padding: '12px 0 8px'}}>
+                        <button 
+                          className={`mark-review-btn ${markedForReview[qIndex] ? 'marked' : ''}`}
+                          onClick={() => {
+                            setMarkedForReview(prev => ({
+                              ...prev,
+                              [qIndex]: !prev[qIndex]
+                            }));
+                          }}
+                        >
+                          {markedForReview[qIndex] ? '📌 Marked for Review' : '📌 Mark for Review'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Chemistry Section */}
+            <div className="subject-section">
+              <div className="subject-header">CHEMISTRY (Q46-90)</div>
+              {test.questions.slice(45, 90).map((question, idx) => {
+                const qIndex = idx + 45;
+                const isSelected = (optIdx) => answers[qIndex] === String.fromCharCode(65 + optIdx);
+                
+                return (
+                  <div 
+                    key={qIndex} 
+                    className={`question-card ${qIndex === currentQuestionIndex ? 'active-question' : ''}`}
+                    id={`question-${qIndex}`}
+                  >
+                    <div className="question-header-card">
+                      <h3>Question {qIndex + 1}</h3>
+                      <div className="question-meta">
+                        <span className="badge">{question.subject}</span>
+                        <span className="marks">4 marks</span>
+                      </div>
+                    </div>
+
+                    <div className="question-content">
+                      <div className="question-text">
+                        <div style={{display: 'flex', alignItems: 'flex-start', gap: '6px'}}>
+                          <strong style={{color: '#2D3E82', flexShrink: 0}}>Q{qIndex + 1}.</strong>
+                          <span style={{flex: 1}}><LatexRenderer content={question.question} /></span>
+                        </div>
+                        {question.questionImage && (
+                          <div className="question-image-container">
+                            <img 
+                              src={question.questionImage} 
+                              alt={`Question ${qIndex + 1}`} 
+                              className="question-image"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Options */}
+                      <div className="options-container">
+                        {question.options.map((option, idx) => (
+                          <div
+                            key={idx}
+                            className={`option ${isSelected(idx) ? 'selected' : ''}`}
+                            onClick={() => {
+                              const answerLetter = String.fromCharCode(65 + idx);
+                              setAnswers(prev => ({
+                                ...prev,
+                                [qIndex]: answerLetter
+                              }));
+                            }}
+                          >
+                            <div className="option-bubble">
+                              {isSelected(idx) && <span className="check-mark">✓</span>}
+                            </div>
+                            <div className="option-content" style={{display: 'flex', alignItems: 'flex-start', gap: '6px', flex: 1}}>
+                              <span className="option-label" style={{flexShrink: 0}}>{String.fromCharCode(65 + idx)}.</span>
+                              <span style={{flex: 1}}>
+                                <LatexRenderer content={option} />
+                                {question.optionImages && question.optionImages[idx] && (
+                                  <img 
+                                    src={question.optionImages[idx]} 
+                                    alt={`Option ${String.fromCharCode(65 + idx)}`}
+                                    className="option-image"
+                                  />
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Mark for Review Button - Bottom Right */}
+                      <div style={{display: 'flex', justifyContent: 'flex-end', padding: '12px 0 8px'}}>
+                        <button 
+                          className={`mark-review-btn ${markedForReview[qIndex] ? 'marked' : ''}`}
+                          onClick={() => {
+                            setMarkedForReview(prev => ({
+                              ...prev,
+                              [qIndex]: !prev[qIndex]
+                            }));
+                          }}
+                        >
+                          {markedForReview[qIndex] ? '📌 Marked for Review' : '📌 Mark for Review'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Biology Section */}
+            <div className="subject-section">
+              <div className="subject-header">BIOLOGY (Q91-180)</div>
+              {test.questions.slice(90, 180).map((question, idx) => {
+                const qIndex = idx + 90;
+                const isSelected = (optIdx) => answers[qIndex] === String.fromCharCode(65 + optIdx);
+                
+                return (
+                  <div 
+                    key={qIndex} 
+                    className={`question-card ${qIndex === currentQuestionIndex ? 'active-question' : ''}`}
+                    id={`question-${qIndex}`}
+                  >
+                    <div className="question-header-card">
+                      <h3>Question {qIndex + 1}</h3>
+                      <div className="question-meta">
+                        <span className="badge">{question.subject}</span>
+                        <span className="marks">4 marks</span>
+                      </div>
+                    </div>
+
+                    <div className="question-content">
+                      <div className="question-text">
+                        <div style={{display: 'flex', alignItems: 'flex-start', gap: '6px'}}>
+                          <strong style={{color: '#2D3E82', flexShrink: 0}}>Q{qIndex + 1}.</strong>
+                          <span style={{flex: 1}}><LatexRenderer content={question.question} /></span>
+                        </div>
+                        {question.questionImage && (
+                          <div className="question-image-container">
+                            <img 
+                              src={question.questionImage} 
+                              alt={`Question ${qIndex + 1}`} 
+                              className="question-image"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Options */}
+                      <div className="options-container">
+                        {question.options.map((option, idx) => (
+                          <div
+                            key={idx}
+                            className={`option ${isSelected(idx) ? 'selected' : ''}`}
+                            onClick={() => {
+                              const answerLetter = String.fromCharCode(65 + idx);
+                              setAnswers(prev => ({
+                                ...prev,
+                                [qIndex]: answerLetter
+                              }));
+                            }}
+                          >
+                            <div className="option-bubble">
+                              {isSelected(idx) && <span className="check-mark">✓</span>}
+                            </div>
+                            <div className="option-content" style={{display: 'flex', alignItems: 'flex-start', gap: '6px', flex: 1}}>
+                              <span className="option-label" style={{flexShrink: 0}}>{String.fromCharCode(65 + idx)}.</span>
+                              <span style={{flex: 1}}>
+                                <LatexRenderer content={option} />
+                                {question.optionImages && question.optionImages[idx] && (
+                                  <img 
+                                    src={question.optionImages[idx]} 
+                                    alt={`Option ${String.fromCharCode(65 + idx)}`}
+                                    className="option-image"
+                                  />
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Mark for Review Button - Bottom Right */}
+                      <div style={{display: 'flex', justifyContent: 'flex-end', padding: '12px 0 8px'}}>
+                        <button 
+                          className={`mark-review-btn ${markedForReview[qIndex] ? 'marked' : ''}`}
+                          onClick={() => {
+                            setMarkedForReview(prev => ({
+                              ...prev,
+                              [qIndex]: !prev[qIndex]
+                            }));
+                          }}
+                        >
+                          {markedForReview[qIndex] ? '📌 Marked for Review' : '📌 Mark for Review'}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
               })}
             </div>
           </div>
-
-          {/* Action Buttons */}
-          <div className="question-actions">
-            <button 
-              className="action-btn"
-              onClick={() => handleNavigate(currentQuestionIndex - 1)}
-              disabled={currentQuestionIndex === 0}
-            >
-              ← Previous
-            </button>
-            <button 
-              className={`action-btn mark-btn ${markedForReview[currentQuestionIndex] ? 'marked' : ''}`}
-              onClick={toggleMarkForReview}
-            >
-              {markedForReview[currentQuestionIndex] ? '📌 Marked' : '📌 Mark for Review'}
-            </button>
-            <button 
-              className="action-btn"
-              onClick={() => setAnswers(prev => {
-                const updated = { ...prev };
-                delete updated[currentQuestionIndex];
-                return updated;
-              })}
-            >
-              Clear
-            </button>
-            <button 
-              className="action-btn"
-              onClick={() => handleNavigate(currentQuestionIndex + 1)}
-              disabled={currentQuestionIndex === test.questions.length - 1}
-            >
-              Next →
-            </button>
-          </div>
         </div>
 
-        {/* OMR Sheet Panel (25%) */}
+        {/* OMR Sheet Panel (30%) */}
         <div className="neet-omr-panel">
           <OMRSheet
             totalQuestions={test.questions.length}
@@ -291,39 +518,8 @@ const NEETTestPage = () => {
             markedForReview={markedForReview}
             currentQuestionIndex={currentQuestionIndex}
             onQuestionClick={handleNavigate}
+            onAnswerSelect={handleAnswerSelect}
           />
-
-          {/* Quick Stats */}
-          <div className="quick-stats">
-            <div className="stat">
-              <span className="stat-label">Attempted</span>
-              <span className="stat-value">{answeredCount}</span>
-            </div>
-            <div className="stat">
-              <span className="stat-label">Marked</span>
-              <span className="stat-value">{markedCount}</span>
-            </div>
-            <div className="stat">
-              <span className="stat-label">Left</span>
-              <span className="stat-value">{test.questions.length - answeredCount}</span>
-            </div>
-          </div>
-
-          {/* Section Navigation */}
-          <div className="section-nav">
-            <div className="section-nav-item">
-              <strong>Physics (1-45)</strong>
-              <button onClick={() => handleNavigate(0)} className="nav-jump">Jump</button>
-            </div>
-            <div className="section-nav-item">
-              <strong>Chemistry (46-90)</strong>
-              <button onClick={() => handleNavigate(45)} className="nav-jump">Jump</button>
-            </div>
-            <div className="section-nav-item">
-              <strong>Biology (91-180)</strong>
-              <button onClick={() => handleNavigate(90)} className="nav-jump">Jump</button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
