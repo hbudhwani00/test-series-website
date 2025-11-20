@@ -4,12 +4,14 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
+import DemoTestSelectionModal from '../../components/DemoTestSelectionModal';
 import { API_URL } from '../../services/api';
 
 const ExamPatternSelection = () => {
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasTakenDemoTest, setHasTakenDemoTest] = useState(false);
+  const [showDemoModal, setShowDemoModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -158,29 +160,8 @@ const ExamPatternSelection = () => {
   };
 
   const handleDemoTest = async () => {
-    try {
-      // Use the permanent demo test endpoint
-      const response = await axios.get(`${API_URL}/demo/test`);
-      console.log('Demo test response:', response.data);
-      
-      if (!response.data.test) {
-        toast.error('Demo test not available. Please contact admin.');
-        return;
-      }
-      
-      navigate(`/student/demo-test/${response.data.test._id}`);
-    } catch (error) {
-      console.error('Demo test error:', error);
-      console.error('Error response:', error.response?.data);
-      const errorMsg = error.response?.data?.message || 'Failed to load demo test';
-      toast.error(errorMsg);
-      
-      if (errorMsg.includes('No demo test available')) {
-        toast.error('Demo test is not set up yet. Please contact admin.', {
-          duration: 5000
-        });
-      }
-    }
+    // Open the demo selection modal instead of directly starting test
+    setShowDemoModal(true);
   };
 
   const handleStartTest = async () => {
@@ -377,6 +358,7 @@ const ExamPatternSelection = () => {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
+      <DemoTestSelectionModal isOpen={showDemoModal} onClose={() => setShowDemoModal(false)} />
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2">Select Test Type</h1>

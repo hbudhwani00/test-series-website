@@ -29,10 +29,12 @@ import DemoTests from './pages/student/DemoTests';
 import AITest from './pages/student/AITest';
 import AITestTake from './pages/student/AITestTake';
 import TestSeries from './pages/student/TestSeries';
+import NEETTestPage from './pages/student/NEETTestPage';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard';
 import ManageDemoTest from './pages/admin/ManageDemoTest';
+import ManageNEETDemoTest from './pages/admin/ManageNEETDemoTest';
 import ManageScheduledTest from './pages/admin/ManageScheduledTest';
 import UploadQuestions from './pages/admin/UploadQuestions';
 import UploadQuestion from './pages/admin/UploadQuestion';
@@ -74,7 +76,8 @@ function AppRoutes() {
   // Hide Navbar and Footer on test routes
   const isTestRoute = location.pathname.includes('/take-test') || 
                       location.pathname.includes('/jee-main-test') ||
-                      location.pathname.includes('/demo-test');
+                      location.pathname.includes('/demo-test') ||
+                      location.pathname.includes('/neet-demo-test');
   
   return (
     <div className="flex flex-col min-h-screen">
@@ -89,6 +92,7 @@ function AppRoutes() {
           <Route path="/student/take-test/:testId" element={<TakeTest />} />
           <Route path="/student/jee-main-test/:testId" element={<JEEMainTest />} />
           <Route path="/student/demo-test/:testId" element={<JEEMainTest />} />
+          <Route path="/student/neet-demo-test/:testId" element={<NEETTestPage />} />
           <Route path="/student/scheduled-test/:testId" element={<ScheduledTestPage />} />
           <Route path="/student/demo-result/:resultId" element={<DemoResultDetail />} />
           <Route path="/student/scheduled-result/:resultId" element={<ScheduledResultDetail />} />
@@ -197,6 +201,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute adminOnly={true}>
               <ManageDemoTest />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/neet-demo-test"
+          element={
+            <ProtectedRoute adminOnly={true}>
+              <ManageNEETDemoTest />
             </ProtectedRoute>
           }
         />

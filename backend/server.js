@@ -34,7 +34,9 @@ app.get('/', (req, res) => {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/admin/demo-test', require('./routes/demoTest'));
+app.use('/api/admin/neet-demo-test', require('./routes/neetDemoTest'));
 app.use('/api/demo', require('./routes/demoTestStudent'));
+app.use('/api/demo/neet-test', require('./routes/neetDemoTest'));
 app.use('/api/scheduled-tests', require('./routes/scheduledTests'));
 app.use('/api/tests', require('./routes/tests'));
 app.use('/api/payment', require('./routes/payment'));
