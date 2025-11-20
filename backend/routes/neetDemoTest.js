@@ -161,6 +161,27 @@ router.get('/admin/all', adminAuth, async (req, res) => {
   }
 });
 
+// Get active NEET Demo Test for Admin
+router.get('/admin', adminAuth, async (req, res) => {
+  try {
+    const neetTest = await NEETDemoTest.findOne({ isActive: true })
+      .populate({
+        path: 'questions',
+        options: { sort: { questionNumber: 1 } }
+      })
+      .populate('createdBy', 'name');
+
+    if (!neetTest) {
+      return res.status(404).json({ message: 'No active NEET demo test found' });
+    }
+
+    res.json({ neetTest });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Add Question to NEET Demo Test
 router.post('/add-question', adminAuth, async (req, res) => {
   try {

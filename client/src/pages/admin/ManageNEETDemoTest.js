@@ -64,15 +64,17 @@ const ManageNEETDemoTest = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const { data } = await axios.get(`${API_URL}/admin/neet-demo-test`, {
+      const { data } = await axios.get(`${API_URL}/admin/neet-demo-test/admin`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNEETTest(data.neetTest);
     } catch (error) {
       if (error.response?.status === 404) {
-        toast.info('No NEET demo test found. Create one first.');
+        // Test doesn't exist, offer to create one
+        console.log('No NEET demo test found');
       } else {
         toast.error('Failed to fetch NEET demo test');
+        console.error('Error:', error);
       }
     } finally {
       setLoading(false);
@@ -180,6 +182,7 @@ const ManageNEETDemoTest = () => {
       const token = localStorage.getItem('token');
       const payload = {
         ...questionForm,
+        testId: neetTest._id, // Add the testId here
         questionImage: questionForm.questionImage || '',
         optionImages: questionForm.optionImages || ['', '', '', ''],
         explanationImage: questionForm.explanationImage || ''
