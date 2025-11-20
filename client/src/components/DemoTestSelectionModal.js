@@ -19,13 +19,13 @@ const DemoTestSelectionModal = ({ isOpen, onClose }) => {
         }
         navigate(`/student/demo-test/${response.data.test._id}`);
       } else if (examType === 'NEET') {
-        // Fetch NEET demo test
+        // Fetch active NEET demo test
         const response = await axios.get(`${API_URL}/demo/neet-test`);
-        if (!response.data.test) {
+        if (!response.data.neetTest) {
           toast.error('NEET demo test not available yet. Please try JEE.');
           return;
         }
-        navigate(`/student/neet-demo-test/${response.data.test._id}`);
+        navigate(`/student/neet-demo-test/${response.data.neetTest._id}`);
       }
       onClose();
     } catch (error) {

@@ -38,8 +38,29 @@ router.post('/create', adminAuth, async (req, res) => {
   }
 });
 
-// Get NEET Demo Test (Student)
-router.get('/:testId', async (req, res) => {
+// Get active NEET Demo Test (Student - no auth required)
+router.get('/', async (req, res) => {
+  try {
+    const neetTest = await NEETDemoTest.findOne({ isActive: true })
+      .populate({
+        path: 'questions',
+        options: { sort: { questionNumber: 1 } }
+      })
+      .populate('createdBy', 'name');
+
+    if (!neetTest) {
+      return res.status(404).json({ message: 'No active NEET demo test found' });
+    }
+
+    res.json({ neetTest });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get specific NEET Demo Test by ID (Student - no auth required)
+router.get('/test/:testId', async (req, res) => {
   try {
     const { testId } = req.params;
 
@@ -61,8 +82,8 @@ router.get('/:testId', async (req, res) => {
   }
 });
 
-// Get all NEET Demo Tests (Admin)
-router.get('/', adminAuth, async (req, res) => {
+// Get all NEET Demo Tests (Admin only)
+router.get('/admin/all', adminAuth, async (req, res) => {
   try {
     const neetTests = await NEETDemoTest.find()
       .populate({
