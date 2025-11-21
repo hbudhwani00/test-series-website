@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
@@ -10,9 +10,56 @@ const AITest = () => {
   const [generating, setGenerating] = useState(false);
   const [subject, setSubject] = useState('');
   const [questionCount, setQuestionCount] = useState(20);
+  const [availableSubjects, setAvailableSubjects] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const subjects = ['Physics', 'Chemistry', 'Mathematics', 'Biology'];
+  useEffect(() => {
+    fetchSubscriptionAndSetSubjects();
+  }, []);
+
+  const fetchSubscriptionAndSetSubjects = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setAvailableSubjects(['Physics', 'Chemistry', 'Mathematics', 'Biology']);
+        setLoading(false);
+        return;
+      }
+
+      const response = await axios.get(`${API_URL}/payment/subscription-status`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const activeSubscriptions = response.data.subscriptions?.filter(
+        sub => sub.isActive && new Date(sub.expiryDate) > new Date()
+      );
+
+      if (activeSubscriptions && activeSubscriptions.length > 0) {
+        const examType = activeSubscriptions[0].examType;
+        
+        if (examType === 'NEET') {
+          // NEET: Physics, Chemistry, Biology
+          setAvailableSubjects(['Physics', 'Chemistry', 'Biology']);
+        } else if (examType === 'JEE_MAIN' || examType === 'JEE_MAIN_ADVANCED') {
+          // JEE: Physics, Chemistry, Mathematics
+          setAvailableSubjects(['Physics', 'Chemistry', 'Mathematics']);
+        } else {
+          // Default: all subjects
+          setAvailableSubjects(['Physics', 'Chemistry', 'Mathematics', 'Biology']);
+        }
+      } else {
+        // No subscription: show all subjects
+        setAvailableSubjects(['Physics', 'Chemistry', 'Mathematics', 'Biology']);
+      }
+    } catch (error) {
+      console.error('Error fetching subscription:', error);
+      // On error, show all subjects
+      setAvailableSubjects(['Physics', 'Chemistry', 'Mathematics', 'Biology']);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleGenerateTest = async () => {
     if (!subject) {
@@ -65,6 +112,17 @@ const AITest = () => {
             <div className="animate-bounce delay-100"></div>
             <div className="animate-bounce delay-200"></div>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     );
@@ -123,23 +181,23 @@ const AITest = () => {
                 Select Subject <span className="text-red-500">*</span>
               </label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {subjects.map((sub) => (
+                {availableSubjects.map((sub) => (
                   <button
                     key={sub}
                     onClick={() => setSubject(sub)}
-                    className={`p-4 rounded-xl border-2 transition-all duration-300 SilentlyContinue{
+                    className={`p-4 rounded-xl border-2 transition-all duration-300 ${
                       subject === sub
                         ? 'border-purple-600 bg-purple-50 shadow-lg transform scale-105'
                         : 'border-gray-200 hover:border-purple-300 hover:shadow-md'
                     }`}
                   >
                     <div className="text-3xl mb-2">
-                      {sub === 'Physics' && ''}
-                      {sub === 'Chemistry' && ''}
-                      {sub === 'Mathematics' && ''}
-                      {sub === 'Biology' && ''}
+                      {sub === 'Physics' && '⚛️'}
+                      {sub === 'Chemistry' && '🧪'}
+                      {sub === 'Mathematics' && '📐'}
+                      {sub === 'Biology' && '🔬'}
                     </div>
-                    <div className={`font-semibold SilentlyContinue{subject === sub ? 'text-purple-700' : 'text-gray-700'}`}>
+                    <div className={`font-semibold ${subject === sub ? 'text-purple-700' : 'text-gray-700'}`}>
                       {sub}
                     </div>
                   </button>

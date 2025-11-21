@@ -57,7 +57,8 @@ const ExamPatternSelection = () => {
       const response = await axios.get(`${API_URL}/payment/subscription-status`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setSubscriptions(response.data.subscriptions);
+      
+      setSubscriptions(response.data.subscriptions || []);
     } catch (error) {
       console.error('Subscription fetch error:', error);
       // If error, assume no subscriptions
@@ -150,12 +151,33 @@ const ExamPatternSelection = () => {
 
   const handlePatternSelect = async (patternType) => {
     if (patternType === 'JEE_MAIN') {
-      // Directly start the demo test (no modal, no login required)
-      await handleStartTest();
+      // Directly start JEE Main test
+      try {
+        const response = await axios.get(`${API_URL}/demo/test`);
+        if (!response.data.test) {
+          toast.error('JEE demo test not available');
+          return;
+        }
+        navigate(`/student/demo-test/${response.data.test._id}`);
+      } catch (error) {
+        console.error('Error loading JEE test:', error);
+        toast.error('Failed to load JEE test');
+      }
     } else if (patternType === 'JEE_ADVANCED') {
       toast.info('JEE Advanced pattern coming soon!');
     } else if (patternType === 'NEET') {
-      toast.info('NEET pattern coming soon!');
+      // Directly start NEET test
+      try {
+        const response = await axios.get(`${API_URL}/demo/neet-test`);
+        if (!response.data.neetTest) {
+          toast.error('NEET demo test not available');
+          return;
+        }
+        navigate(`/student/neet-demo-test/${response.data.neetTest._id}`);
+      } catch (error) {
+        console.error('Error loading NEET test:', error);
+        toast.error('Failed to load NEET test');
+      }
     }
   };
 

@@ -1,13 +1,63 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 import DemoTestSelectionModal from '../components/DemoTestSelectionModal';
+import { API_URL } from '../services/api';
 import './Home.css';
 import './HomeModern.css';
 
 const Home = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [showDemoModal, setShowDemoModal] = useState(false);
+  const [hasSubscription, setHasSubscription] = useState(false);
+  const [subscriptionType, setSubscriptionType] = useState(null);
+
+  useEffect(() => {
+    if (user && user.role === 'student') {
+      checkSubscription();
+    }
+  }, [user]);
+
+  const checkSubscription = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const response = await axios.get(`${API_URL}/payment/subscription-status`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const activeSubscriptions = response.data.subscriptions?.filter(
+        sub => sub.isActive && new Date(sub.expiryDate) > new Date()
+      );
+
+      if (activeSubscriptions && activeSubscriptions.length > 0) {
+        setHasSubscription(true);
+        // Get the first active subscription type
+        setSubscriptionType(activeSubscriptions[0].examType);
+      }
+    } catch (error) {
+      console.error('Error checking subscription:', error);
+    }
+  };
+
+  const handleTryFreeTest = () => {
+    if (user && user.role === 'student') {
+      // User is logged in - check if they have subscription
+      if (hasSubscription) {
+        // Has subscription - go to dashboard
+        navigate('/student/dashboard');
+      } else {
+        // No subscription - show demo modal to choose JEE/NEET
+        setShowDemoModal(true);
+      }
+    } else {
+      // Not logged in - show demo modal to choose JEE/NEET
+      setShowDemoModal(true);
+    }
+  };
 
   return (
     <div className="home-page">
@@ -60,7 +110,7 @@ const Home = () => {
           <div className="hero-cta-modern">
             {!user ? (
               <>
-                <button onClick={() => setShowDemoModal(true)} className="cta-button-modern cta-primary-modern">
+                <button onClick={handleTryFreeTest} className="cta-button-modern cta-primary-modern">
                   <span>🎯 Try First Free Test</span>
                 </button>
                 <Link to="/register" className="cta-button-modern cta-secondary-modern">
@@ -223,7 +273,7 @@ const Home = () => {
           </div>
 
           <div className="how-it-works-cta-modern">
-            <button onClick={() => setShowDemoModal(true)} className="cta-button-large">
+            <button onClick={handleTryFreeTest} className="cta-button-large">
               <span>Start Your Free Assessment</span>
               <span className="cta-arrow">→</span>
             </button>
@@ -491,7 +541,7 @@ const Home = () => {
             <h2>Ready to Transform Your Preparation?</h2>
             <p>Join thousands of students who improved their scores with AI-powered learning</p>
             <div className="cta-buttons">
-              <button onClick={() => setShowDemoModal(true)} className="cta-button cta-white">
+              <button onClick={handleTryFreeTest} className="cta-button cta-white">
                 <span>🎯 Try Free Demo</span>
               </button>
               <Link to="/register" className="cta-button cta-outlined">

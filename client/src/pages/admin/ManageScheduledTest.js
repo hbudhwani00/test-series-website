@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 import './ManageDemoTest.css';
 import LatexRenderer from '../../components/LatexRenderer';
+import { getChapters, getTopics } from '../../data/chaptersTopics';
 
 const API_URL = 'https://test-series-backend-dyfc.onrender.com/api';
 
@@ -807,22 +808,33 @@ const ManageScheduledTest = () => {
 
                       <div className="form-group">
                         <label>Chapter</label>
-                        <input
-                          type="text"
+                        <select
                           value={currentQuestion.chapter}
-                          onChange={(e) => setCurrentQuestion({ ...currentQuestion, chapter: e.target.value })}
-                          placeholder="e.g., Thermodynamics"
-                        />
+                          onChange={(e) => setCurrentQuestion({ ...currentQuestion, chapter: e.target.value, topic: '' })}
+                        >
+                          <option value="">Select Chapter</option>
+                          {getChapters(currentQuestion.subject).map((chapter) => (
+                            <option key={chapter} value={chapter}>
+                              {chapter}
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
                       <div className="form-group">
                         <label>Topic</label>
-                        <input
-                          type="text"
+                        <select
                           value={currentQuestion.topic}
                           onChange={(e) => setCurrentQuestion({ ...currentQuestion, topic: e.target.value })}
-                          placeholder="e.g., First Law"
-                        />
+                          disabled={!currentQuestion.chapter}
+                        >
+                          <option value="">Select Topic</option>
+                          {currentQuestion.chapter && getTopics(currentQuestion.subject, currentQuestion.chapter).map((topic) => (
+                            <option key={topic} value={topic}>
+                              {topic}
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
                       <div className="form-group">

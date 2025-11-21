@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { authService } from '../services/api';
+import axios from 'axios';
+import { authService, API_URL } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import './Auth.css';
 
@@ -32,7 +33,27 @@ const Login = () => {
       if (user.role === 'admin') {
         navigate('/admin/dashboard');
       } else {
-        navigate('/student/exam-selection');
+        // Check if student has active subscription
+        try {
+          const subResponse = await axios.get(`${API_URL}/payment/subscription-status`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+
+          const activeSubscriptions = subResponse.data.subscriptions?.filter(
+            sub => sub.isActive && new Date(sub.expiryDate) > new Date()
+          );
+
+          if (activeSubscriptions && activeSubscriptions.length > 0) {
+            // Has subscription - go to dashboard
+            navigate('/student/dashboard');
+          } else {
+            // No subscription - go to exam selection to choose demo
+            navigate('/student/exam-selection');
+          }
+        } catch (error) {
+          // If subscription check fails, default to exam selection
+          navigate('/student/exam-selection');
+        }
       }
     } catch (error) {
       toast.error(error.response?.data?.message || 'Login failed');

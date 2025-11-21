@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import LatexRenderer from '../../components/LatexRenderer';
 import './ManageNEETDemoTest.css';
 import { API_URL } from '../../services/api';
+import { getChapters, getTopics } from '../../data/chaptersTopics';
 
 const ManageNEETDemoTest = () => {
   const [neetTest, setNEETTest] = useState(null);
@@ -375,24 +376,35 @@ const ManageNEETDemoTest = () => {
                 <div className="form-row">
                   <div className="form-group">
                     <label>Chapter *</label>
-                    <input
-                      type="text"
+                    <select
                       value={questionForm.chapter}
-                      onChange={(e) => setQuestionForm({ ...questionForm, chapter: e.target.value })}
-                      placeholder="e.g., Mechanics, Reproduction"
+                      onChange={(e) => setQuestionForm({ ...questionForm, chapter: e.target.value, topic: '' })}
                       required
-                    />
+                    >
+                      <option value="">Select Chapter</option>
+                      {getChapters(questionForm.subject).map((chapter) => (
+                        <option key={chapter} value={chapter}>
+                          {chapter}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="form-group">
                     <label>Topic *</label>
-                    <input
-                      type="text"
+                    <select
                       value={questionForm.topic}
                       onChange={(e) => setQuestionForm({ ...questionForm, topic: e.target.value })}
-                      placeholder="e.g., Motion, DNA"
+                      disabled={!questionForm.chapter}
                       required
-                    />
+                    >
+                      <option value="">Select Topic</option>
+                      {questionForm.chapter && getTopics(questionForm.subject, questionForm.chapter).map((topic) => (
+                        <option key={topic} value={topic}>
+                          {topic}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
