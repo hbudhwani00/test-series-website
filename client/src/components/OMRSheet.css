@@ -135,11 +135,10 @@
 }
 
 .omr-question-row {
-  display: grid;
-  grid-template-columns: auto 1fr;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
+  gap: 12px;
+  padding: 8px 10px;
   border-bottom: 1px solid #111827;
   background: #ffe4e6;
   transition: all 0.15s ease;
@@ -160,14 +159,14 @@
 }
 
 .question-num {
-  min-width: 45px;
+  min-width: 50px;
   font-weight: 700;
   font-size: 0.95rem;
   color: #111827;
-  text-align: center;
-  grid-column: 1;
+  text-align: left;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .question-num:hover {
@@ -179,11 +178,10 @@
 .question-options {
   display: flex !important;
   flex-direction: row !important;
-  gap: 8px;
-  grid-column: 2;
-  width: fit-content;
+  gap: 10px;
+  flex: 1;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .option-bubble-omr {
@@ -201,6 +199,7 @@
   color: #374151;
   transition: all 0.15s ease;
   flex-shrink: 0;
+  line-height: 1;
 }
 
 .option-bubble-omr:hover {

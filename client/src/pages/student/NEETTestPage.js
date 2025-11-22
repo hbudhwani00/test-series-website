@@ -159,21 +159,10 @@ const NEETTestPage = () => {
     }
 
     try {
-      const totalMarks = Object.values(answers).length * 4; // 4 marks per correct answer
-
       const submitData = {
         testId,
         testType: 'neet_demo',
-        answers: Object.entries(answers).map(([index, answer]) => ({
-          questionIndex: parseInt(index),
-          answer,
-          question: test.questions[index],
-          isCorrect: answer === test.questions[index].correctAnswer
-        })),
-        totalMarks,
-        score: Object.entries(answers).filter(([index, answer]) => 
-          answer === test.questions[index].correctAnswer
-        ).length * 4,
+        answers, // Send answers object as-is { 0: 'A', 1: 'B', etc. }
         timeSpent: 12000 - timeRemaining,
         markedForReview
       };
@@ -181,7 +170,7 @@ const NEETTestPage = () => {
       const response = await axios.post(`${API_URL}/results/submit-demo`, submitData);
 
       toast.success('Test submitted successfully!');
-      navigate(`/student/demo-result/${response.data.result._id}`);
+      navigate(`/student/demo-result/${response.data.result.id}`);
     } catch (error) {
       console.error('Error submitting test:', error);
       toast.error(error.response?.data?.message || 'Failed to submit test');
