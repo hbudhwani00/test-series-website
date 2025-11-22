@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { resultService, paymentService } from '../../services/api';
 import './Dashboard.css';
@@ -8,6 +8,7 @@ const StudentDashboard = () => {
   const [analytics, setAnalytics] = useState(null);
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchData();
@@ -22,6 +23,24 @@ const StudentDashboard = () => {
 
       setAnalytics(analyticsRes.data);
       setSubscriptions(subsRes.data.subscriptions);
+
+      // Dashboard is ONLY for subscribed students
+      const activeSubscriptions = subsRes.data.subscriptions?.filter(
+        sub => sub.isActive && new Date(sub.expiryDate) > new Date()
+      );
+      
+      // Non-subscribed students should NOT access dashboard
+      if (!activeSubscriptions || activeSubscriptions.length === 0) {
+        const selectedExam = localStorage.getItem('selectedExam');
+        // Redirect to exam patterns (where demo tests are shown)
+        if (selectedExam) {
+          navigate('/student/exam-patterns');
+        } else {
+          // First time user - let them select exam type
+          navigate('/student/exam-selection');
+        }
+        return;
+      }
     } catch (error) {
       toast.error('Failed to load dashboard data');
     } finally {

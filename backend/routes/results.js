@@ -7,10 +7,10 @@ const Question = require('../models/Question');
 const DemoTest = require('../models/DemoTest');
 const NEETDemoTest = require('../models/NEETDemoTest');
 
-// Submit Demo Test (NEET/JEE) - No auth required
+// Submit Demo Test (NEET/JEE) - No auth required but save userId if available
 router.post('/submit-demo', async (req, res) => {
   try {
-    const { testId, testType, answers, timeSpent, markedForReview } = req.body;
+    const { testId, testType, answers, timeSpent, markedForReview, userId } = req.body;
 
     let test;
     let allQuestions = [];
@@ -51,17 +51,19 @@ router.post('/submit-demo', async (req, res) => {
           userAnswer: null,
           isCorrect: false,
           marksAwarded: 0,
-          // Snapshot key fields for result display
-          subject: question.subject,
-          chapter: question.chapter,
-          topic: question.topic,
-          questionNumber: question.questionNumber,
+          // Snapshot key fields for result display (ensure all data is saved)
+          subject: question.subject || 'General',
+          chapter: question.chapter || 'General',
+          topic: question.topic || 'General',
+          questionNumber: question.questionNumber || (index + 1),
           questionText: question.question,
           questionImage: question.questionImage,
-          questionType: question.questionType,
+          questionType: question.questionType || 'single',
           correctAnswer: question.correctAnswer,
           explanation: question.explanation,
-          explanationImage: question.explanationImage
+          explanationImage: question.explanationImage,
+          options: question.options || [],
+          optionImages: question.optionImages || []
         });
         return;
       }
@@ -93,24 +95,26 @@ router.post('/submit-demo', async (req, res) => {
         userAnswer: userAnswer,
         isCorrect,
         marksAwarded,
-        // Snapshot key fields for result display
-        subject: question.subject,
-        chapter: question.chapter,
-        topic: question.topic,
-        questionNumber: question.questionNumber,
+        // Snapshot key fields for result display (ensure all data is saved)
+        subject: question.subject || 'General',
+        chapter: question.chapter || 'General',
+        topic: question.topic || 'General',
+        questionNumber: question.questionNumber || (index + 1),
         questionText: question.question,
         questionImage: question.questionImage,
-        questionType: question.questionType,
+        questionType: question.questionType || 'single',
         correctAnswer: question.correctAnswer,
         explanation: question.explanation,
-        explanationImage: question.explanationImage
+        explanationImage: question.explanationImage,
+        options: question.options || [],
+        optionImages: question.optionImages || []
       });
     });
 
     const percentage = (score / test.totalMarks) * 100;
 
-    // Create result without userId (demo test)
-    const result = new Result({
+    // Create result - include userId if provided (for logged-in users taking demo)
+    const resultData = {
       testId: testId,
       testType: testType,
       answers: evaluatedAnswers,
@@ -122,7 +126,14 @@ router.post('/submit-demo', async (req, res) => {
       unattempted,
       timeTaken: timeSpent,
       isDemo: true // Mark as demo result
-    });
+    };
+    
+    // Add userId if user is logged in
+    if (userId) {
+      resultData.userId = userId;
+    }
+    
+    const result = new Result(resultData);
 
     await result.save();
 

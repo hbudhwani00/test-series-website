@@ -467,39 +467,49 @@ const JEEMainTest = () => {
 
     try {
       const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
       const allQuestions = getAllQuestions();
       const formattedAnswers = {};
       
-      // Convert index-based answers to questionId-based answers
-      Object.keys(answers).forEach(key => {
-        const index = parseInt(key);
-        const question = allQuestions[index];
-        if (question && question._id) {
-          let answer = answers[key];
-          
-          // Convert letter answers (A, B, C, D) to numeric indices (0, 1, 2, 3)
-          if (typeof answer === 'string' && answer.length === 1 && answer >= 'A' && answer <= 'Z') {
-            answer = answer.charCodeAt(0) - 65; // 'A' -> 0, 'B' -> 1, 'C' -> 2, 'D' -> 3
+      // Convert index-based answers to questionId-based answers for regular test
+      // OR keep as index-based for demo test
+      if (isDemoTest) {
+        // For demo test, keep answers as index-based { 0: 'A', 1: 'B', etc }
+        Object.keys(answers).forEach(key => {
+          formattedAnswers[key] = answers[key];
+        });
+      } else {
+        // For regular test, convert to questionId-based
+        Object.keys(answers).forEach(key => {
+          const index = parseInt(key);
+          const question = allQuestions[index];
+          if (question && question._id) {
+            let answer = answers[key];
+            
+            // Convert letter answers (A, B, C, D) to numeric indices (0, 1, 2, 3)
+            if (typeof answer === 'string' && answer.length === 1 && answer >= 'A' && answer <= 'Z') {
+              answer = answer.charCodeAt(0) - 65; // 'A' -> 0, 'B' -> 1, 'C' -> 2, 'D' -> 3
+            }
+            
+            formattedAnswers[question._id] = answer;
           }
-          
-          formattedAnswers[question._id] = answer;
-        }
-      });
+        });
+      }
 
       let response;
       
       if (isDemoTest) {
-        // Demo test submission (send token if user is logged in so result is saved to their account)
+        // Demo test submission - use submit-demo endpoint
         response = await axios.post(
-          `${API_URL}/demo/submit`,
+          `${API_URL}/results/submit-demo`,
           {
             testId: test._id,
+            testType: 'jee_demo',
             answers: formattedAnswers,
-            timeTaken: (180 * 60) - timeRemaining,
-            userName: 'Demo User',
-            userEmail: ''
-          },
-          { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+            timeSpent: (180 * 60) - timeRemaining,
+            markedForReview: {},
+            userId: user._id || null // Include userId if logged in
+          }
         );
       } else {
         // Regular test submission

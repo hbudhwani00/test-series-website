@@ -580,9 +580,9 @@ const DemoResultDetail = () => {
                                     </div>
                                   </div>
                                   
-                                  {answer.questionId?.options && answer.questionId.options.length > 0 && (
+                                  {(answer.options || answer.questionId?.options) && (answer.options || answer.questionId?.options).length > 0 && (
                                     <ul className="options-list">
-                                      {answer.questionId.options.map((option, optIdx) => {
+                                      {(answer.options || answer.questionId?.options).map((option, optIdx) => {
                                         const normalizedUserAnswer = typeof answer.userAnswer === 'string' && answer.userAnswer.length === 1 ? 
                                           answer.userAnswer.charCodeAt(0) - 65 : 
                                           parseInt(answer.userAnswer);
@@ -594,6 +594,8 @@ const DemoResultDetail = () => {
                                         const isCorrectOption = optIdx === normalizedCorrectAnswer;
                                         const isUserOption = optIdx === normalizedUserAnswer;
                                         
+                                        const optionImages = answer.optionImages || answer.questionId?.optionImages;
+                                        
                                         return (
                                           <li 
                                             key={optIdx}
@@ -603,10 +605,10 @@ const DemoResultDetail = () => {
                                             <span style={{ marginLeft: '8px' }}>
                                               <LatexRenderer content={option} />
                                             </span>
-                                            {answer.questionId?.optionImages && answer.questionId.optionImages[optIdx] && (
+                                            {optionImages && optionImages[optIdx] && (
                                               <div style={{ marginTop: '8px', marginLeft: '24px' }}>
                                                 <img 
-                                                  src={answer.questionId.optionImages[optIdx]} 
+                                                  src={optionImages[optIdx]} 
                                                   alt={`Option ${String.fromCharCode(65 + optIdx)} diagram`} 
                                                   style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '6px' }} 
                                                 />
@@ -639,10 +641,10 @@ const DemoResultDetail = () => {
                                     <p>
                                       <LatexRenderer content={answer.explanation || 'Solution not available'} />
                                     </p>
-                                    {answer.questionId?.explanationImage && (
+                                    {(answer.explanationImage || answer.questionId?.explanationImage) && (
                                       <div style={{ marginTop: '1rem' }}>
                                         <img 
-                                          src={answer.questionId.explanationImage} 
+                                          src={answer.explanationImage || answer.questionId?.explanationImage} 
                                           alt="Solution diagram" 
                                           style={{ maxWidth: '100%', maxHeight: '320px', borderRadius: '8px' }} 
                                         />

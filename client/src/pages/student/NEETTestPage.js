@@ -159,12 +159,16 @@ const NEETTestPage = () => {
     }
 
     try {
+      // Get userId if user is logged in
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
       const submitData = {
         testId,
         testType: 'neet_demo',
         answers, // Send answers object as-is { 0: 'A', 1: 'B', etc. }
         timeSpent: 12000 - timeRemaining,
-        markedForReview
+        markedForReview,
+        userId: user._id || null // Include userId if logged in
       };
 
       const response = await axios.post(`${API_URL}/results/submit-demo`, submitData);

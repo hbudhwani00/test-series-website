@@ -22,7 +22,9 @@ const Results = () => {
       console.log('Results response:', response.data);
       console.log('Number of results:', response.data.results?.length);
       
-      setResults(response.data.results);
+      // Show all results - don't filter by exam selection
+      // Users should see all tests they've taken
+      setResults(response.data.results || []);
     } catch (error) {
       console.error('Error fetching results:', error);
       console.error('Error response:', error.response?.data);
@@ -41,10 +43,14 @@ const Results = () => {
       <h1>My Test Results</h1>
 
       {results.length === 0 ? (
-        <div className="card">
-          <p>No test results found. Take a test to see your results here.</p>
-          <Link to="/student/generate-test" className="btn btn-primary">
-            Generate Test
+        <div className="card" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
+          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📊</div>
+          <h2 style={{ marginBottom: '1rem', color: '#1f2937' }}>No Results Yet</h2>
+          <p style={{ marginBottom: '2rem', color: '#6b7280', fontSize: '1.1rem' }}>
+            Take your first test to see your performance and detailed analytics here!
+          </p>
+          <Link to="/student/exam-patterns" className="btn btn-primary" style={{ fontSize: '1.1rem', padding: '0.75rem 2rem' }}>
+            Browse Tests
           </Link>
         </div>
       ) : (

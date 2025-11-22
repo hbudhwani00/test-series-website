@@ -12,6 +12,7 @@ const ExamPatternSelection = () => {
   const [loading, setLoading] = useState(true);
   const [hasTakenDemoTest, setHasTakenDemoTest] = useState(false);
   const [showDemoModal, setShowDemoModal] = useState(false);
+  const [selectedExam, setSelectedExam] = useState(localStorage.getItem('selectedExam') || 'JEE');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -182,8 +183,30 @@ const ExamPatternSelection = () => {
   };
 
   const handleDemoTest = async () => {
-    // Open the demo selection modal instead of directly starting test
-    setShowDemoModal(true);
+    // Directly start the test based on selected exam (no modal needed)
+    const examType = selectedExam;
+    
+    try {
+      if (examType === 'NEET') {
+        const response = await axios.get(`${API_URL}/demo/neet-test`);
+        if (!response.data.neetTest) {
+          toast.error('NEET demo test not available');
+          return;
+        }
+        navigate(`/student/neet-demo-test/${response.data.neetTest._id}`);
+      } else {
+        // Default to JEE
+        const response = await axios.get(`${API_URL}/demo/test`);
+        if (!response.data.test) {
+          toast.error('JEE demo test not available');
+          return;
+        }
+        navigate(`/student/demo-test/${response.data.test._id}`);
+      }
+    } catch (error) {
+      console.error('Error loading demo test:', error);
+      toast.error('Failed to load demo test. Please try again.');
+    }
   };
 
   const handleStartTest = async () => {
@@ -283,18 +306,57 @@ const ExamPatternSelection = () => {
   }
 
   if (showDemoOnly) {
+    const isNEET = selectedExam === 'NEET';
+    
+    const handleExamToggle = (exam) => {
+      localStorage.setItem('selectedExam', exam);
+      setSelectedExam(exam);
+    };
+    
     return (
       <div className="min-h-screen bg-background p-4 md:p-8">
         <div className="max-w-4xl mx-auto">
+          {/* Exam Toggle */}
+          <div className="flex justify-center mb-6">
+            <div className="inline-flex rounded-lg border-2 border-primary p-1 bg-white">
+              <button
+                onClick={() => handleExamToggle('JEE')}
+                className={`px-6 py-2 rounded-md font-medium transition-all ${
+                  !isNEET 
+                    ? 'bg-primary text-white shadow-md' 
+                    : 'text-gray-600 hover:text-primary'
+                }`}
+              >
+                📐 JEE
+              </button>
+              <button
+                onClick={() => handleExamToggle('NEET')}
+                className={`px-6 py-2 rounded-md font-medium transition-all ${
+                  isNEET 
+                    ? 'bg-primary text-white shadow-md' 
+                    : 'text-gray-600 hover:text-primary'
+                }`}
+              >
+                🩺 NEET
+              </button>
+            </div>
+          </div>
+
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-2">Try JEE Main Demo Test</h1>
-            <p className="text-gray-600">Experience our test platform with a free demo test</p>
+            <h1 className="text-4xl font-bold mb-2">
+              Try {isNEET ? 'NEET' : 'JEE Main'} Demo Test
+            </h1>
+            <p className="text-gray-600">
+              Experience our test platform with a free demo test
+            </p>
           </div>
 
           <Card className="p-8">
             <div className="text-center mb-6">
-              <div className="text-6xl mb-4">🎯</div>
-              <h2 className="text-2xl font-bold mb-2">JEE Main 2026 Demo Test</h2>
+              <div className="text-6xl mb-4">{isNEET ? '🩺' : '🎯'}</div>
+              <h2 className="text-2xl font-bold mb-2">
+                {isNEET ? 'NEET 2026' : 'JEE Main 2026'} Demo Test
+              </h2>
               <p className="text-gray-600 mb-4">Complete Official Pattern - Free Access</p>
             </div>
 
@@ -302,26 +364,53 @@ const ExamPatternSelection = () => {
               <div>
                 <h3 className="font-bold mb-3 text-lg">Test Details:</h3>
                 <ul className="space-y-2 text-sm text-gray-700">
-                  <li className="flex items-start">
-                    <span className="text-primary mr-2">✓</span>
-                    <span>75 Questions (25 each: Physics, Chemistry, Mathematics)</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-primary mr-2">✓</span>
-                    <span>20 MCQs + 5 Numerical per subject</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-primary mr-2">✓</span>
-                    <span>Total: 300 marks</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-primary mr-2">✓</span>
-                    <span>Duration: 3 hours (180 minutes)</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-primary mr-2">✓</span>
-                    <span>Official JEE Main 2026 Pattern</span>
-                  </li>
+                  {isNEET ? (
+                    <>
+                      <li className="flex items-start">
+                        <span className="text-primary mr-2">✓</span>
+                        <span>180 Questions (45 Physics, 45 Chemistry, 90 Biology)</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="text-primary mr-2">✓</span>
+                        <span>All Multiple Choice Questions</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="text-primary mr-2">✓</span>
+                        <span>Total: 720 marks (4 marks each)</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="text-primary mr-2">✓</span>
+                        <span>Duration: 3 hours 20 minutes (200 minutes)</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="text-primary mr-2">✓</span>
+                        <span>Official NEET 2026 Pattern</span>
+                      </li>
+                    </>
+                  ) : (
+                    <>
+                      <li className="flex items-start">
+                        <span className="text-primary mr-2">✓</span>
+                        <span>75 Questions (25 each: Physics, Chemistry, Mathematics)</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="text-primary mr-2">✓</span>
+                        <span>20 MCQs + 5 Numerical per subject</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="text-primary mr-2">✓</span>
+                        <span>Total: 300 marks</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="text-primary mr-2">✓</span>
+                        <span>Duration: 3 hours (180 minutes)</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="text-primary mr-2">✓</span>
+                        <span>Official JEE Main 2026 Pattern</span>
+                      </li>
+                    </>
+                  )}
                 </ul>
               </div>
 
@@ -357,7 +446,7 @@ const ExamPatternSelection = () => {
               size="lg" 
               className="w-full mb-4"
             >
-              Start Free Demo Test
+              Start Free {isNEET ? 'NEET' : 'JEE Main'} Demo Test
             </Button>
 
             <div className="text-center pt-4 border-t">

@@ -33,6 +33,9 @@ const Login = () => {
       if (user.role === 'admin') {
         navigate('/admin/dashboard');
       } else {
+        // Check if student has selected exam preference
+        const selectedExam = localStorage.getItem('selectedExam');
+        
         // Check if student has active subscription
         try {
           const subResponse = await axios.get(`${API_URL}/payment/subscription-status`, {
@@ -47,12 +50,23 @@ const Login = () => {
             // Has subscription - go to dashboard
             navigate('/student/dashboard');
           } else {
-            // No subscription - go to exam selection to choose demo
-            navigate('/student/exam-selection');
+            // No subscription - check if exam is already selected
+            if (selectedExam) {
+              // Exam already selected, go to test patterns page
+              navigate('/student/exam-patterns');
+            } else {
+              // No exam selected, go to exam selection
+              navigate('/student/exam-selection');
+            }
           }
         } catch (error) {
-          // If subscription check fails, default to exam selection
-          navigate('/student/exam-selection');
+          // If subscription check fails, check for exam selection
+          console.error('Subscription check error:', error);
+          if (selectedExam) {
+            navigate('/student/exam-patterns');
+          } else {
+            navigate('/student/exam-selection');
+          }
         }
       }
     } catch (error) {
