@@ -13,7 +13,7 @@ const resultSchema = new mongoose.Schema({
   },
   testType: {
     type: String,
-    enum: ['Test', 'DemoTest', 'ScheduledTest'],
+    enum: ['Test', 'DemoTest', 'NEETDemoTest', 'ScheduledTest', 'neet_demo', 'jee_demo'],
     default: 'Test'
   },
   isDemo: {

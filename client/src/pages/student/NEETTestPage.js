@@ -235,8 +235,8 @@ const NEETTestPage = () => {
             {/* Physics Section */}
             <div className="subject-section">
               <div className="subject-header">PHYSICS (Q1-45)</div>
-              {test.questions.slice(0, 45).map((question, idx) => {
-                const qIndex = idx;
+              {test.questions.filter(q => q.subject === 'Physics').sort((a, b) => a.questionNumber - b.questionNumber).map((question, idx) => {
+                const qIndex = test.questions.indexOf(question);
                 const isSelected = (optIdx) => answers[qIndex] === String.fromCharCode(65 + optIdx);
                 
                 return (
@@ -246,7 +246,7 @@ const NEETTestPage = () => {
                     id={`question-${qIndex}`}
                   >
                     <div className="question-header-card">
-                      <h3>Question {qIndex + 1}</h3>
+                      <h3>Question {question.questionNumber || (qIndex + 1)}</h3>
                       <div className="question-meta">
                         <span className="badge">{question.subject}</span>
                         <span className="marks">4 marks</span>
@@ -256,14 +256,14 @@ const NEETTestPage = () => {
                     <div className="question-content">
                       <div className="question-text">
                         <div style={{display: 'flex', alignItems: 'flex-start', gap: '6px'}}>
-                          <strong style={{color: '#2D3E82', flexShrink: 0}}>Q{qIndex + 1}.</strong>
+                          <strong style={{color: '#111827', flexShrink: 0}}>Q{question.questionNumber || (qIndex + 1)}.</strong>
                           <span style={{flex: 1}}><LatexRenderer content={question.question} /></span>
                         </div>
                         {question.questionImage && (
                           <div className="question-image-container">
                             <img 
                               src={question.questionImage} 
-                              alt={`Question ${qIndex + 1}`} 
+                              alt={`Question ${question.questionNumber || (qIndex + 1)}`} 
                               className="question-image"
                             />
                           </div>
@@ -327,8 +327,8 @@ const NEETTestPage = () => {
             {/* Chemistry Section */}
             <div className="subject-section">
               <div className="subject-header">CHEMISTRY (Q46-90)</div>
-              {test.questions.slice(45, 90).map((question, idx) => {
-                const qIndex = idx + 45;
+              {test.questions.filter(q => q.subject === 'Chemistry').sort((a, b) => a.questionNumber - b.questionNumber).map((question, idx) => {
+                const qIndex = test.questions.indexOf(question);
                 const isSelected = (optIdx) => answers[qIndex] === String.fromCharCode(65 + optIdx);
                 
                 return (
@@ -338,7 +338,7 @@ const NEETTestPage = () => {
                     id={`question-${qIndex}`}
                   >
                     <div className="question-header-card">
-                      <h3>Question {qIndex + 1}</h3>
+                      <h3>Question {question.questionNumber || (qIndex + 1)}</h3>
                       <div className="question-meta">
                         <span className="badge">{question.subject}</span>
                         <span className="marks">4 marks</span>
@@ -348,14 +348,14 @@ const NEETTestPage = () => {
                     <div className="question-content">
                       <div className="question-text">
                         <div style={{display: 'flex', alignItems: 'flex-start', gap: '6px'}}>
-                          <strong style={{color: '#2D3E82', flexShrink: 0}}>Q{qIndex + 1}.</strong>
+                          <strong style={{color: '#111827', flexShrink: 0}}>Q{question.questionNumber || (qIndex + 1)}.</strong>
                           <span style={{flex: 1}}><LatexRenderer content={question.question} /></span>
                         </div>
                         {question.questionImage && (
                           <div className="question-image-container">
                             <img 
                               src={question.questionImage} 
-                              alt={`Question ${qIndex + 1}`} 
+                              alt={`Question ${question.questionNumber || (qIndex + 1)}`} 
                               className="question-image"
                             />
                           </div>
@@ -419,8 +419,8 @@ const NEETTestPage = () => {
             {/* Biology Section */}
             <div className="subject-section">
               <div className="subject-header">BIOLOGY (Q91-180)</div>
-              {test.questions.slice(90, 180).map((question, idx) => {
-                const qIndex = idx + 90;
+              {test.questions.filter(q => q.subject === 'Biology').sort((a, b) => a.questionNumber - b.questionNumber).map((question, idx) => {
+                const qIndex = test.questions.indexOf(question);
                 const isSelected = (optIdx) => answers[qIndex] === String.fromCharCode(65 + optIdx);
                 
                 return (
@@ -430,7 +430,7 @@ const NEETTestPage = () => {
                     id={`question-${qIndex}`}
                   >
                     <div className="question-header-card">
-                      <h3>Question {qIndex + 1}</h3>
+                      <h3>Question {question.questionNumber || (qIndex + 1)}</h3>
                       <div className="question-meta">
                         <span className="badge">{question.subject}</span>
                         <span className="marks">4 marks</span>
@@ -440,14 +440,14 @@ const NEETTestPage = () => {
                     <div className="question-content">
                       <div className="question-text">
                         <div style={{display: 'flex', alignItems: 'flex-start', gap: '6px'}}>
-                          <strong style={{color: '#2D3E82', flexShrink: 0}}>Q{qIndex + 1}.</strong>
+                          <strong style={{color: '#111827', flexShrink: 0}}>Q{question.questionNumber || (qIndex + 1)}.</strong>
                           <span style={{flex: 1}}><LatexRenderer content={question.question} /></span>
                         </div>
                         {question.questionImage && (
                           <div className="question-image-container">
                             <img 
                               src={question.questionImage} 
-                              alt={`Question ${qIndex + 1}`} 
+                              alt={`Question ${question.questionNumber || (qIndex + 1)}`} 
                               className="question-image"
                             />
                           </div>
@@ -514,6 +514,7 @@ const NEETTestPage = () => {
         <div className="neet-omr-panel">
           <OMRSheet
             totalQuestions={test.questions.length}
+            questions={test.questions}
             answers={answers}
             markedForReview={markedForReview}
             currentQuestionIndex={currentQuestionIndex}

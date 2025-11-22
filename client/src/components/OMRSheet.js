@@ -1,28 +1,31 @@
 import React from 'react';
 import './OMRSheet.css';
 
-const OMRSheet = ({ totalQuestions = 180, answers, markedForReview, currentQuestionIndex, onQuestionClick, onAnswerSelect }) => {
+const OMRSheet = ({ totalQuestions = 180, questions = [], answers, markedForReview, currentQuestionIndex, onQuestionClick, onAnswerSelect }) => {
+  // Group questions by subject and sort by questionNumber
+  const physicsQuestions = questions.filter(q => q.subject === 'Physics').sort((a, b) => a.questionNumber - b.questionNumber);
+  const chemistryQuestions = questions.filter(q => q.subject === 'Chemistry').sort((a, b) => a.questionNumber - b.questionNumber);
+  const biologyQuestions = questions.filter(q => q.subject === 'Biology').sort((a, b) => a.questionNumber - b.questionNumber);
+
   const sections = [
-    { name: 'Physics', start: 1, end: 45 },
-    { name: 'Chemistry', start: 46, end: 90 },
-    { name: 'Biology', start: 91, end: 180 }
+    { name: 'Physics', questions: physicsQuestions, range: 'Q1-45' },
+    { name: 'Chemistry', questions: chemistryQuestions, range: 'Q46-90' },
+    { name: 'Biology', questions: biologyQuestions, range: 'Q91-180' }
   ];
 
-  const getAnswerStatus = (questionNum, optionIndex) => {
-    const index = questionNum - 1;
-    const answer = answers[index];
+  const getAnswerStatus = (questionIndex, optionIndex) => {
+    const answer = answers[questionIndex];
     if (!answer) return 'unanswered';
     const optionLetter = String.fromCharCode(65 + optionIndex);
     return answer === optionLetter ? 'answered' : 'unanswered';
   };
 
-  const handleOptionClick = (questionNum, optionIndex) => {
-    const index = questionNum - 1;
+  const handleOptionClick = (questionIndex, optionIndex) => {
     const optionLetter = String.fromCharCode(65 + optionIndex);
     
     // Call the answer select handler if provided
     if (onAnswerSelect) {
-      onAnswerSelect(index, optionLetter);
+      onAnswerSelect(questionIndex, optionLetter);
     }
   };
 
@@ -70,23 +73,38 @@ const OMRSheet = ({ totalQuestions = 180, answers, markedForReview, currentQuest
           <div key={section.name} className="omr-section">
             <div className="section-header">
               <span className="section-name">{section.name}</span>
-              <span className="section-range">Q{section.start}-{section.end}</span>
+              <span className="section-range">{section.range}</span>
             </div>
             
             <div className="omr-questions-list">
-              {Array.from({ length: section.end - section.start + 1 }, (_, i) => {
-                const questionNum = section.start + i;
-                const index = questionNum - 1;
-                const isCurrent = currentQuestionIndex === index;
-                const isMarked = markedForReview[index];
-                const answer = answers[index];
+              {section.questions.map((question) => {
+                const questionIndex = questions.indexOf(question);
+                const isCurrent = currentQuestionIndex === questionIndex;
+                const isMarked = markedForReview[questionIndex];
+                const answer = answers[questionIndex];
+                const displayNumber = question.questionNumber || (questionIndex + 1);
                 
                 return (
                   <div
-                    key={questionNum}
+                    key={questionIndex}
                     className={`omr-question-row ${isCurrent ? 'current' : ''} ${isMarked ? 'marked' : ''}`}
                   >
-                    <div className="question-num">Q{questionNum}</div>
+                    <div 
+                      className="question-num"
+                      onClick={() => {
+                        if (onQuestionClick) {
+                          onQuestionClick(questionIndex);
+                          // Scroll to the question
+                          const questionElement = document.getElementById(`question-${questionIndex}`);
+                          if (questionElement) {
+                            questionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          }
+                        }
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      Q{displayNumber}
+                    </div>
                     
                     <div className="question-options">
                       {['A', 'B', 'C', 'D'].map((option, idx) => {
@@ -95,8 +113,8 @@ const OMRSheet = ({ totalQuestions = 180, answers, markedForReview, currentQuest
                           <div
                             key={option}
                             className={`option-bubble-omr ${isSelected ? 'selected' : ''}`}
-                            onClick={() => handleOptionClick(questionNum, idx)}
-                            title={`Q${questionNum} Option ${option}`}
+                            onClick={() => handleOptionClick(questionIndex, idx)}
+                            title={`Q${displayNumber} Option ${option}`}
                           >
                             {option}
                           </div>

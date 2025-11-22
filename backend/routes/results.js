@@ -4,6 +4,123 @@ const { auth } = require('../middleware/auth');
 const Result = require('../models/Result');
 const Test = require('../models/Test');
 const Question = require('../models/Question');
+const DemoTest = require('../models/DemoTest');
+const NEETDemoTest = require('../models/NEETDemoTest');
+
+// Submit Demo Test (NEET/JEE) - No auth required
+router.post('/submit-demo', async (req, res) => {
+  try {
+    const { testId, testType, answers, timeSpent, markedForReview } = req.body;
+
+    let test;
+    let allQuestions = [];
+
+    // Fetch the appropriate test type
+    if (testType === 'neet_demo') {
+      test = await NEETDemoTest.findById(testId).populate('questions');
+      if (!test) {
+        return res.status(404).json({ message: 'NEET demo test not found' });
+      }
+      allQuestions = test.questions;
+    } else if (testType === 'jee_demo') {
+      test = await DemoTest.findById(testId).populate('questions');
+      if (!test) {
+        return res.status(404).json({ message: 'JEE demo test not found' });
+      }
+      allQuestions = test.questions;
+    } else {
+      return res.status(400).json({ message: 'Invalid test type' });
+    }
+
+    // Evaluate answers
+    let score = 0;
+    let correctAnswers = 0;
+    let incorrectAnswers = 0;
+    let unattempted = 0;
+
+    const evaluatedAnswers = [];
+
+    // Convert answers object to map (answers is { questionIndex: 'A'/'B'/'C'/'D' })
+    allQuestions.forEach((question, index) => {
+      const userAnswer = answers[index];
+
+      if (!userAnswer || userAnswer === null || userAnswer === undefined || userAnswer === '') {
+        unattempted++;
+        evaluatedAnswers.push({
+          questionId: question._id,
+          userAnswer: null,
+          isCorrect: false,
+          marksAwarded: 0
+        });
+        return;
+      }
+
+      // Check if answer is correct
+      let isCorrect = false;
+      
+      if (question.questionType === 'single' || !question.questionType) {
+        // Convert answer letter to index (A=0, B=1, C=2, D=3)
+        const answerIndex = userAnswer.charCodeAt(0) - 65; // 'A' = 65
+        const correctIndex = parseInt(question.correctAnswer);
+        isCorrect = answerIndex === correctIndex;
+      }
+
+      // Calculate marks
+      let marksAwarded = 0;
+      if (isCorrect) {
+        marksAwarded = question.marks || 4;
+        correctAnswers++;
+      } else {
+        marksAwarded = question.negativeMarks || -1;
+        incorrectAnswers++;
+      }
+
+      score += marksAwarded;
+
+      evaluatedAnswers.push({
+        questionId: question._id,
+        userAnswer: userAnswer,
+        isCorrect,
+        marksAwarded
+      });
+    });
+
+    const percentage = (score / test.totalMarks) * 100;
+
+    // Create result without userId (demo test)
+    const result = new Result({
+      testId: testId,
+      testType: testType,
+      answers: evaluatedAnswers,
+      score,
+      totalMarks: test.totalMarks,
+      percentage,
+      correctAnswers,
+      incorrectAnswers,
+      unattempted,
+      timeTaken: timeSpent,
+      isDemo: true // Mark as demo result
+    });
+
+    await result.save();
+
+    res.json({
+      message: 'Demo test submitted successfully',
+      result: {
+        id: result._id,
+        score,
+        totalMarks: test.totalMarks,
+        percentage: percentage.toFixed(2),
+        correctAnswers,
+        incorrectAnswers,
+        unattempted
+      }
+    });
+  } catch (error) {
+    console.error('Error submitting demo test:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
 
 // Submit Test and Calculate Result
 router.post('/submit', auth, async (req, res) => {
