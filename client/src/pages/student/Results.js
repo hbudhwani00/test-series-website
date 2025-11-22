@@ -60,7 +60,8 @@ const Results = () => {
               <div className="result-header">
                 <h3>
                   {result.isDemo && '🎯 '}
-                  {result.testId?.title || 'JEE Main Demo Test'}
+                  {result.testId?.title || 
+                   (result.testType === 'neet_demo' ? 'NEET Demo Test' : 'JEE Main Demo Test')}
                   {result.isDemo && ' (Demo)'}
                 </h3>
                 <span className="result-date">
