@@ -50,7 +50,18 @@ router.post('/submit-demo', async (req, res) => {
           questionId: question._id,
           userAnswer: null,
           isCorrect: false,
-          marksAwarded: 0
+          marksAwarded: 0,
+          // Snapshot key fields for result display
+          subject: question.subject,
+          chapter: question.chapter,
+          topic: question.topic,
+          questionNumber: question.questionNumber,
+          questionText: question.question,
+          questionImage: question.questionImage,
+          questionType: question.questionType,
+          correctAnswer: question.correctAnswer,
+          explanation: question.explanation,
+          explanationImage: question.explanationImage
         });
         return;
       }
@@ -81,7 +92,18 @@ router.post('/submit-demo', async (req, res) => {
         questionId: question._id,
         userAnswer: userAnswer,
         isCorrect,
-        marksAwarded
+        marksAwarded,
+        // Snapshot key fields for result display
+        subject: question.subject,
+        chapter: question.chapter,
+        topic: question.topic,
+        questionNumber: question.questionNumber,
+        questionText: question.question,
+        questionImage: question.questionImage,
+        questionType: question.questionType,
+        correctAnswer: question.correctAnswer,
+        explanation: question.explanation,
+        explanationImage: question.explanationImage
       });
     });
 
@@ -293,9 +315,7 @@ router.get('/public/:resultId', async (req, res) => {
       return res.status(400).json({ message: 'Invalid result ID' });
     }
     
-    const result = await Result.findById(resultId)
-      .populate('testId')
-      .populate('answers.questionId');
+    const result = await Result.findById(resultId);
 
     if (!result) {
       return res.status(404).json({ message: 'Result not found' });
@@ -306,9 +326,20 @@ router.get('/public/:resultId', async (req, res) => {
       return res.status(403).json({ message: 'This result requires authentication' });
     }
 
-    res.json({ result });
+    // Populate test based on testType (answers already have snapshot data)
+    let populatedResult = result.toObject();
+    
+    if (result.testType === 'neet_demo') {
+      const test = await NEETDemoTest.findById(result.testId).populate('questions');
+      populatedResult.testId = test;
+    } else if (result.testType === 'jee_demo') {
+      const test = await DemoTest.findById(result.testId).populate('questions');
+      populatedResult.testId = test;
+    }
+
+    res.json({ result: populatedResult });
   } catch (error) {
-    console.error(error);
+    console.error('Error fetching public result:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
