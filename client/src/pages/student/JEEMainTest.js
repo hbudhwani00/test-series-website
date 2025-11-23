@@ -549,18 +549,27 @@ const JEEMainTest = () => {
       
       if (isDemoTest) {
         // Demo test submission - use submit-demo endpoint
+        console.log('JEE Demo Test Submit - User from localStorage:', user);
+        console.log('JEE Demo Test Submit - userId to send:', user._id || null);
+        
+        const submitPayload = {
+          testId: test._id,
+          testType: 'jee_demo',
+          answers: formattedAnswers,
+          timeSpent: (180 * 60) - timeRemaining,
+          markedForReview: {},
+          userId: user._id || null, // Include userId if logged in
+          questionTimeTracking // Include detailed time tracking data
+        };
+        
+        console.log('JEE Demo Test Submit - Payload:', { ...submitPayload, answers: `[${Object.keys(submitPayload.answers).length} answers]` });
+        
         response = await axios.post(
           `${API_URL}/results/submit-demo`,
-          {
-            testId: test._id,
-            testType: 'jee_demo',
-            answers: formattedAnswers,
-            timeSpent: (180 * 60) - timeRemaining,
-            markedForReview: {},
-            userId: user._id || null, // Include userId if logged in
-            questionTimeTracking // Include detailed time tracking data
-          }
+          submitPayload
         );
+        
+        console.log('JEE Demo Test Submit - Response:', response.data);
       } else {
         // Regular test submission
         response = await axios.post(

@@ -210,6 +210,9 @@ const NEETTestPage = () => {
       // Get userId if user is logged in
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       
+      console.log('NEET Test Submit - User from localStorage:', user);
+      console.log('NEET Test Submit - userId to send:', user._id || null);
+      
       const submitData = {
         testId,
         testType: 'neet_demo',
@@ -219,8 +222,12 @@ const NEETTestPage = () => {
         userId: user._id || null, // Include userId if logged in
         questionTimeTracking // Include detailed time tracking data
       };
+      
+      console.log('NEET Test Submit - Complete submitData:', { ...submitData, answers: `[${Object.keys(submitData.answers).length} answers]` });
 
       const response = await axios.post(`${API_URL}/results/submit-demo`, submitData);
+      
+      console.log('NEET Test Submit - Response:', response.data);
 
       toast.success('Test submitted successfully!');
       navigate(`/student/demo-result/${response.data.result.id}`);
