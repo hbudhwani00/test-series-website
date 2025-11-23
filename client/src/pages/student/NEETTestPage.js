@@ -209,9 +209,10 @@ const NEETTestPage = () => {
     try {
       // Get userId if user is logged in
       const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const userId = user.id || user._id || null; // Backend returns 'id', not '_id'
       
       console.log('NEET Test Submit - User from localStorage:', user);
-      console.log('NEET Test Submit - userId to send:', user._id || null);
+      console.log('NEET Test Submit - userId to send:', userId);
       
       const submitData = {
         testId,
@@ -219,7 +220,7 @@ const NEETTestPage = () => {
         answers, // Send answers object as-is { 0: 'A', 1: 'B', etc. }
         timeSpent: 12000 - timeRemaining,
         markedForReview,
-        userId: user._id || null, // Include userId if logged in
+        userId: userId, // Include userId if logged in
         questionTimeTracking // Include detailed time tracking data
       };
       

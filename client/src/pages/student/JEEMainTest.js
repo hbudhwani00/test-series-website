@@ -520,13 +520,59 @@ const JEEMainTest = () => {
       const allQuestions = getAllQuestions();
       const formattedAnswers = {};
       
+      console.log('=== JEE Demo Test Submission Debug ===');
+      console.log('Total questions:', allQuestions.length);
+      console.log('Answers state object:', answers);
+      console.log('Answers keys:', Object.keys(answers));
+      console.log('Sample answers:', Object.keys(answers).slice(0, 5).map(k => ({ key: k, value: answers[k], type: typeof answers[k] })));
+      
       // Convert index-based answers to questionId-based answers for regular test
-      // OR keep as index-based for demo test
+      // OR convert to questionId-based for demo test
       if (isDemoTest) {
-        // For demo test, keep answers as index-based { 0: 'A', 1: 'B', etc }
-        Object.keys(answers).forEach(key => {
-          formattedAnswers[key] = answers[key];
+        console.log('=== Processing Demo Test Answers ===');
+        
+        // For demo test, convert index-based answers to questionId-based
+        // IMPORTANT: Include ALL questions, even unattempted ones (null)
+        allQuestions.forEach((question, index) => {
+          if (question && question._id) {
+            // Keys are stored as strings like "0", "1", "2" (see getQuestionKey())
+            const indexKey = index.toString();
+            const answer = answers[indexKey];
+            
+            // DEBUG: Log first 5 and any answered questions
+            if (index < 5 || answer !== undefined) {
+              console.log(`Q${index}: indexKey="${indexKey}", answer="${answer}", type=${typeof answer}, questionId=${question._id}`);
+            }
+            
+            // Convert answers to numeric format for backend
+            let numericAnswer = answer;
+            if (answer !== undefined && answer !== null) {
+              if (typeof answer === 'string') {
+                // Check if it's a letter (A, B, C, D) - convert to index (0, 1, 2, 3)
+                if (answer.length === 1 && answer >= 'A' && answer <= 'Z') {
+                  numericAnswer = answer.charCodeAt(0) - 65; // 'A' -> 0, 'B' -> 1, 'C' -> 2, 'D' -> 3
+                  console.log(`  ✓ Converted letter "${answer}" to ${numericAnswer}`);
+                } else {
+                  // It's a numeric string (Section B numerical answer) - convert to number
+                  numericAnswer = parseFloat(answer);
+                  console.log(`  ✓ Converted numeric string "${answer}" to ${numericAnswer}`);
+                }
+              }
+              // If already a number, keep it as is
+            }
+            
+            formattedAnswers[question._id] = numericAnswer !== undefined ? numericAnswer : null;
+          }
         });
+        
+        console.log('=== Formatted Answers Summary ===');
+        const answeredQuestions = Object.entries(formattedAnswers).filter(([_, ans]) => ans !== null && ans !== undefined);
+        console.log('Total questions formatted:', Object.keys(formattedAnswers).length);
+        console.log('Answered (non-null):', answeredQuestions.length);
+        console.log('All answered questions:', answeredQuestions.map(([qId, ans]) => ({ questionId: qId, answer: ans, type: typeof ans })));
+        
+        console.log('Formatted answers count:', Object.keys(formattedAnswers).length);
+        console.log('Non-null answers:', Object.values(formattedAnswers).filter(a => a !== null).length);
       } else {
         // For regular test, convert to questionId-based
         Object.keys(answers).forEach(key => {
@@ -549,8 +595,9 @@ const JEEMainTest = () => {
       
       if (isDemoTest) {
         // Demo test submission - use submit-demo endpoint
+        const userId = user.id || user._id || null; // Backend returns 'id', not '_id'
         console.log('JEE Demo Test Submit - User from localStorage:', user);
-        console.log('JEE Demo Test Submit - userId to send:', user._id || null);
+        console.log('JEE Demo Test Submit - userId to send:', userId);
         
         const submitPayload = {
           testId: test._id,
@@ -558,7 +605,7 @@ const JEEMainTest = () => {
           answers: formattedAnswers,
           timeSpent: (180 * 60) - timeRemaining,
           markedForReview: {},
-          userId: user._id || null, // Include userId if logged in
+          userId: userId, // Include userId if logged in
           questionTimeTracking // Include detailed time tracking data
         };
         

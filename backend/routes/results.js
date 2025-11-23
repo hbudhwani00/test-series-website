@@ -50,9 +50,10 @@ router.post('/submit-demo', async (req, res) => {
 
     const evaluatedAnswers = [];
 
-    // Convert answers object to map (answers is { questionIndex: 'A'/'B'/'C'/'D' })
+    // Convert answers object to map (answers is { questionId: numericAnswer })
     allQuestions.forEach((question, index) => {
-      const userAnswer = answers[index];
+      const questionId = question._id.toString();
+      const userAnswer = answers[questionId];
       
       // Get time tracking data for this question
       const timeData = questionTimeTracking && questionTimeTracking[index];
@@ -95,10 +96,15 @@ router.post('/submit-demo', async (req, res) => {
       let isCorrect = false;
       
       if (question.questionType === 'single' || !question.questionType) {
-        // Convert answer letter to index (A=0, B=1, C=2, D=3)
-        const answerIndex = userAnswer.charCodeAt(0) - 65; // 'A' = 65
-        const correctIndex = parseInt(question.correctAnswer);
-        isCorrect = answerIndex === correctIndex;
+        // Both userAnswer and correctAnswer are now numeric (0, 1, 2, 3)
+        const userAnswerNum = typeof userAnswer === 'string' ? parseInt(userAnswer) : userAnswer;
+        const correctAnswerNum = typeof question.correctAnswer === 'string' ? parseInt(question.correctAnswer) : question.correctAnswer;
+        isCorrect = userAnswerNum === correctAnswerNum;
+      } else if (question.questionType === 'numerical') {
+        // For numerical questions, compare the numeric values
+        const userAnswerNum = typeof userAnswer === 'string' ? parseFloat(userAnswer) : userAnswer;
+        const correctAnswerNum = typeof question.correctAnswer === 'string' ? parseFloat(question.correctAnswer) : question.correctAnswer;
+        isCorrect = Math.abs(userAnswerNum - correctAnswerNum) < 0.01; // Allow small floating point differences
       }
 
       // Calculate marks

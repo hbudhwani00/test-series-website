@@ -114,6 +114,98 @@ const Results = () => {
                 </div>
               </div>
 
+              {/* Subject-wise Marks Table */}
+              {result.answers && result.answers.length > 0 && (() => {
+                const subjectMarks = {};
+                result.answers.forEach(ans => {
+                  const subject = ans.subject || 'General';
+                  if (!subjectMarks[subject]) {
+                    subjectMarks[subject] = { correct: 0, incorrect: 0, unattempted: 0, score: 0, total: 0 };
+                  }
+                  subjectMarks[subject].total++;
+                  if (ans.isCorrect) {
+                    subjectMarks[subject].correct++;
+                    subjectMarks[subject].score += (ans.marksAwarded || 4);
+                  } else if (ans.userAnswer === null || ans.userAnswer === undefined || ans.userAnswer === '') {
+                    subjectMarks[subject].unattempted++;
+                  } else {
+                    subjectMarks[subject].incorrect++;
+                    subjectMarks[subject].score += (ans.marksAwarded || -1);
+                  }
+                });
+                
+                const hasMultipleSubjects = Object.keys(subjectMarks).length > 1;
+                const subjects = Object.keys(subjectMarks).sort();
+                
+                return hasMultipleSubjects ? (
+                  <div className="subject-breakdown" style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+                    <h4 style={{ fontSize: '0.9rem', color: '#6b7280', marginBottom: '0.75rem', fontWeight: '600' }}>📊 Subject-wise Marks</h4>
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                        <thead>
+                          <tr style={{ backgroundColor: '#f9fafb', borderBottom: '2px solid #e5e7eb' }}>
+                            <th style={{ padding: '0.5rem', textAlign: 'left', fontWeight: '600', color: '#6b7280' }}>Metric</th>
+                            {subjects.map(subject => (
+                              <th key={subject} style={{ padding: '0.5rem', textAlign: 'center', fontWeight: '600', color: '#374151' }}>{subject}</th>
+                            ))}
+                            <th style={{ padding: '0.5rem', textAlign: 'center', fontWeight: '700', color: '#1f2937', backgroundColor: '#f3f4f6' }}>Total</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                            <td style={{ padding: '0.5rem', fontWeight: '500', color: '#6b7280' }}>Marks</td>
+                            {subjects.map(subject => {
+                              const maxMarks = subjectMarks[subject].total * 4;
+                              return (
+                                <td key={subject} style={{ padding: '0.5rem', textAlign: 'center', fontWeight: '700', color: subjectMarks[subject].score >= 0 ? '#059669' : '#dc2626' }}>
+                                  {subjectMarks[subject].score}/{maxMarks}
+                                </td>
+                              );
+                            })}
+                            <td style={{ padding: '0.5rem', textAlign: 'center', fontWeight: '800', color: result.score >= 0 ? '#059669' : '#dc2626', backgroundColor: '#f3f4f6', fontSize: '0.95rem' }}>
+                              {result.score}/{result.totalMarks}
+                            </td>
+                          </tr>
+                          <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                            <td style={{ padding: '0.5rem', fontWeight: '500', color: '#6b7280' }}>Correct</td>
+                            {subjects.map(subject => (
+                              <td key={subject} style={{ padding: '0.5rem', textAlign: 'center', color: '#22c55e', fontWeight: '600' }}>
+                                {subjectMarks[subject].correct}
+                              </td>
+                            ))}
+                            <td style={{ padding: '0.5rem', textAlign: 'center', fontWeight: '700', color: '#22c55e', backgroundColor: '#f3f4f6' }}>
+                              {result.correctAnswers}
+                            </td>
+                          </tr>
+                          <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+                            <td style={{ padding: '0.5rem', fontWeight: '500', color: '#6b7280' }}>Incorrect</td>
+                            {subjects.map(subject => (
+                              <td key={subject} style={{ padding: '0.5rem', textAlign: 'center', color: '#ef4444', fontWeight: '600' }}>
+                                {subjectMarks[subject].incorrect}
+                              </td>
+                            ))}
+                            <td style={{ padding: '0.5rem', textAlign: 'center', fontWeight: '700', color: '#ef4444', backgroundColor: '#f3f4f6' }}>
+                              {result.incorrectAnswers}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style={{ padding: '0.5rem', fontWeight: '500', color: '#6b7280' }}>Unattempted</td>
+                            {subjects.map(subject => (
+                              <td key={subject} style={{ padding: '0.5rem', textAlign: 'center', color: '#f59e0b', fontWeight: '600' }}>
+                                {subjectMarks[subject].unattempted}
+                              </td>
+                            ))}
+                            <td style={{ padding: '0.5rem', textAlign: 'center', fontWeight: '700', color: '#f59e0b', backgroundColor: '#f3f4f6' }}>
+                              {result.unattempted}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ) : null;
+              })()}
+
               <Link
                 to={result.isDemo ? `/student/demo-result/${result._id}` : `/student/result/${result._id}`}
                 className="btn btn-primary"

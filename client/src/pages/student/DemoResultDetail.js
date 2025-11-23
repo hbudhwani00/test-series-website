@@ -13,6 +13,9 @@ const DemoResultDetail = () => {
   const [showSolutions, setShowSolutions] = useState(true);
   const [aiFeedback, setAiFeedback] = useState(null);
   const [loadingAI, setLoadingAI] = useState(false);
+  const [showAllRecommended, setShowAllRecommended] = useState(false);
+  const [showAllWeak, setShowAllWeak] = useState(false);
+  const [showAllStrength, setShowAllStrength] = useState(false);
   
   // Lead capture states
   const [showLeadForm, setShowLeadForm] = useState(false);
@@ -174,9 +177,67 @@ const DemoResultDetail = () => {
   };
 
   const topicPerformance = getTopicPerformance();
-  const weakTopics = topicPerformance.filter(t => t.incorrect > 0).sort((a, b) => b.incorrect - a.incorrect).slice(0, 5);
-  const strengthTopics = topicPerformance.filter(t => t.correct > 0 && t.incorrect === 0).sort((a, b) => b.correct - a.correct).slice(0, 5);
-  const recommendedTopics = topicPerformance.filter(t => t.unattempted > 0 || t.incorrect > 0).sort((a, b) => (b.incorrect + b.unattempted) - (a.incorrect + a.unattempted)).slice(0, 4);
+  const weakTopics = topicPerformance.filter(t => t.incorrect > 0).sort((a, b) => b.incorrect - a.incorrect);
+  const strengthTopics = topicPerformance.filter(t => t.correct > 0 && t.incorrect === 0).sort((a, b) => b.correct - a.correct);
+  
+  // Group weak topics by chapter
+  const weakByChapter = {};
+  weakTopics.forEach(topic => {
+    const chapterKey = `${topic.subject}/${topic.chapter}`;
+    if (!weakByChapter[chapterKey]) {
+      weakByChapter[chapterKey] = {
+        subject: topic.subject,
+        chapter: topic.chapter,
+        topics: [],
+        totalIncorrect: 0
+      };
+    }
+    weakByChapter[chapterKey].topics.push(topic.topic);
+    weakByChapter[chapterKey].totalIncorrect += topic.incorrect;
+  });
+  const weakChapters = Object.values(weakByChapter).sort((a, b) => b.totalIncorrect - a.totalIncorrect);
+  
+  // Group strength topics by chapter
+  const strengthByChapter = {};
+  strengthTopics.forEach(topic => {
+    const chapterKey = `${topic.subject}/${topic.chapter}`;
+    if (!strengthByChapter[chapterKey]) {
+      strengthByChapter[chapterKey] = {
+        subject: topic.subject,
+        chapter: topic.chapter,
+        topics: [],
+        totalCorrect: 0
+      };
+    }
+    strengthByChapter[chapterKey].topics.push(topic.topic);
+    strengthByChapter[chapterKey].totalCorrect += topic.correct;
+  });
+  const strengthChapters = Object.values(strengthByChapter).sort((a, b) => b.totalCorrect - a.totalCorrect);
+  const recommendedTopics = topicPerformance.filter(t => t.unattempted > 0 || t.incorrect > 0).sort((a, b) => (b.incorrect + b.unattempted) - (a.incorrect + a.unattempted));
+
+  // Group recommended topics by chapter
+  const recommendedByChapter = {};
+  recommendedTopics.forEach(topic => {
+    const chapterKey = `${topic.subject}/${topic.chapter}`;
+    if (!recommendedByChapter[chapterKey]) {
+      recommendedByChapter[chapterKey] = {
+        subject: topic.subject,
+        chapter: topic.chapter,
+        topics: [],
+        totalIncorrect: 0,
+        totalUnattempted: 0,
+        totalQuestions: 0
+      };
+    }
+    recommendedByChapter[chapterKey].topics.push(topic.topic);
+    recommendedByChapter[chapterKey].totalIncorrect += topic.incorrect;
+    recommendedByChapter[chapterKey].totalUnattempted += topic.unattempted;
+    recommendedByChapter[chapterKey].totalQuestions += topic.total;
+  });
+  
+  const recommendedChapters = Object.values(recommendedByChapter).sort((a, b) => 
+    (b.totalIncorrect + b.totalUnattempted) - (a.totalIncorrect + a.totalUnattempted)
+  );
 
   // Get slow questions (>3 minutes = 180 seconds)
   const slowQuestions = result.answers 
@@ -228,27 +289,16 @@ const DemoResultDetail = () => {
 
   const gradeInfo = getGrade(result.percentage);
 
-  // Group answers for detailed solutions
-  const groupedAnswers = {};
-  if (result.answers) {
-    result.answers.forEach((answer) => {
-      const subject = answer.subject || 'General';
-      const chapter = answer.chapter || 'General';
-      const topic = answer.topic || 'General';
-      
-      if (!groupedAnswers[subject]) {
-        groupedAnswers[subject] = {};
-      }
-      if (!groupedAnswers[subject][chapter]) {
-        groupedAnswers[subject][chapter] = {};
-      }
-      if (!groupedAnswers[subject][chapter][topic]) {
-        groupedAnswers[subject][chapter][topic] = [];
-      }
-      
-      groupedAnswers[subject][chapter][topic].push(answer);
-    });
-  }
+  // Sort answers by question number for sequential display
+  const sortedAnswers = result.answers ? [...result.answers].map((answer, index) => ({
+    ...answer,
+    displayIndex: index + 1 // Fallback index starting from 1
+  })).sort((a, b) => {
+    // Use questionNumber if available, otherwise use displayIndex
+    const numA = a.questionNumber !== null && a.questionNumber !== undefined ? a.questionNumber : a.displayIndex;
+    const numB = b.questionNumber !== null && b.questionNumber !== undefined ? b.questionNumber : b.displayIndex;
+    return numA - numB;
+  }) : [];
 
   return (
     <div className="demo-result-container">
@@ -329,6 +379,112 @@ const DemoResultDetail = () => {
         {/* Results Dashboard - Blurred when modal is showing */}
         <div className={`results-content ${showLeadForm ? 'blurred' : ''}`}>
         
+        {/* Subject-wise Scorecard - Top Section */}
+        {(() => {
+          const subjectMarks = {};
+          result.answers.forEach(ans => {
+            const subject = ans.subject || 'General';
+            if (!subjectMarks[subject]) {
+              subjectMarks[subject] = { correct: 0, incorrect: 0, unattempted: 0, score: 0, total: 0 };
+            }
+            subjectMarks[subject].total++;
+            if (ans.isCorrect) {
+              subjectMarks[subject].correct++;
+              subjectMarks[subject].score += (ans.marksAwarded || 4);
+            } else if (ans.userAnswer === null || ans.userAnswer === undefined || ans.userAnswer === '') {
+              subjectMarks[subject].unattempted++;
+            } else {
+              subjectMarks[subject].incorrect++;
+              subjectMarks[subject].score += (ans.marksAwarded || -1);
+            }
+          });
+          
+          const hasMultipleSubjects = Object.keys(subjectMarks).length > 1;
+          const subjects = Object.keys(subjectMarks).sort();
+          
+          return hasMultipleSubjects ? (
+            <div style={{ 
+              marginBottom: '2rem', 
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+              color: 'white', 
+              padding: '2rem', 
+              borderRadius: '12px',
+              boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)'
+            }}>
+              <h3 style={{ color: 'white', fontSize: '1.4rem', marginBottom: '1.5rem', fontWeight: '700', textAlign: 'center' }}>📊 Subject-wise Scorecard</h3>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0, fontSize: '0.95rem' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}>
+                      <th style={{ padding: '0.9rem', textAlign: 'left', fontWeight: '600', color: 'rgba(255, 255, 255, 0.9)', borderBottom: '2px solid rgba(255, 255, 255, 0.2)' }}>Metric</th>
+                      {subjects.map(subject => (
+                        <th key={subject} style={{ padding: '0.9rem', textAlign: 'center', fontWeight: '700', color: 'white', borderBottom: '2px solid rgba(255, 255, 255, 0.2)' }}>{subject}</th>
+                      ))}
+                      <th style={{ padding: '0.9rem', textAlign: 'center', fontWeight: '800', color: 'white', backgroundColor: 'rgba(255, 255, 255, 0.15)', borderBottom: '2px solid rgba(255, 255, 255, 0.3)' }}>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}>
+                      <td style={{ padding: '0.9rem', fontWeight: '600', color: 'rgba(255, 255, 255, 0.9)', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>Marks Scored</td>
+                      {subjects.map(subject => {
+                        const maxMarks = subjectMarks[subject].total * 4;
+                        const percentage = ((subjectMarks[subject].score / maxMarks) * 100).toFixed(0);
+                        return (
+                          <td key={subject} style={{ padding: '0.9rem', textAlign: 'center', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                            <div style={{ fontWeight: '800', fontSize: '1.2rem', color: 'white', marginBottom: '0.25rem' }}>
+                              {subjectMarks[subject].score}/{maxMarks}
+                            </div>
+                            <div style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.7)' }}>{percentage}%</div>
+                          </td>
+                        );
+                      })}
+                      <td style={{ padding: '0.9rem', textAlign: 'center', backgroundColor: 'rgba(255, 255, 255, 0.15)', borderBottom: '1px solid rgba(255, 255, 255, 0.2)' }}>
+                        <div style={{ fontWeight: '900', fontSize: '1.4rem', color: 'white', marginBottom: '0.25rem' }}>
+                          {result.score}/{result.totalMarks}
+                        </div>
+                        <div style={{ fontSize: '0.85rem', fontWeight: '600', color: 'rgba(255, 255, 255, 0.8)' }}>{result.percentage.toFixed(1)}%</div>
+                      </td>
+                    </tr>
+                    <tr style={{ backgroundColor: 'rgba(34, 197, 94, 0.15)' }}>
+                      <td style={{ padding: '0.9rem', fontWeight: '600', color: 'rgba(255, 255, 255, 0.9)', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>✓ Correct</td>
+                      {subjects.map(subject => (
+                        <td key={subject} style={{ padding: '0.9rem', textAlign: 'center', color: '#86efac', fontWeight: '700', fontSize: '1.1rem', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                          {subjectMarks[subject].correct}
+                        </td>
+                      ))}
+                      <td style={{ padding: '0.9rem', textAlign: 'center', fontWeight: '800', fontSize: '1.2rem', color: '#86efac', backgroundColor: 'rgba(34, 197, 94, 0.2)', borderBottom: '1px solid rgba(255, 255, 255, 0.2)' }}>
+                        {result.correctAnswers}
+                      </td>
+                    </tr>
+                    <tr style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)' }}>
+                      <td style={{ padding: '0.9rem', fontWeight: '600', color: 'rgba(255, 255, 255, 0.9)', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>✗ Incorrect</td>
+                      {subjects.map(subject => (
+                        <td key={subject} style={{ padding: '0.9rem', textAlign: 'center', color: '#fca5a5', fontWeight: '700', fontSize: '1.1rem', borderBottom: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                          {subjectMarks[subject].incorrect}
+                        </td>
+                      ))}
+                      <td style={{ padding: '0.9rem', textAlign: 'center', fontWeight: '800', fontSize: '1.2rem', color: '#fca5a5', backgroundColor: 'rgba(239, 68, 68, 0.2)', borderBottom: '1px solid rgba(255, 255, 255, 0.2)' }}>
+                        {result.incorrectAnswers}
+                      </td>
+                    </tr>
+                    <tr style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)' }}>
+                      <td style={{ padding: '0.9rem', fontWeight: '600', color: 'rgba(255, 255, 255, 0.9)' }}>○ Unattempted</td>
+                      {subjects.map(subject => (
+                        <td key={subject} style={{ padding: '0.9rem', textAlign: 'center', color: '#fcd34d', fontWeight: '700', fontSize: '1.1rem' }}>
+                          {subjectMarks[subject].unattempted}
+                        </td>
+                      ))}
+                      <td style={{ padding: '0.9rem', textAlign: 'center', fontWeight: '800', fontSize: '1.2rem', color: '#fcd34d', backgroundColor: 'rgba(245, 158, 11, 0.2)' }}>
+                        {result.unattempted}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : null;
+        })()}
+        
         {/* Dashboard Grid */}
         <div className="demo-dashboard-grid">
           
@@ -359,7 +515,7 @@ const DemoResultDetail = () => {
                     className="progress-ring-circle"
                   />
                 </svg>
-                <div className="progress-value">{displayPercentage >= 0 ? Math.round(displayPercentage) : displayPercentage.toFixed(1)}%</div>
+                <div className="progress-value">{displayPercentage.toFixed(1)}%</div>
               </div>
               <div className="progress-label">Overall Score</div>
               <div className="progress-sublabel">
@@ -472,21 +628,51 @@ const DemoResultDetail = () => {
             <h3 className="demo-card-title">
               <span style={{ fontSize: '1.5rem' }}>📉</span> Weak Topics
             </h3>
-            {weakTopics.length > 0 ? (
+            {weakChapters.length > 0 ? (
               <>
                 <ul className="weak-topics-list">
-                  {weakTopics.map((topic, idx) => (
-                    <li key={idx} className="weak-topic-item">
-                      <span className="topic-bullet"></span>
-                      <span className="topic-name">{topic.topic}</span>
-                      <span className="topic-count">{topic.incorrect} wrong</span>
-                    </li>
-                  ))}
+                  {weakChapters.slice(0, showAllWeak ? weakChapters.length : 3).map((chapter, idx) => {
+                    const topicsDisplay = chapter.topics.length > 1 
+                      ? chapter.topics.join(', ') 
+                      : chapter.topics[0];
+                    
+                    return (
+                      <li key={idx} className="weak-topic-item">
+                        <span className="topic-bullet"></span>
+                        <span className="topic-name">{chapter.chapter} ({topicsDisplay})</span>
+                        <span className="topic-count">{chapter.totalIncorrect} wrong</span>
+                      </li>
+                    );
+                  })}
                 </ul>
-                <div className="topic-actions">
-                  <button className="topic-btn">Secondary</button>
-                  <button className="topic-btn">Diagnostic</button>
-                </div>
+                
+                {weakChapters.length > 3 && (
+                  <button 
+                    onClick={() => setShowAllWeak(!showAllWeak)}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      marginTop: '1rem',
+                      backgroundColor: '#f3f4f6',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      color: '#374151',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = '#e5e7eb';
+                      e.target.style.borderColor = '#d1d5db';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = '#f3f4f6';
+                      e.target.style.borderColor = '#e5e7eb';
+                    }}
+                  >
+                    {showAllWeak ? '▲ Show Less' : `▼ Show More (${weakChapters.length - 3} more)`}
+                  </button>
+                )}
               </>
             ) : (
               <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '20px' }}>
@@ -500,20 +686,51 @@ const DemoResultDetail = () => {
             <h3 className="demo-card-title">
               <span style={{ fontSize: '1.5rem' }}>✅</span> Strength Topics
             </h3>
-            {strengthTopics.length > 0 ? (
+            {strengthChapters.length > 0 ? (
               <>
                 <ul className="weak-topics-list">
-                  {strengthTopics.map((topic, idx) => (
-                    <li key={idx} className="weak-topic-item">
-                      <span className="topic-bullet strength"></span>
-                      <span className="topic-name">{topic.topic}</span>
-                      <span className="topic-count">{topic.correct} correct</span>
-                    </li>
-                  ))}
+                  {strengthChapters.slice(0, showAllStrength ? strengthChapters.length : 3).map((chapter, idx) => {
+                    const topicsDisplay = chapter.topics.length > 1 
+                      ? chapter.topics.join(', ') 
+                      : chapter.topics[0];
+                    
+                    return (
+                      <li key={idx} className="weak-topic-item">
+                        <span className="topic-bullet strength"></span>
+                        <span className="topic-name">{chapter.chapter} ({topicsDisplay})</span>
+                        <span className="topic-count">{chapter.totalCorrect} correct</span>
+                      </li>
+                    );
+                  })}
                 </ul>
-                <div className="topic-actions">
-                  <button className="topic-btn primary">View Progress</button>
-                </div>
+                
+                {strengthChapters.length > 3 && (
+                  <button 
+                    onClick={() => setShowAllStrength(!showAllStrength)}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      marginTop: '1rem',
+                      backgroundColor: '#f3f4f6',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      color: '#374151',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = '#e5e7eb';
+                      e.target.style.borderColor = '#d1d5db';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = '#f3f4f6';
+                      e.target.style.borderColor = '#e5e7eb';
+                    }}
+                  >
+                    {showAllStrength ? '▲ Show Less' : `▼ Show More (${strengthChapters.length - 3} more)`}
+                  </button>
+                )}
               </>
             ) : (
               <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '20px' }}>
@@ -527,16 +744,22 @@ const DemoResultDetail = () => {
             <h3 className="demo-card-title">
               <span style={{ fontSize: '1.5rem' }}>🎯</span> Recommended Practice
             </h3>
-            {recommendedTopics.length > 0 ? (
+            {recommendedChapters.length > 0 ? (
               <>
                 <div className="practice-chart">
-                  {recommendedTopics.map((topic, idx) => {
-                    const needsPractice = topic.incorrect + topic.unattempted;
-                    const percentage = (needsPractice / topic.total) * 100;
+                  {recommendedChapters.slice(0, showAllRecommended ? recommendedChapters.length : 3).map((chapter, idx) => {
+                    const needsPractice = chapter.totalIncorrect + chapter.totalUnattempted;
+                    const percentage = (needsPractice / chapter.totalQuestions) * 100;
+                    const topicsDisplay = chapter.topics.length > 1 
+                      ? chapter.topics.join(', ') 
+                      : chapter.topics[0];
+                    
                     return (
                       <div key={idx} className="chart-bar-item">
                         <div className="chart-bar-header">
-                          <span className="chart-bar-label">{topic.topic}</span>
+                          <span className="chart-bar-label">
+                            {chapter.chapter} ({topicsDisplay})
+                          </span>
                           <span className="chart-bar-value">{needsPractice} questions</span>
                         </div>
                         <div className="chart-bar-bg">
@@ -549,10 +772,34 @@ const DemoResultDetail = () => {
                     );
                   })}
                 </div>
-                <div className="topic-actions">
-                  <button className="topic-btn">Technical test</button>
-                  <button className="topic-btn">Data skill</button>
-                </div>
+                
+                {recommendedChapters.length > 3 && (
+                  <button 
+                    onClick={() => setShowAllRecommended(!showAllRecommended)}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      marginTop: '1rem',
+                      backgroundColor: '#f3f4f6',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      color: '#374151',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = '#e5e7eb';
+                      e.target.style.borderColor = '#d1d5db';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = '#f3f4f6';
+                      e.target.style.borderColor = '#e5e7eb';
+                    }}
+                  >
+                    {showAllRecommended ? '▲ Show Less' : `▼ Show More (${recommendedChapters.length - 3} more)`}
+                  </button>
+                )}
               </>
             ) : (
               <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '20px' }}>
@@ -574,68 +821,93 @@ const DemoResultDetail = () => {
 
           {showSolutions && (
             <>
-              {Object.keys(groupedAnswers).map((subject, subIdx) => (
-                <div key={subIdx}>
-                  <h3 className="subject-header">{subject}</h3>
-                  
-                  {Object.keys(groupedAnswers[subject]).map((chapter, chIdx) => (
-                    <div key={chIdx}>
-                      <h4 className="chapter-header">📖 Chapter: {chapter}</h4>
-                      
-                      {Object.keys(groupedAnswers[subject][chapter]).map((topic, topIdx) => {
-                        const topicAnswers = groupedAnswers[subject][chapter][topic];
-                        
-                        return (
-                          <div key={topIdx}>
-                            <h5 className="topic-header">🎯 Topic: {topic}</h5>
-                            
-                            {topicAnswers.map((answer, qIdx) => {
-                              const isCorrect = answer.isCorrect;
-                              const isUnattempted = answer.userAnswer === null || answer.userAnswer === undefined;
-                              const questionClass = isCorrect ? 'correct' : (isUnattempted ? 'unattempted' : 'incorrect');
-                              
-                              return (
-                                <div key={qIdx} className={`question-card ${questionClass}`}>
-                                  <span className={`question-status-badge ${questionClass}`}>
-                                    {isCorrect ? '✓ CORRECT' : (isUnattempted ? '− UNATTEMPTED' : '✗ INCORRECT')}
-                                    {' • '}
-                                    Marks: {answer.marksAwarded > 0 ? `+${answer.marksAwarded}` : answer.marksAwarded}
-                                  </span>
+              {sortedAnswers.map((answer, qIdx) => {
+                const isCorrect = answer.isCorrect;
+                const isUnattempted = answer.userAnswer === null || answer.userAnswer === undefined;
+                const questionClass = isCorrect ? 'correct' : (isUnattempted ? 'unattempted' : 'incorrect');
+                
+                return (
+                  <div key={qIdx} className={`question-card ${questionClass}`}>
+                    {/* Subject/Chapter/Topic Badge */}
+                    <div style={{ marginBottom: '0.75rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      {answer.subject && (
+                        <span style={{ 
+                          padding: '0.25rem 0.75rem', 
+                          backgroundColor: '#3b82f6', 
+                          color: 'white', 
+                          borderRadius: '12px', 
+                          fontSize: '0.75rem', 
+                          fontWeight: '600' 
+                        }}>
+                          {answer.subject}
+                        </span>
+                      )}
+                      {answer.chapter && (
+                        <span style={{ 
+                          padding: '0.25rem 0.75rem', 
+                          backgroundColor: '#8b5cf6', 
+                          color: 'white', 
+                          borderRadius: '12px', 
+                          fontSize: '0.75rem', 
+                          fontWeight: '600' 
+                        }}>
+                          {answer.chapter}
+                        </span>
+                      )}
+                      {answer.topic && (
+                        <span style={{ 
+                          padding: '0.25rem 0.75rem', 
+                          backgroundColor: '#ec4899', 
+                          color: 'white', 
+                          borderRadius: '12px', 
+                          fontSize: '0.75rem', 
+                          fontWeight: '600' 
+                        }}>
+                          {answer.topic}
+                        </span>
+                      )}
+                    </div>
 
-                                  <p className="question-text">
-                                    {/* Show question number (prefer snapshot) and question text (snapshot or populated) */}
-                                    <strong style={{ display: 'block', marginBottom: '6px' }}>
-                                      Q{answer.questionNumber || (qIdx + 1)}
-                                    </strong>
-                                    <LatexRenderer content={answer.questionText || answer.questionId?.question || 'Question not available'} />
-                                  </p>
+                    <span className={`question-status-badge ${questionClass}`}>
+                      {isCorrect ? '✓ CORRECT' : (isUnattempted ? '− UNATTEMPTED' : '✗ INCORRECT')}
+                      {' • '}
+                      Marks: {answer.marksAwarded > 0 ? `+${answer.marksAwarded}` : answer.marksAwarded}
+                    </span>
 
-                                  {(answer.questionId?.questionImage || answer.questionImage) && (
-                                    <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
-                                      <img 
-                                        src={answer.questionImage || answer.questionId?.questionImage} 
-                                        alt="Question diagram" 
-                                        style={{ maxWidth: '100%', maxHeight: '320px', borderRadius: '8px' }} 
-                                      />
-                                    </div>
-                                  )}
-                                  
-                                  <div style={{ 
-                                    padding: '15px', 
-                                    background: 'var(--light-bg)', 
-                                    borderRadius: '10px', 
-                                    marginBottom: '15px',
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    flexWrap: 'wrap',
-                                    gap: '10px'
-                                  }}>
-                                    <div>
-                                      <strong>Your Answer: </strong>
-                                      <span style={{ color: isUnattempted ? 'var(--orange-accent)' : 'var(--text-primary)' }}>
-                                        {isUnattempted ? 
-                                          'Not Attempted' : 
-                                          ((answer.questionType || answer.questionId?.questionType) === 'numerical' ? 
+                    <p className="question-text">
+                      {/* Show question number (prefer snapshot) and question text (snapshot or populated) */}
+                      <strong style={{ display: 'block', marginBottom: '6px' }}>
+                        Q{answer.questionNumber || (qIdx + 1)}
+                      </strong>
+                      <LatexRenderer content={answer.questionText || answer.questionId?.question || 'Question not available'} />
+                    </p>
+
+                    {(answer.questionId?.questionImage || answer.questionImage) && (
+                      <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+                        <img 
+                          src={answer.questionImage || answer.questionId?.questionImage} 
+                          alt="Question diagram" 
+                          style={{ maxWidth: '100%', maxHeight: '320px', borderRadius: '8px' }} 
+                        />
+                      </div>
+                    )}
+                    
+                    <div style={{ 
+                      padding: '15px', 
+                      background: 'var(--light-bg)', 
+                      borderRadius: '10px', 
+                      marginBottom: '15px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '10px'
+                    }}>
+                      <div>
+                        <strong>Your Answer: </strong>
+                        <span style={{ color: isUnattempted ? 'var(--orange-accent)' : 'var(--text-primary)' }}>
+                          {isUnattempted ? 
+                            'Not Attempted' : 
+                            ((answer.questionType || answer.questionId?.questionType) === 'numerical' ? 
                                             answer.userAnswer : 
                                             (typeof answer.userAnswer === 'string' && answer.userAnswer.length === 1 && answer.userAnswer.match(/[A-Z]/i) ?
                                               `Option ${answer.userAnswer.toUpperCase()}` :
@@ -702,16 +974,45 @@ const DemoResultDetail = () => {
                                   {(answer.options || answer.questionId?.options) && (answer.options || answer.questionId?.options).length > 0 && (
                                     <ul className="options-list">
                                       {(answer.options || answer.questionId?.options).map((option, optIdx) => {
-                                        const normalizedUserAnswer = typeof answer.userAnswer === 'string' && answer.userAnswer.length === 1 ? 
-                                          answer.userAnswer.charCodeAt(0) - 65 : 
-                                          parseInt(answer.userAnswer);
+                                        // Normalize user answer to index (0-3)
+                                        let normalizedUserAnswer;
+                                        if (typeof answer.userAnswer === 'string' && answer.userAnswer.length === 1 && answer.userAnswer.match(/[A-D]/i)) {
+                                          normalizedUserAnswer = answer.userAnswer.toUpperCase().charCodeAt(0) - 65;
+                                        } else if (!isNaN(answer.userAnswer)) {
+                                          normalizedUserAnswer = parseInt(answer.userAnswer);
+                                        } else {
+                                          normalizedUserAnswer = -1;
+                                        }
                                         
-                                        const normalizedCorrectAnswer = typeof answer.correctAnswer === 'string' && answer.correctAnswer.length === 1 ? 
-                                          answer.correctAnswer.charCodeAt(0) - 65 :
-                                          parseInt(answer.correctAnswer);
+                                        // Normalize correct answer to index (0-3)
+                                        let normalizedCorrectAnswer;
+                                        if (typeof answer.correctAnswer === 'string' && answer.correctAnswer.length === 1 && answer.correctAnswer.match(/[A-D]/i)) {
+                                          normalizedCorrectAnswer = answer.correctAnswer.toUpperCase().charCodeAt(0) - 65;
+                                        } else if (!isNaN(answer.correctAnswer)) {
+                                          normalizedCorrectAnswer = parseInt(answer.correctAnswer);
+                                        } else {
+                                          normalizedCorrectAnswer = -1;
+                                        }
                                         
                                         const isCorrectOption = optIdx === normalizedCorrectAnswer;
                                         const isUserOption = optIdx === normalizedUserAnswer;
+                                        
+                                        // Debug logging for the first option
+                                        if (qIdx === 0 && optIdx === 0) {
+                                          console.log('DEBUG Answer comparison:', {
+                                            questionNumber: answer.questionNumber,
+                                            userAnswer: answer.userAnswer,
+                                            userAnswerType: typeof answer.userAnswer,
+                                            correctAnswer: answer.correctAnswer,
+                                            correctAnswerType: typeof answer.correctAnswer,
+                                            normalizedUser: normalizedUserAnswer,
+                                            normalizedCorrect: normalizedCorrectAnswer,
+                                            isCorrect: answer.isCorrect,
+                                            optIdx: optIdx,
+                                            isCorrectOption,
+                                            isUserOption
+                                          });
+                                        }
                                         
                                         const optionImages = answer.optionImages || answer.questionId?.optionImages;
                                         
@@ -735,6 +1036,7 @@ const DemoResultDetail = () => {
                                             )}
                                             {isCorrectOption && <span style={{ color: 'var(--success-green)', marginLeft: '10px', fontWeight: 'bold' }}>✓</span>}
                                             {isUserOption && !isCorrectOption && <span style={{ color: 'var(--warning-red)', marginLeft: '10px', fontWeight: 'bold' }}>✗ Your Answer</span>}
+                                            {isUserOption && isCorrectOption && <span style={{ color: 'var(--success-green)', marginLeft: '10px', fontWeight: 'bold' }}>✓ Your Answer</span>}
                                           </li>
                                         );
                                       })}
@@ -773,13 +1075,6 @@ const DemoResultDetail = () => {
                                 </div>
                               );
                             })}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ))}
-                </div>
-              ))}
             </>
           )}
         </div>
