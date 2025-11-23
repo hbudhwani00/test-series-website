@@ -146,11 +146,16 @@ router.post('/submit-demo', async (req, res) => {
     // Add userId if user is logged in
     if (userId) {
       resultData.userId = userId;
+      console.log(`Demo test submitted by logged-in user: ${userId}`);
+    } else {
+      console.log('Demo test submitted by non-logged-in user');
     }
     
     const result = new Result(resultData);
 
     await result.save();
+    
+    console.log(`Result saved successfully - ID: ${result._id}, isDemo: ${result.isDemo}, testType: ${result.testType}, onModel: ${result.onModel}, userId: ${result.userId || 'none'}`);
 
     res.json({
       message: 'Demo test submitted successfully',
@@ -410,13 +415,29 @@ router.get('/user/all', auth, async (req, res) => {
   try {
     console.log('Fetching results for user:', req.user.userId);
     
+    // Find results and populate testId using refPath (polymorphic reference)
     const results = await Result.find({ 
       userId: req.user.userId  // Only show this user's results (including their demo results)
     })
-      .populate('testId', 'title examType subject chapter')
+      .populate({
+        path: 'testId',
+        select: 'title examType subject chapter'
+        // refPath 'onModel' is automatically used from schema definition
+      })
       .sort({ submittedAt: -1 });
 
     console.log(`Found ${results.length} results for user ${req.user.userId}`);
+    
+    // Debug logging to check if testId is populated correctly
+    if (results.length > 0) {
+      console.log('Sample result:', {
+        testType: results[0].testType,
+        onModel: results[0].onModel,
+        isDemo: results[0].isDemo,
+        hasTestId: !!results[0].testId,
+        testIdValue: results[0].testId
+      });
+    }
     
     res.json({ results });
   } catch (error) {
