@@ -11,6 +11,12 @@ const NEETDemoTest = require('../models/NEETDemoTest');
 router.post('/submit-demo', async (req, res) => {
   try {
     const { testId, testType, answers, timeSpent, markedForReview, userId, questionTimeTracking } = req.body;
+    
+    console.log('=== DEMO TEST SUBMISSION ===');
+    console.log('testType:', testType);
+    console.log('userId received:', userId);
+    console.log('userId type:', typeof userId);
+    console.log('userId truthiness:', !!userId);
 
     let test;
     let allQuestions = [];
@@ -144,18 +150,21 @@ router.post('/submit-demo', async (req, res) => {
     };
     
     // Add userId if user is logged in
+    console.log('About to save result - userId check:', { userId, truthy: !!userId, type: typeof userId });
     if (userId) {
       resultData.userId = userId;
-      console.log(`Demo test submitted by logged-in user: ${userId}`);
+      console.log(`✅ Demo test submitted by logged-in user: ${userId}`);
     } else {
-      console.log('Demo test submitted by non-logged-in user');
+      console.log('❌ Demo test submitted by non-logged-in user (userId is falsy)');
     }
+    
+    console.log('resultData before save:', { ...resultData, answers: `[${resultData.answers.length} answers]` });
     
     const result = new Result(resultData);
 
     await result.save();
     
-    console.log(`Result saved successfully - ID: ${result._id}, isDemo: ${result.isDemo}, testType: ${result.testType}, onModel: ${result.onModel}, userId: ${result.userId || 'none'}`);
+    console.log(`✅ Result saved - ID: ${result._id}, isDemo: ${result.isDemo}, testType: ${result.testType}, onModel: ${result.onModel}, userId: ${result.userId || 'NONE'}`);
 
     res.json({
       message: 'Demo test submitted successfully',
