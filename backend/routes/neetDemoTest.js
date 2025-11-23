@@ -29,7 +29,7 @@ router.post('/initialize', async (req, res) => {
     const neetTest = new NEETDemoTest({
       title: 'NEET Demo Test',
       description: 'Experience the NEET exam with our sample test. 180 questions covering Physics, Chemistry, and Biology.',
-      duration: 12000, // 200 minutes in seconds
+      duration: 180, // 180 minutes (3 hours)
       totalMarks: 720, // 180 questions * 4 marks
       questions: [],
       isActive: true
@@ -81,7 +81,7 @@ router.post('/create', adminAuth, async (req, res) => {
     const neetTest = new NEETDemoTest({
       title,
       description,
-      duration: duration || 12000, // 200 minutes default
+      duration: duration || 180, // 180 minutes default (3 hours)
       totalMarks: totalMarks || 720, // 180 questions * 4 marks
       questions: [],
       createdBy: req.user.userId
@@ -215,6 +215,22 @@ router.post('/add-question', adminAuth, async (req, res) => {
       });
     }
 
+    // Check for duplicate question number in the test
+    const neetTest = await NEETDemoTest.findById(testId).populate('questions');
+    if (!neetTest) {
+      return res.status(404).json({ message: 'NEET demo test not found' });
+    }
+
+    const duplicateQuestion = neetTest.questions.find(q => 
+      parseInt(q.questionNumber) === parseInt(questionNumber)
+    );
+
+    if (duplicateQuestion) {
+      return res.status(400).json({ 
+        message: `Question number ${questionNumber} already exists in this test! Please use a different number.` 
+      });
+    }
+
     // Create new question
     const payload = {
       ...req.body,
@@ -231,11 +247,6 @@ router.post('/add-question', adminAuth, async (req, res) => {
     await newQuestion.save();
 
     // Add to NEET demo test
-    const neetTest = await NEETDemoTest.findById(testId);
-    if (!neetTest) {
-      return res.status(404).json({ message: 'NEET demo test not found' });
-    }
-
     neetTest.questions.push(newQuestion._id);
     await neetTest.save();
 

@@ -50,8 +50,8 @@ router.post('/upload-image', auth, upload.single('image'), async (req, res) => {
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
-    // S3 URL returned by multer-s3
-    const imageUrl = req.file.location;
+    // S3 URL (when S3 is configured) or local path (when S3 is not configured)
+    const imageUrl = req.file.location || `/uploads/${req.file.filename}`;
 
     res.json({
       success: true,

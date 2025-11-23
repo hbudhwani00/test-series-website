@@ -10,7 +10,7 @@ const NEETDemoTest = require('../models/NEETDemoTest');
 // Submit Demo Test (NEET/JEE) - No auth required but save userId if available
 router.post('/submit-demo', async (req, res) => {
   try {
-    const { testId, testType, answers, timeSpent, markedForReview, userId } = req.body;
+    const { testId, testType, answers, timeSpent, markedForReview, userId, questionTimeTracking } = req.body;
 
     let test;
     let allQuestions = [];
@@ -43,6 +43,18 @@ router.post('/submit-demo', async (req, res) => {
     // Convert answers object to map (answers is { questionIndex: 'A'/'B'/'C'/'D' })
     allQuestions.forEach((question, index) => {
       const userAnswer = answers[index];
+      
+      // Get time tracking data for this question
+      const timeData = questionTimeTracking && questionTimeTracking[index];
+      let questionTimeBreakdown = null;
+      
+      if (timeData && timeData.visited) {
+        questionTimeBreakdown = {
+          firstVisit: timeData.firstVisit || 0,
+          revisits: timeData.revisits || [],
+          totalTime: (timeData.firstVisit || 0) + (timeData.revisits || []).reduce((sum, t) => sum + t, 0)
+        };
+      }
 
       if (!userAnswer || userAnswer === null || userAnswer === undefined || userAnswer === '') {
         unattempted++;
@@ -51,6 +63,7 @@ router.post('/submit-demo', async (req, res) => {
           userAnswer: null,
           isCorrect: false,
           marksAwarded: 0,
+          timeBreakdown: questionTimeBreakdown,
           // Snapshot key fields for result display (ensure all data is saved)
           subject: question.subject || 'General',
           chapter: question.chapter || 'General',
@@ -95,6 +108,7 @@ router.post('/submit-demo', async (req, res) => {
         userAnswer: userAnswer,
         isCorrect,
         marksAwarded,
+        timeBreakdown: questionTimeBreakdown,
         // Snapshot key fields for result display (ensure all data is saved)
         subject: question.subject || 'General',
         chapter: question.chapter || 'General',
@@ -117,6 +131,7 @@ router.post('/submit-demo', async (req, res) => {
     const resultData = {
       testId: testId,
       testType: testType,
+      onModel: testType === 'neet_demo' ? 'NEETDemoTest' : 'DemoTest',
       answers: evaluatedAnswers,
       score,
       totalMarks: test.totalMarks,

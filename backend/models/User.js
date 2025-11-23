@@ -47,6 +47,37 @@ const userSchema = new mongoose.Schema({
       default: true
     }
   }],
+  // Legacy subscription fields for compatibility
+  subscriptionStatus: {
+    type: String,
+    enum: ['active', 'inactive', 'expired'],
+    default: 'inactive'
+  },
+  subscriptionType: {
+    type: String,
+    enum: ['JEE', 'NEET', 'BOTH', ''],
+    default: ''
+  },
+  subscriptionExpiry: {
+    type: Date
+  },
+  phoneNumber: {
+    type: String
+  },
+  // Activity tracking
+  lastActive: {
+    type: Date,
+    default: Date.now
+  },
+  loginHistory: [{
+    timestamp: {
+      type: Date,
+      default: Date.now
+    },
+    ipAddress: String,
+    device: String,
+    userAgent: String
+  }],
   createdAt: {
     type: Date,
     default: Date.now

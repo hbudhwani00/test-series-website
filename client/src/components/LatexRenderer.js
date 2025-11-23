@@ -69,18 +69,26 @@ const LatexRenderer = ({ content }) => {
     <span className="latex-content">
       {parts.map((part, index) => {
         if (part.type === 'text') {
-          // Escape HTML in plain text then convert newlines to <br/> so Enter shows as line breaks
-          const escapeHtml = (str) =>
-            String(str)
-              .replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;')
-              .replace(/"/g, '&quot;')
-              .replace(/'/g, '&#039;');
+          // Check if the text contains HTML img tags
+          const hasImgTag = part.content.includes('<img');
+          
+          if (hasImgTag) {
+            // Render HTML directly if it contains img tags
+            return <span key={index} dangerouslySetInnerHTML={{ __html: part.content }} />;
+          } else {
+            // Escape HTML in plain text then convert newlines to <br/> so Enter shows as line breaks
+            const escapeHtml = (str) =>
+              String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
 
-          const html = escapeHtml(part.content).replace(/\n/g, '<br/>');
+            const html = escapeHtml(part.content).replace(/\n/g, '<br/>');
 
-          return <span key={index} dangerouslySetInnerHTML={{ __html: html }} />;
+            return <span key={index} dangerouslySetInnerHTML={{ __html: html }} />;
+          }
         } else {
           return (
             <span 

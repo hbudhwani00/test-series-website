@@ -178,6 +178,36 @@ const DemoResultDetail = () => {
   const strengthTopics = topicPerformance.filter(t => t.correct > 0 && t.incorrect === 0).sort((a, b) => b.correct - a.correct).slice(0, 5);
   const recommendedTopics = topicPerformance.filter(t => t.unattempted > 0 || t.incorrect > 0).sort((a, b) => (b.incorrect + b.unattempted) - (a.incorrect + a.unattempted)).slice(0, 4);
 
+  // Get slow questions (>3 minutes = 180 seconds)
+  const slowQuestions = result.answers 
+    ? result.answers
+        .map((answer, index) => ({ ...answer, originalIndex: index }))
+        .filter(answer => answer.timeBreakdown && answer.timeBreakdown.totalTime > 180)
+        .sort((a, b) => b.timeBreakdown.totalTime - a.timeBreakdown.totalTime)
+    : [];
+
+  // Calculate subject-wise average time
+  const subjectTimeStats = {};
+  if (result.answers) {
+    result.answers.forEach(answer => {
+      const subject = answer.subject || 'General';
+      if (!subjectTimeStats[subject]) {
+        subjectTimeStats[subject] = { totalTime: 0, count: 0 };
+      }
+      if (answer.timeBreakdown && answer.timeBreakdown.totalTime) {
+        subjectTimeStats[subject].totalTime += answer.timeBreakdown.totalTime;
+        subjectTimeStats[subject].count++;
+      }
+    });
+  }
+  const subjectAverages = Object.keys(subjectTimeStats).map(subject => ({
+    subject,
+    avgTime: subjectTimeStats[subject].count > 0 
+      ? Math.round(subjectTimeStats[subject].totalTime / subjectTimeStats[subject].count) 
+      : 0,
+    questionCount: subjectTimeStats[subject].count
+  }));
+
   // Circular progress calculation
   const radius = 85;
   const circumference = 2 * Math.PI * radius;
@@ -382,6 +412,61 @@ const DemoResultDetail = () => {
             </div>
           </div>
 
+          {/* Time Analysis Cards */}
+          {slowQuestions.length > 0 && (
+            <div className="demo-card" style={{ borderLeft: '4px solid #ff9800' }}>
+              <h3 className="demo-card-title">
+                <span style={{ fontSize: '1.5rem' }}>⚠️</span> Slow Questions ({">"} 3 minutes)
+              </h3>
+              <p style={{ color: '#d84315', marginBottom: '15px', fontSize: '0.95rem' }}>
+                These questions took longer than expected. Practice similar problems to improve speed.
+              </p>
+              <ul className="weak-topics-list">
+                {slowQuestions.map((question, idx) => (
+                  <li key={idx} className="weak-topic-item">
+                    <span className="topic-bullet" style={{ background: '#ff9800' }}></span>
+                    <span className="topic-name">
+                      Q{question.questionNumber || (question.originalIndex + 1)} - {question.subject}
+                      {question.topic && question.topic !== 'General' && ` (${question.topic})`}
+                    </span>
+                    <span className="topic-count" style={{ color: '#d84315', fontWeight: '600' }}>
+                      {Math.floor(question.timeBreakdown.totalTime / 60)}m {question.timeBreakdown.totalTime % 60}s
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {subjectAverages.length > 0 && (
+            <div className="demo-card">
+              <h3 className="demo-card-title">
+                <span style={{ fontSize: '1.5rem' }}>📊</span> Average Time per Subject
+              </h3>
+              <div className="practice-chart">
+                {subjectAverages.map((stat, idx) => (
+                  <div key={idx} className="chart-bar-item">
+                    <div className="chart-bar-header">
+                      <span className="chart-bar-label">{stat.subject}</span>
+                      <span className="chart-bar-value">
+                        {Math.floor(stat.avgTime / 60)}m {stat.avgTime % 60}s avg ({stat.questionCount} questions)
+                      </span>
+                    </div>
+                    <div className="chart-bar-bg">
+                      <div 
+                        className="chart-bar-fill" 
+                        style={{ 
+                          width: `${Math.min((stat.avgTime / 240) * 100, 100)}%`,
+                          background: stat.avgTime > 180 ? '#ff9800' : '#17a2b8'
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Weak Topics Card */}
           <div className="demo-card">
             <h3 className="demo-card-title">
@@ -579,6 +664,40 @@ const DemoResultDetail = () => {
                                       </span>
                                     </div>
                                   </div>
+                                  
+                                  {/* Time Tracking Display */}
+                                  {answer.timeBreakdown && answer.timeBreakdown.totalTime > 0 && (
+                                    <div style={{ 
+                                      padding: '12px 15px', 
+                                      background: answer.timeBreakdown.totalTime > 180 ? '#fff3cd' : '#d1ecf1', 
+                                      borderRadius: '8px', 
+                                      marginBottom: '15px',
+                                      borderLeft: `4px solid ${answer.timeBreakdown.totalTime > 180 ? '#ff9800' : '#17a2b8'}`
+                                    }}>
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', fontSize: '0.9rem' }}>
+                                        <div>
+                                          <strong>⏱️ First Visit: </strong>
+                                          <span>{answer.timeBreakdown.firstVisit}s</span>
+                                        </div>
+                                        {answer.timeBreakdown.revisits && answer.timeBreakdown.revisits.length > 0 && (
+                                          <div>
+                                            <strong>🔄 Revisits: </strong>
+                                            <span>{answer.timeBreakdown.revisits.join('s, ')}s ({answer.timeBreakdown.revisits.length} times)</span>
+                                          </div>
+                                        )}
+                                        <div>
+                                          <strong>📊 Total Time: </strong>
+                                          <span style={{ 
+                                            color: answer.timeBreakdown.totalTime > 180 ? '#d84315' : '#00695c',
+                                            fontWeight: '600'
+                                          }}>
+                                            {answer.timeBreakdown.totalTime}s
+                                            {answer.timeBreakdown.totalTime > 180 && ' ⚠️ Slow'}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
                                   
                                   {(answer.options || answer.questionId?.options) && (answer.options || answer.questionId?.options).length > 0 && (
                                     <ul className="options-list">

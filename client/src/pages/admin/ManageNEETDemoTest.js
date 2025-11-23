@@ -94,7 +94,7 @@ const ManageNEETDemoTest = () => {
           title,
           description: 'Official NEET Demo Test - 180 Questions',
           examType: 'NEET',
-          duration: 200, // 3 hours 20 minutes
+          duration: 180, // 3 hours (actual NEET exam duration)
           totalMarks: 720
         },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -151,6 +151,82 @@ const ManageNEETDemoTest = () => {
     }
   };
 
+  const handlePaste = async (e, type, index = null) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        e.preventDefault();
+        
+        const blob = items[i].getAsFile();
+        if (blob) {
+          toast.info('Uploading pasted image...');
+          
+          // Upload image and get URL
+          try {
+            const token = localStorage.getItem('token');
+            const formDataObj = new FormData();
+            formDataObj.append('image', blob);
+
+            const response = await axios.post(`${API_URL}/questions/upload-image`, formDataObj, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data'
+              }
+            });
+
+            const imageUrl = response.data.imageUrl;
+            // Use HTML img tag with width control (default 20%)
+            const imageMarkdown = `<img src="${imageUrl}" style="width: 20%; max-width: 100%;" alt="image" />`;
+            
+            // Get cursor position and insert image URL at that position
+            const target = e.target;
+            const startPos = target.selectionStart;
+            const endPos = target.selectionEnd;
+            
+            if (type === 'question') {
+              const currentText = questionForm.question;
+              const newText = currentText.substring(0, startPos) + imageMarkdown + currentText.substring(endPos);
+              setQuestionForm(prev => ({ ...prev, question: newText }));
+              
+              // Set cursor position after inserted image
+              setTimeout(() => {
+                target.selectionStart = target.selectionEnd = startPos + imageMarkdown.length;
+                target.focus();
+              }, 0);
+            } else if (type === 'option' && index !== null) {
+              const newOptions = [...questionForm.options];
+              const currentText = newOptions[index];
+              newOptions[index] = currentText.substring(0, startPos) + imageMarkdown + currentText.substring(endPos);
+              setQuestionForm(prev => ({ ...prev, options: newOptions }));
+              
+              setTimeout(() => {
+                target.selectionStart = target.selectionEnd = startPos + imageMarkdown.length;
+                target.focus();
+              }, 0);
+            } else if (type === 'explanation') {
+              const currentText = questionForm.explanation;
+              const newText = currentText.substring(0, startPos) + imageMarkdown + currentText.substring(endPos);
+              setQuestionForm(prev => ({ ...prev, explanation: newText }));
+              
+              setTimeout(() => {
+                target.selectionStart = target.selectionEnd = startPos + imageMarkdown.length;
+                target.focus();
+              }, 0);
+            }
+            
+            toast.success('Image inserted at cursor position');
+          } catch (error) {
+            console.error('Image upload error:', error);
+            toast.error('Failed to upload image');
+          }
+        }
+        break;
+      }
+    }
+  };
+
   const handleImageSizeChange = (type, index = null, value) => {
     const key = index !== null ? `${type}${index}` : type;
     setImageSizes(prev => ({ ...prev, [key]: parseInt(value) }));
@@ -177,6 +253,46 @@ const ManageNEETDemoTest = () => {
     if (!questionForm.question.trim()) {
       toast.error('Please enter a question');
       return;
+    }
+
+    if (!questionForm.questionNumber || questionForm.questionNumber === '') {
+      toast.error('Please enter a question number');
+      return;
+    }
+
+    // Check for duplicate question number (only when adding new, not editing)
+    if (!editingQuestionId) {
+      const questionNumber = parseInt(questionForm.questionNumber);
+      
+      // Fetch fresh test data to ensure we have the latest questions
+      try {
+        const token = localStorage.getItem('token');
+        const { data } = await axios.get(`${API_URL}/admin/neet-demo-test`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        const isDuplicate = data.neetTest?.questions?.some(q => 
+          parseInt(q.questionNumber) === questionNumber
+        );
+        
+        if (isDuplicate) {
+          toast.error(`Question number ${questionNumber} already exists! Please use a different number.`);
+          return;
+        }
+      } catch (err) {
+        console.error('Error checking duplicates:', err);
+      }
+    } else {
+      // When editing, check if another question (not this one) has the same number
+      const questionNumber = parseInt(questionForm.questionNumber);
+      const isDuplicate = neetTest?.questions?.some(q => 
+        q._id !== editingQuestionId && parseInt(q.questionNumber) === questionNumber
+      );
+      
+      if (isDuplicate) {
+        toast.error(`Question number ${questionNumber} is already used by another question!`);
+        return;
+      }
     }
 
     try {
@@ -208,7 +324,15 @@ const ManageNEETDemoTest = () => {
 
       setShowQuestionForm(false);
       setShowPreview(false);
-      resetForm();
+      
+      // Save last used values before resetting
+      const lastSubject = questionForm.subject;
+      const lastChapter = questionForm.chapter;
+      const lastTopic = questionForm.topic;
+      const lastSource = questionForm.source;
+      const lastDifficulty = questionForm.difficulty;
+      
+      resetForm(lastSubject, lastChapter, lastTopic, lastSource, lastDifficulty);
       fetchNEETTest();
     } catch (error) {
       console.error('Error saving question:', error);
@@ -264,13 +388,13 @@ const ManageNEETDemoTest = () => {
     }
   };
 
-  const resetForm = () => {
+  const resetForm = (keepSubject = 'Physics', keepChapter = '', keepTopic = '', keepSource = 'Practice', keepDifficulty = 'medium') => {
     setQuestionForm({
       questionNumber: '',
-      subject: 'Physics',
-      chapter: '',
-      topic: '',
-      source: 'Practice',
+      subject: keepSubject,
+      chapter: keepChapter,
+      topic: keepTopic,
+      source: keepSource,
       questionType: 'single',
       section: 'A',
       question: '',
@@ -280,7 +404,7 @@ const ManageNEETDemoTest = () => {
       correctAnswer: '',
       explanation: '',
       explanationImage: '',
-      difficulty: 'medium',
+      difficulty: keepDifficulty,
       marks: 4,
       negativeMarks: -1
     });
@@ -365,11 +489,20 @@ const ManageNEETDemoTest = () => {
                       type="number"
                       value={questionForm.questionNumber}
                       onChange={(e) => setQuestionForm({ ...questionForm, questionNumber: e.target.value })}
+                      onWheel={(e) => e.target.blur()} 
                       placeholder="e.g., 1 to 180"
                       min="1"
                       max="180"
                       required
                     />
+                    {questionForm.questionNumber && !editingQuestionId && neetTest?.questions?.some(q => parseInt(q.questionNumber) === parseInt(questionForm.questionNumber)) && (
+                      <small style={{ color: '#ef4444', display: 'block', marginTop: '4px' }}>
+                        ⚠️ This question number is already used!
+                      </small>
+                    )}
+                    <small style={{ color: '#6b7280', display: 'block', marginTop: '4px' }}>
+                      Used numbers: {neetTest?.questions?.map(q => q.questionNumber).sort((a, b) => a - b).join(', ') || 'None'}
+                    </small>
                   </div>
                 </div>
 
@@ -382,6 +515,10 @@ const ManageNEETDemoTest = () => {
                       required
                     >
                       <option value="">Select Chapter</option>
+                      {/* Show current value even if not in list */}
+                      {questionForm.chapter && !getChapters(questionForm.subject).includes(questionForm.chapter) && (
+                        <option value={questionForm.chapter}>{questionForm.chapter} (current)</option>
+                      )}
                       {getChapters(questionForm.subject).map((chapter) => (
                         <option key={chapter} value={chapter}>
                           {chapter}
@@ -399,6 +536,10 @@ const ManageNEETDemoTest = () => {
                       required
                     >
                       <option value="">Select Topic</option>
+                      {/* Show current value even if not in list */}
+                      {questionForm.topic && questionForm.chapter && !getTopics(questionForm.subject, questionForm.chapter).includes(questionForm.topic) && (
+                        <option value={questionForm.topic}>{questionForm.topic} (current)</option>
+                      )}
                       {questionForm.chapter && getTopics(questionForm.subject, questionForm.chapter).map((topic) => (
                         <option key={topic} value={topic}>
                           {topic}
@@ -409,10 +550,22 @@ const ManageNEETDemoTest = () => {
                 </div>
 
                 <div className="form-group">
+                  <label>Source *</label>
+                  <input
+                    type="text"
+                    value={questionForm.source}
+                    onChange={(e) => setQuestionForm({ ...questionForm, source: e.target.value })}
+                    placeholder="e.g., NEET 2024, Practice, AIIMS"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
                   <label>Question * <span style={{ fontSize: '12px', color: '#666' }}>(Paste images with Ctrl+V)</span></label>
                   <textarea
                     value={questionForm.question}
                     onChange={(e) => setQuestionForm({ ...questionForm, question: e.target.value })}
+                    onPaste={(e) => handlePaste(e, 'question')}
                     placeholder="Enter question text..."
                     rows="4"
                     required
@@ -453,6 +606,7 @@ const ManageNEETDemoTest = () => {
                         newOptions[index] = e.target.value;
                         setQuestionForm({ ...questionForm, options: newOptions });
                       }}
+                      onPaste={(e) => handlePaste(e, 'option', index)}
                       placeholder={`Option ${String.fromCharCode(65 + index)}`}
                       required
                     />
@@ -513,10 +667,11 @@ const ManageNEETDemoTest = () => {
                 </div>
 
                 <div className="form-group">
-                  <label>Solution/Explanation *</label>
+                  <label>Solution/Explanation * <span style={{ fontSize: '12px', color: '#666' }}>(Paste images with Ctrl+V)</span></label>
                   <textarea
                     value={questionForm.explanation}
                     onChange={(e) => setQuestionForm({ ...questionForm, explanation: e.target.value })}
+                    onPaste={(e) => handlePaste(e, 'explanation')}
                     placeholder="Enter detailed solution..."
                     rows="3"
                     required

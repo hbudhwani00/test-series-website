@@ -62,7 +62,9 @@ app.get('/', (req, res) => {
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api', require('./routes/callbackRequests'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/admin', require('./routes/userManagement'));
 app.use('/api/admin/demo-test', require('./routes/demoTest'));
 app.use('/api/admin/neet-demo-test', require('./routes/neetDemoTest'));
 app.use('/api/demo', require('./routes/demoTestStudent'));

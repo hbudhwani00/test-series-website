@@ -34,6 +34,10 @@ const JEEMainTest = () => {
   const [isLandscape, setIsLandscape] = useState(true);
   const [isDemoTest, setIsDemoTest] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  
+  // Time tracking per question
+  const [questionStartTime, setQuestionStartTime] = useState(Date.now());
+  const [questionTimeTracking, setQuestionTimeTracking] = useState({});
 
   // Check if device is mobile and orientation
   useEffect(() => {
@@ -341,6 +345,52 @@ const JEEMainTest = () => {
     return currentQuestionIndex.toString();
   };
 
+  // Track time spent on a question before navigating away
+  const trackQuestionTime = (fromIndex) => {
+    if (questionStartTime === null) return;
+    
+    const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000); // Convert to seconds
+    
+    setQuestionTimeTracking(prev => {
+      const existing = prev[fromIndex] || { visited: false, firstVisit: 0, revisits: [] };
+      
+      if (!existing.visited) {
+        // First time visiting this question
+        return {
+          ...prev,
+          [fromIndex]: {
+            visited: true,
+            firstVisit: timeSpent,
+            revisits: []
+          }
+        };
+      } else {
+        // Revisiting the question
+        return {
+          ...prev,
+          [fromIndex]: {
+            ...existing,
+            revisits: [...existing.revisits, timeSpent]
+          }
+        };
+      }
+    });
+  };
+
+  // Navigate to a question and track time
+  const navigateToQuestion = (index) => {
+    // Track time for current question before leaving
+    trackQuestionTime(currentQuestionIndex);
+    
+    // Navigate to new question
+    setCurrentQuestionIndex(index);
+    const key = index.toString();
+    setVisited(prev => ({ ...prev, [key]: true }));
+    
+    // Reset timer for new question
+    setQuestionStartTime(Date.now());
+  };
+
   const handleAnswer = (answer) => {
     const key = getQuestionKey();
     setAnswers(prev => ({ ...prev, [key]: answer }));
@@ -371,16 +421,12 @@ const JEEMainTest = () => {
   const navigateNext = () => {
     const allQuestions = getAllQuestions();
     if (currentQuestionIndex < allQuestions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
-      const nextKey = (currentQuestionIndex + 1).toString();
-      setVisited(prev => ({ ...prev, [nextKey]: true }));
+      navigateToQuestion(currentQuestionIndex + 1);
     }
   };
 
   const jumpToQuestion = (index) => {
-    setCurrentQuestionIndex(index);
-    const key = index.toString();
-    setVisited(prev => ({ ...prev, [key]: true }));
+    navigateToQuestion(index);
   };
 
   // Jump to the first question of a given subject (Physics/Chemistry/Mathematics)
@@ -465,6 +511,9 @@ const JEEMainTest = () => {
   const handleSubmit = async () => {
     if (!window.confirm('Are you sure you want to submit the test?')) return;
 
+    // Track time for the current question before submitting
+    trackQuestionTime(currentQuestionIndex);
+
     try {
       const token = localStorage.getItem('token');
       const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -508,7 +557,8 @@ const JEEMainTest = () => {
             answers: formattedAnswers,
             timeSpent: (180 * 60) - timeRemaining,
             markedForReview: {},
-            userId: user._id || null // Include userId if logged in
+            userId: user._id || null, // Include userId if logged in
+            questionTimeTracking // Include detailed time tracking data
           }
         );
       } else {

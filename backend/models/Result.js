@@ -8,8 +8,13 @@ const resultSchema = new mongoose.Schema({
   },
   testId: {
     type: mongoose.Schema.Types.ObjectId,
-    refPath: 'testType',
+    refPath: 'onModel',
     required: false // Allow null for AI-generated tests
+  },
+  onModel: {
+    type: String,
+    enum: ['Test', 'DemoTest', 'NEETDemoTest', 'ScheduledTest'],
+    default: 'Test'
   },
   testType: {
     type: String,
@@ -50,7 +55,12 @@ const resultSchema = new mongoose.Schema({
     userAnswer: mongoose.Schema.Types.Mixed,
     isCorrect: Boolean,
     marksAwarded: Number,
-    timeTaken: Number, // in seconds
+    timeTaken: Number, // Total time in seconds for this question
+    timeBreakdown: {
+      firstVisit: { type: Number, default: 0 }, // Time spent on first visit
+      revisits: [{ type: Number }], // Array of time spent on each revisit
+      totalTime: { type: Number, default: 0 } // Total time across all visits
+    },
     chapter: String,
     topic: String,
     subject: String,

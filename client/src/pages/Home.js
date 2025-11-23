@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import DemoTestSelectionModal from '../components/DemoTestSelectionModal';
+import CallbackPopup from '../components/CallbackPopup';
 import { API_URL } from '../services/api';
 import './Home.css';
 import './HomeModern.css';
@@ -11,12 +12,31 @@ const Home = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [showDemoModal, setShowDemoModal] = useState(false);
+  const [showCallbackPopup, setShowCallbackPopup] = useState(false);
   const [hasSubscription, setHasSubscription] = useState(false);
   const [subscriptionType, setSubscriptionType] = useState(null);
 
   useEffect(() => {
     if (user && user.role === 'student') {
       checkSubscription();
+    }
+
+    // Show callback popup for non-logged-in users
+    if (!user) {
+      // First popup after 5 seconds
+      const firstTimer = setTimeout(() => {
+        setShowCallbackPopup(true);
+      }, 5000);
+
+      // Subsequent popups every 10 seconds
+      const intervalTimer = setInterval(() => {
+        setShowCallbackPopup(true);
+      }, 10000);
+
+      return () => {
+        clearTimeout(firstTimer);
+        clearInterval(intervalTimer);
+      };
     }
   }, [user]);
 
@@ -559,6 +579,11 @@ const Home = () => {
         isOpen={showDemoModal} 
         onClose={() => setShowDemoModal(false)} 
       />
+
+      {/* Callback Popup for non-logged-in users */}
+      {showCallbackPopup && (
+        <CallbackPopup onClose={() => setShowCallbackPopup(false)} />
+      )}
     </div>
   );
 };

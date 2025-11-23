@@ -35,6 +35,8 @@ import NEETTestPage from './pages/student/NEETTestPage';
 import AdminDashboard from './pages/admin/Dashboard';
 import ManageDemoTest from './pages/admin/ManageDemoTest';
 import ManageNEETDemoTest from './pages/admin/ManageNEETDemoTest';
+import ManageUsers from './pages/admin/ManageUsers';
+import CallbackRequests from './pages/admin/CallbackRequests';
 import ManageScheduledTest from './pages/admin/ManageScheduledTest';
 import UploadQuestions from './pages/admin/UploadQuestions';
 import UploadQuestion from './pages/admin/UploadQuestion';
@@ -193,6 +195,22 @@ function AppRoutes() {
           element={
             <ProtectedRoute adminOnly={true}>
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/manage-users"
+          element={
+            <ProtectedRoute adminOnly={true}>
+              <ManageUsers />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/callback-requests"
+          element={
+            <ProtectedRoute adminOnly={true}>
+              <CallbackRequests />
             </ProtectedRoute>
           }
         />

@@ -87,6 +87,12 @@ const AdminDashboard = () => {
 
         <div className="card quick-actions">
           <h3>Quick Actions</h3>
+          <Link to="/admin/manage-users" className="btn btn-primary">
+            👥 Manage Users
+          </Link>
+          <Link to="/admin/callback-requests" className="btn btn-success">
+            📞 Callback Requests
+          </Link>
           <Link to="/admin/demo-test" className="btn btn-primary">
             📋 Manage Demo Test (JEE)
           </Link>

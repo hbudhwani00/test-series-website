@@ -1,0 +1,164 @@
+.callback-requests {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.callback-requests .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.callback-requests h1 {
+  margin: 0;
+  color: #333;
+}
+
+.stats {
+  display: flex;
+  gap: 15px;
+}
+
+.stat {
+  padding: 8px 16px;
+  background: #e9ecef;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.stat.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.filters button {
+  padding: 10px 20px;
+  border: 2px solid #dee2e6;
+  background: white;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.filters button:hover {
+  border-color: #007bff;
+  background: #f8f9fa;
+}
+
+.filters button.active {
+  background: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.requests-table {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow-x: auto;
+}
+
+.requests-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.requests-table th {
+  background: #f8f9fa;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.requests-table td {
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.requests-table tr:hover {
+  background: #f8f9fa;
+}
+
+.requests-table a {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.requests-table a:hover {
+  text-decoration: underline;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 5px;
+  transition: transform 0.2s;
+}
+
+.btn-icon:hover {
+  transform: scale(1.2);
+}
+
+.btn-icon.danger:hover {
+  filter: brightness(0.8);
+}
+
+.no-data {
+  text-align: center;
+  padding: 40px;
+  color: #6c757d;
+  font-size: 16px;
+}
+
+.loading {
+  text-align: center;
+  padding: 50px;
+  font-size: 18px;
+  color: #6c757d;
+}
+
+@media (max-width: 768px) {
+  .callback-requests .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .stats {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .filters {
+    flex-wrap: wrap;
+  }
+
+  .requests-table {
+    font-size: 12px;
+  }
+
+  .requests-table th,
+  .requests-table td {
+    padding: 8px;
+  }
+}

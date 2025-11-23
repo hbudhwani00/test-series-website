@@ -18,6 +18,10 @@ const NEETTestPage = () => {
   const [markedForReview, setMarkedForReview] = useState({});
   const [timeRemaining, setTimeRemaining] = useState(12000); // 200 minutes (3 hours 20 min)
   const [isFullscreen, setIsFullscreen] = useState(false);
+  
+  // Time tracking per question
+  const [questionStartTime, setQuestionStartTime] = useState(Date.now());
+  const [questionTimeTracking, setQuestionTimeTracking] = useState({}); // { questionIndex: { firstVisit: time, revisits: [time1, time2], visited: boolean } }
 
   useEffect(() => {
     fetchTest();
@@ -88,6 +92,47 @@ const NEETTestPage = () => {
 
   const currentQuestion = test?.questions[currentQuestionIndex];
 
+  // Track time when changing questions
+  const trackQuestionTime = (fromIndex) => {
+    const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000); // Convert to seconds
+    
+    setQuestionTimeTracking(prev => {
+      const existing = prev[fromIndex] || { visited: false, firstVisit: 0, revisits: [] };
+      
+      if (!existing.visited) {
+        // First visit
+        return {
+          ...prev,
+          [fromIndex]: {
+            visited: true,
+            firstVisit: timeSpent,
+            revisits: []
+          }
+        };
+      } else {
+        // Revisit
+        return {
+          ...prev,
+          [fromIndex]: {
+            ...existing,
+            revisits: [...existing.revisits, timeSpent]
+          }
+        };
+      }
+    });
+  };
+
+  const navigateToQuestion = (index) => {
+    if (index === currentQuestionIndex) return;
+    
+    // Track time before leaving current question
+    trackQuestionTime(currentQuestionIndex);
+    
+    // Navigate to new question
+    setCurrentQuestionIndex(index);
+    setQuestionStartTime(Date.now());
+  };
+
   const formatTime = (seconds) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -126,7 +171,7 @@ const NEETTestPage = () => {
 
   const handleNavigate = (index) => {
     if (index >= 0 && index < test.questions.length) {
-      setCurrentQuestionIndex(index);
+      navigateToQuestion(index);
     }
   };
 
@@ -158,6 +203,9 @@ const NEETTestPage = () => {
       return;
     }
 
+    // Track time for the current question before submitting
+    trackQuestionTime(currentQuestionIndex);
+
     try {
       // Get userId if user is logged in
       const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -168,7 +216,8 @@ const NEETTestPage = () => {
         answers, // Send answers object as-is { 0: 'A', 1: 'B', etc. }
         timeSpent: 12000 - timeRemaining,
         markedForReview,
-        userId: user._id || null // Include userId if logged in
+        userId: user._id || null, // Include userId if logged in
+        questionTimeTracking // Include detailed time tracking data
       };
 
       const response = await axios.post(`${API_URL}/results/submit-demo`, submitData);
