@@ -55,19 +55,39 @@ const Results = () => {
         </div>
       ) : (
         <div className="results-list">
-          {results.map((result) => (
-            <div key={result._id} className="result-card card">
-              <div className="result-header">
-                <h3>
-                  {result.isDemo && '🎯 '}
-                  {result.testId?.title || 
-                   (result.testType === 'neet_demo' ? 'NEET Demo Test' : 'JEE Main Demo Test')}
-                  {result.isDemo && ' (Demo)'}
-                </h3>
-                <span className="result-date">
-                  {new Date(result.submittedAt).toLocaleDateString()}
-                </span>
-              </div>
+          {results.map((result) => {
+            // Determine test title with better fallback logic
+            let testTitle = result.testId?.title;
+            
+            if (!testTitle) {
+              // Fallback based on testType or totalMarks
+              if (result.testType === 'neet_demo' || result.onModel === 'NEETDemoTest' || result.totalMarks === 720) {
+                testTitle = 'NEET Demo Test';
+              } else if (result.testType === 'jee_demo' || result.onModel === 'DemoTest' || result.totalMarks === 300) {
+                testTitle = 'JEE Main Demo Test';
+              } else if (result.isAIGenerated) {
+                testTitle = 'AI Generated Test';
+              } else if (result.isScheduled) {
+                testTitle = 'Scheduled Test';
+              } else {
+                testTitle = result.isDemo ? 'Demo Test' : 'Test';
+              }
+            }
+            
+            return (
+              <div key={result._id} className="result-card card">
+                <div className="result-header">
+                  <h3>
+                    {result.isDemo && '🎯 '}
+                    {result.isAIGenerated && '🤖 '}
+                    {result.isScheduled && '📅 '}
+                    {testTitle}
+                    {result.isDemo && ' (Demo)'}
+                  </h3>
+                  <span className="result-date">
+                    {new Date(result.submittedAt).toLocaleDateString()}
+                  </span>
+                </div>
 
               <div className="result-stats">
                 <div className="stat">
@@ -101,7 +121,8 @@ const Results = () => {
                 View Detailed Analysis
               </Link>
             </div>
-          ))}
+          );
+          })}
         </div>
       )}
     </div>

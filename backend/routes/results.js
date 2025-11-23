@@ -6,6 +6,10 @@ const Test = require('../models/Test');
 const Question = require('../models/Question');
 const DemoTest = require('../models/DemoTest');
 const NEETDemoTest = require('../models/NEETDemoTest');
+const ScheduledTest = require('../models/ScheduledTest');
+
+// Ensure all models are registered for refPath to work properly
+// This is necessary for polymorphic populate to function correctly
 
 // Submit Demo Test (NEET/JEE) - No auth required but save userId if available
 router.post('/submit-demo', async (req, res) => {
