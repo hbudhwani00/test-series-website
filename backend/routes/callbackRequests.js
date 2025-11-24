@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const CallbackRequest = require('../models/CallbackRequest');
-const auth = require('../middleware/auth');
-const adminAuth = require('../middleware/admin');
+const { auth, adminAuth } = require('../middleware/auth');
 
 // Submit callback request (Public route)
 router.post('/callback-request', async (req, res) => {
