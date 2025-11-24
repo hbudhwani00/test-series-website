@@ -210,24 +210,39 @@ const NEETTestPage = () => {
       // Get userId if user is logged in
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const userId = user.id || user._id || null; // Backend returns 'id', not '_id'
-      
+
+      // Convert answers from index keys to questionId keys and letters to numbers
+      const formattedAnswers = {};
+      if (test && test.questions) {
+        test.questions.forEach((question, index) => {
+          const indexKey = index.toString();
+          let answer = answers[indexKey];
+          // Convert letter answers (A, B, C, D) to numeric indices (0, 1, 2, 3)
+          if (typeof answer === 'string' && answer.length === 1 && answer >= 'A' && answer <= 'Z') {
+            answer = answer.charCodeAt(0) - 65;
+          }
+          formattedAnswers[question._id] = answer !== undefined ? answer : null;
+        });
+      }
+
       console.log('NEET Test Submit - User from localStorage:', user);
       console.log('NEET Test Submit - userId to send:', userId);
-      
+      console.log('NEET Test Submit - Formatted answers:', formattedAnswers);
+
       const submitData = {
         testId,
         testType: 'neet_demo',
-        answers, // Send answers object as-is { 0: 'A', 1: 'B', etc. }
+        answers: formattedAnswers,
         timeSpent: 12000 - timeRemaining,
         markedForReview,
         userId: userId, // Include userId if logged in
         questionTimeTracking // Include detailed time tracking data
       };
-      
+
       console.log('NEET Test Submit - Complete submitData:', { ...submitData, answers: `[${Object.keys(submitData.answers).length} answers]` });
 
       const response = await axios.post(`${API_URL}/results/submit-demo`, submitData);
-      
+
       console.log('NEET Test Submit - Response:', response.data);
 
       toast.success('Test submitted successfully!');
