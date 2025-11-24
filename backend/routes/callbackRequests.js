@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const CallbackRequest = require('../models/CallbackRequest');
+const auth = require('../middleware/auth');
 const adminAuth = require('../middleware/admin');
 
 // Submit callback request (Public route)
@@ -40,7 +41,7 @@ router.post('/callback-request', async (req, res) => {
 });
 
 // Get all callback requests (Admin only)
-router.get('/admin/callback-requests', adminAuth, async (req, res) => {
+router.get('/admin/callback-requests', auth, adminAuth, async (req, res) => {
   try {
     const { status } = req.query;
     
@@ -61,7 +62,7 @@ router.get('/admin/callback-requests', adminAuth, async (req, res) => {
 });
 
 // Update callback request status (Admin only)
-router.put('/admin/callback-requests/:id', adminAuth, async (req, res) => {
+router.put('/admin/callback-requests/:id', auth, adminAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const { status, notes } = req.body;
@@ -91,7 +92,7 @@ router.put('/admin/callback-requests/:id', adminAuth, async (req, res) => {
 });
 
 // Delete callback request (Admin only)
-router.delete('/admin/callback-requests/:id', adminAuth, async (req, res) => {
+router.delete('/admin/callback-requests/:id', auth, adminAuth, async (req, res) => {
   try {
     const { id } = req.params;
 
