@@ -32,6 +32,9 @@ router.post('/submit-demo', async (req, res) => {
         return res.status(404).json({ message: 'NEET demo test not found' });
       }
       allQuestions = test.questions;
+      console.log('=== NEET Demo Test Submission Debug ===');
+      console.log('Received answers object:', answers);
+      console.log('All questions:', allQuestions.length);
     } else if (testType === 'jee_demo') {
       test = await DemoTest.findById(testId).populate('questions');
       if (!test) {
@@ -54,6 +57,9 @@ router.post('/submit-demo', async (req, res) => {
     allQuestions.forEach((question, index) => {
       const questionId = question._id.toString();
       const userAnswer = answers[questionId];
+      if (index < 5 || userAnswer !== undefined) {
+        console.log(`Q${index + 1}: questionId="${questionId}", userAnswer="${userAnswer}", type=${typeof userAnswer}, correctAnswer="${question.correctAnswer}"`);
+      }
       
       // Get time tracking data for this question
       const timeData = questionTimeTracking && questionTimeTracking[index];
