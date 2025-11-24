@@ -3,17 +3,18 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const Result = require('../models/Result');
-const adminAuth = require('../middleware/admin');
+
+const { auth, adminAuth } = require('../middleware/auth');
 
 // Get all users (Admin only)
-router.get('/users', adminAuth, async (req, res) => {
+router.get('/users', auth, adminAuth, async (req, res) => {
   try {
     const users = await User.find({ role: 'student' })
       .select('-password')
       .sort({ createdAt: -1 });
 
     // Enhance with test count
-    const usersWithStats = await Promise.all(users.map(async (user) => {
+    const usersWithStats = await Promise.all(users.map(async (user) => {  
       const testCount = await Result.countDocuments({ userId: user._id });
       const deviceCount = user.loginHistory?.length || 1;
       
@@ -32,7 +33,7 @@ router.get('/users', adminAuth, async (req, res) => {
 });
 
 // Get user details with full activity (Admin only)
-router.get('/users/:userId/details', adminAuth, async (req, res) => {
+router.get('/users', auth, adminAuth, async (req, res) => {
   try {
     const { userId } = req.params;
     
