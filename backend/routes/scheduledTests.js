@@ -140,7 +140,7 @@ router.post('/create', auth, adminAuth, async (req, res) => {
       }
     }
 
-    // Create scheduled test
+    // Create scheduled test (store only question IDs)
     const scheduledTest = new ScheduledTest({
       title,
       examType,
@@ -152,7 +152,7 @@ router.post('/create', auth, adminAuth, async (req, res) => {
       scheduleType,
       startDate,
       endDate: endDate || null,
-      questions: createdQuestions,
+      questions: createdQuestions, // Array of ObjectIds
       scheduledDates,
       isActive: true,
       createdBy: req.user.userId

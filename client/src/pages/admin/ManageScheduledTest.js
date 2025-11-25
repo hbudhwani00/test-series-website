@@ -276,7 +276,13 @@ const ManageScheduledTest = () => {
       toast.error('Please add at least one question');
       return;
     }
-
+      
+      const invalidQuestions = questions.filter(q => !q || !q.question || !q.question.trim());
+    if (invalidQuestions.length > 0) {
+    toast.error(`Found ${invalidQuestions.length} invalid question(s). Please check all questions have text.`);
+    console.error('Invalid questions:', invalidQuestions);
+    return;
+  }
     if (!testData.startDate) {
       toast.error('Please select start date');
       return;
@@ -284,10 +290,26 @@ const ManageScheduledTest = () => {
 
     try {
       const token = localStorage.getItem('token');
+       const cleanedQuestions = questions.map(q => ({
+      questionNumber: q.questionNumber,
+      question: q.question?.trim() || '',
+      options: q.options || ['', '', '', ''],
+      correctAnswer: q.correctAnswer !== undefined ? q.correctAnswer : 0,
+      marks: q.marks || 4,
+      hasNegativeMarking: q.hasNegativeMarking !== undefined ? q.hasNegativeMarking : true,
+      difficulty: q.difficulty || 'medium',
+      subject: q.subject || '',
+      chapter: q.chapter || '',
+      topic: q.topic || '',
+      explanation: q.explanation || '',
+      questionType: q.questionType || 'mcq',
+      source: q.source || 'Practice'
+    }));
       const payload = {
         ...testData,
-        questions: questions
+        questions: cleanedQuestions
       };
+        console.log('Sending payload:', JSON.stringify(payload, null, 2)); // Debug log
 
       if (editingTest) {
         await axios.put(
