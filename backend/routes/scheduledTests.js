@@ -91,24 +91,39 @@ router.post('/create', auth, adminAuth, async (req, res) => {
       createdQuestions.push(savedQuestion._id);
     }
 
-    // Generate scheduled dates
-    // Always treat admin input as IST (India time)
+
+    // Helper: Extract date and time from ISO or string
+    function extractDateAndTime(dateInput, fallbackTime = '10:00') {
+      if (!dateInput) return { dateStr: '', timeStr: fallbackTime };
+      // If ISO string, split date and time
+      if (typeof dateInput === 'string' && dateInput.includes('T')) {
+        const [dateStr, timePart] = dateInput.split('T');
+        const timeStr = timePart ? timePart.slice(0,5) : fallbackTime;
+        return { dateStr, timeStr };
+      }
+      // If just date string
+      return { dateStr: dateInput, timeStr: fallbackTime };
+    }
+
+    // Convert IST date+time to UTC
     const IST_OFFSET_MINUTES = 330; // +5:30
     function toUTCFromIST(dateStr, timeStr) {
-      // dateStr: 'YYYY-MM-DD', timeStr: 'HH:mm'
+      if (!dateStr) return null;
       const [year, month, day] = dateStr.split('-').map(Number);
       const [hour, minute] = timeStr.split(':').map(Number);
-      // Create date in IST
       const istDate = new Date(Date.UTC(year, month - 1, day, hour, minute));
-      // Subtract IST offset to get UTC
       istDate.setUTCMinutes(istDate.getUTCMinutes() - IST_OFFSET_MINUTES);
       return istDate;
     }
 
-    const scheduledDates = [];
-    const start = toUTCFromIST(formData.startDate, formData.startTime || '10:00');
-    const end = formData.endDate ? toUTCFromIST(formData.endDate, formData.endTime || '10:00') : null;
+    // Extract start/end date and time
+    const { dateStr: startDateStr, timeStr: startTimeStr } = extractDateAndTime(startDate, req.body.startTime || '10:00');
+    const { dateStr: endDateStr, timeStr: endTimeStr } = extractDateAndTime(endDate, req.body.endTime || '10:00');
 
+    const start = toUTCFromIST(startDateStr, startTimeStr);
+    const end = endDateStr ? toUTCFromIST(endDateStr, endTimeStr) : null;
+
+    const scheduledDates = [];
     if (scheduleType === 'one-time') {
       scheduledDates.push({ date: start, isCompleted: false });
     } else if (scheduleType === 'weekly' && end) {
