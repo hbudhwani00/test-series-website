@@ -51,12 +51,14 @@ const TestSeries = () => {
 
   const getTestStatus = (test) => {
     const now = new Date();
+    // Always display scheduledDate in IST
     const scheduledDate = new Date(test.scheduledDate);
-    const endDate = new Date(scheduledDate.getTime() + test.duration * 60000);
+    const scheduledDateIST = new Date(scheduledDate.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+    const endDateIST = new Date(scheduledDateIST.getTime() + test.duration * 60000);
 
-    if (now < scheduledDate) {
+    if (now < scheduledDateIST) {
       return { status: 'upcoming', label: 'Upcoming', color: 'blue' };
-    } else if (now >= scheduledDate && now <= endDate) {
+    } else if (now >= scheduledDateIST && now <= endDateIST) {
       return { status: 'live', label: 'Live Now', color: 'green' };
     } else {
       return { status: 'completed', label: 'Completed', color: 'gray' };
@@ -117,11 +119,11 @@ const TestSeries = () => {
                     <div className="space-y-2 mb-4 text-sm text-gray-600">
                       <div className="flex items-center">
                         <span className="mr-2">📅</span>
-                        <span>{new Date(test.scheduledDate).toLocaleDateString()}</span>
+                        <span>{new Date(test.scheduledDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</span>
                       </div>
                       <div className="flex items-center">
                         <span className="mr-2">🕐</span>
-                        <span>{new Date(test.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span>{new Date(test.scheduledDate).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}</span>
                       </div>
                       <div className="flex items-center">
                         <span className="mr-2">⏱️</span>
@@ -147,7 +149,7 @@ const TestSeries = () => {
                         variant="secondary"
                         disabled
                       >
-                        Starts {new Date(test.scheduledDate).toLocaleDateString()}
+                        Starts {new Date(test.scheduledDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
                       </Button>
                     )}
                     {testStatus.status === 'completed' && (
@@ -199,11 +201,11 @@ const TestSeries = () => {
                     <div className="space-y-2 mb-4 text-sm text-gray-600">
                       <div className="flex items-center">
                         <span className="mr-2">📅</span>
-                        <span>{new Date(test.scheduledDate).toLocaleDateString()}</span>
+                        <span>{new Date(test.scheduledDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}</span>
                       </div>
                       <div className="flex items-center">
                         <span className="mr-2">🕐</span>
-                        <span>{new Date(test.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span>{new Date(test.scheduledDate).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })}</span>
                       </div>
                       <div className="flex items-center">
                         <span className="mr-2">⏱️</span>
@@ -229,7 +231,7 @@ const TestSeries = () => {
                         variant="secondary"
                         disabled
                       >
-                        Starts {new Date(test.scheduledDate).toLocaleDateString()}
+                        Starts {new Date(test.scheduledDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })}
                       </Button>
                     )}
                     {testStatus.status === 'completed' && (

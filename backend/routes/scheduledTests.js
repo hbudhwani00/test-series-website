@@ -92,26 +92,36 @@ router.post('/create', auth, adminAuth, async (req, res) => {
     }
 
     // Generate scheduled dates
+    // Always treat admin input as IST (India time)
+    const IST_OFFSET_MINUTES = 330; // +5:30
+    function toUTCFromIST(dateStr, timeStr) {
+      // dateStr: 'YYYY-MM-DD', timeStr: 'HH:mm'
+      const [year, month, day] = dateStr.split('-').map(Number);
+      const [hour, minute] = timeStr.split(':').map(Number);
+      // Create date in IST
+      const istDate = new Date(Date.UTC(year, month - 1, day, hour, minute));
+      // Subtract IST offset to get UTC
+      istDate.setUTCMinutes(istDate.getUTCMinutes() - IST_OFFSET_MINUTES);
+      return istDate;
+    }
+
     const scheduledDates = [];
-    const start = new Date(startDate);
-    
+    const start = toUTCFromIST(formData.startDate, formData.startTime || '10:00');
+    const end = formData.endDate ? toUTCFromIST(formData.endDate, formData.endTime || '10:00') : null;
+
     if (scheduleType === 'one-time') {
       scheduledDates.push({ date: start, isCompleted: false });
-    } else if (scheduleType === 'weekly' && endDate) {
-      const end = new Date(endDate);
+    } else if (scheduleType === 'weekly' && end) {
       let currentDate = new Date(start);
-      
       while (currentDate <= end) {
         scheduledDates.push({ date: new Date(currentDate), isCompleted: false });
-        currentDate.setDate(currentDate.getDate() + 7); // Weekly
+        currentDate.setDate(currentDate.getDate() + 7);
       }
-    } else if (scheduleType === 'alternate-days' && endDate) {
-      const end = new Date(endDate);
+    } else if (scheduleType === 'alternate-days' && end) {
       let currentDate = new Date(start);
-      
       while (currentDate <= end) {
         scheduledDates.push({ date: new Date(currentDate), isCompleted: false });
-        currentDate.setDate(currentDate.getDate() + 2); // Alternate days
+        currentDate.setDate(currentDate.getDate() + 2);
       }
     }
 
