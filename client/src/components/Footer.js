@@ -63,11 +63,11 @@ const Footer = () => {
             <ul className="space-y-2 text-gray-400 text-sm">
               <li className="flex items-center space-x-2">
                 <span>📧</span>
-                <span>support@testseries.com</span>
+                <span>contact@testseriesai.com</span>
               </li>
               <li className="flex items-center space-x-2">
                 <span>📞</span>
-                <span>+91 9999999999</span>
+                <span>+91 7425071550</span>
               </li>
               <li className="flex items-center space-x-2">
                 <span>📍</span>
