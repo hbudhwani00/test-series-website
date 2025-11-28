@@ -30,18 +30,18 @@ const Footer = () => {
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/demo-tests" className="text-gray-400 hover:text-white transition-colors duration-300">
-                  Demo Tests
+                <Link to="https://www.instagram.com/_test.ai/" className="text-gray-400 hover:text-white transition-colors duration-300">
+                  Instagram
                 </Link>
               </li>
               <li>
-                <Link to="/login" className="text-gray-400 hover:text-white transition-colors duration-300">
-                  Login
+                <Link to="https://www.youtube.com/@t_e_s_t.a_i" className="text-gray-400 hover:text-white transition-colors duration-300">
+                  YouTube
                 </Link>
               </li>
               <li>
-                <Link to="/register" className="text-gray-400 hover:text-white transition-colors duration-300">
-                  Register
+                <Link to="https://www.linkedin.com" className="text-gray-400 hover:text-white transition-colors duration-300">
+                  Linkedin
                 </Link>
               </li>
             </ul>
