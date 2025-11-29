@@ -247,43 +247,32 @@ const JEEMainTest = () => {
       const token = localStorage.getItem('token');
       const isDemo = location.pathname.includes('/demo-test/');
       setIsDemoTest(isDemo);
-      
       let endpoint;
       let response;
-      
       if (isDemo) {
-        // For demo test, fetch from demo endpoint (no auth required)
         response = await axios.get(`${API_URL}/demo/test`);
         setTest(response.data.test);
+        setLoading(false); // Hide spinner as soon as test data is set
       } else {
-        // For regular test
         endpoint = `${API_URL}/tests/${testId}`;
-        
-        // If testId is "new", fetch from the /new endpoint to generate a new test
         if (testId === 'new') {
           endpoint = `${API_URL}/tests/new`;
         }
-        
         response = await axios.get(endpoint, {
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         });
-        
         setTest(response.data.test);
-        
-        // If we generated a new test, update the URL with the actual test ID
+        setLoading(false); // Hide spinner as soon as test data is set
         if (testId === 'new' && response.data.test._id) {
           window.history.replaceState(null, '', `/student/jee-main-test/${response.data.test._id}`);
         }
       }
-      
-      // Initialize visited for first question
       setVisited({ '0': true });
     } catch (error) {
       console.error('Failed to load test:', error);
       toast.error(error.response?.data?.message || 'Failed to load test');
       navigate('/student/dashboard');
-    } finally {
-      setLoading(false);
+      setLoading(false); // Hide spinner on error
     }
   };
 

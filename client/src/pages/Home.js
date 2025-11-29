@@ -4,9 +4,11 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import DemoTestSelectionModal from '../components/DemoTestSelectionModal';
 import CallbackPopup from '../components/CallbackPopup';
+import TopBanner from '../components/TopBanner';
 import { API_URL } from '../services/api';
 import './Home.css';
 import './HomeModern.css';
+
 
 const Home = () => {
   const { user } = useAuth();
@@ -26,12 +28,12 @@ const Home = () => {
       // First popup after 5 seconds
       const firstTimer = setTimeout(() => {
         setShowCallbackPopup(true);
-      }, 5000);
+      }, 30000);
 
       // Subsequent popups every 10 seconds
       const intervalTimer = setInterval(() => {
         setShowCallbackPopup(true);
-      }, 10000);
+      }, 30000);
 
       return () => {
         clearTimeout(firstTimer);
@@ -78,9 +80,11 @@ const Home = () => {
       setShowDemoModal(true);
     }
   };
+  
 
   return (
     <div className="home-page">
+      <TopBanner /> {/* ADD THIS LINE */}
       {/* Hero Section with Cyan/Turquoise Background - World Class Design */}
       <section className="hero-section modern-hero">
         <div className="hero-background-modern">
@@ -304,15 +308,7 @@ const Home = () => {
       {/* AI-Powered USP Section */}
       <section className="ai-usp-section">
         <div className="container">
-          <div className="section-header">
-            <span className="section-badge">🤖 Powered by AI</span>
-            <h2 className="section-title">
-              Why We're <span className="gradient-text">Different</span>
-            </h2>
-            <p className="section-subtitle">
-              Traditional platforms give everyone the same tests. We're smarter.
-            </p>
-          </div>
+         
 
           <div className="usp-grid">
             <div className="usp-card usp-highlight">
@@ -391,10 +387,7 @@ const Home = () => {
       {/* Features Section */}
       <section className="features-section">
         <div className="container">
-          <div className="section-header">
-            <h2 className="section-title">Everything You Need to <span className="gradient-text">Excel</span></h2>
-          </div>
-
+          
           <div className="features-showcase">
             <div className="feature-large">
               <div className="feature-visual">
@@ -461,9 +454,7 @@ const Home = () => {
       <section className="pricing-section">
         <div className="container">
           <div className="section-header">
-            <span className="section-badge">💰 Affordable Excellence</span>
-            <h2 className="section-title">Choose Your <span className="gradient-text">Success Plan</span></h2>
-            <p className="section-subtitle">No hidden fees. Cancel anytime. 7-day money-back guarantee.</p>
+            
             <p className="mobile-swipe-hint" style={{
               display: 'none',
               fontSize: '0.9rem',

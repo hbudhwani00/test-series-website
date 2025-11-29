@@ -33,7 +33,8 @@ const CallbackPopup = ({ onClose }) => {
         <button className="close-btn" onClick={onClose}>×</button>
         
         <div className="popup-header">
-          <h2>Have you any doubts?</h2>
+          <h2>Enquiry Form</h2>
+          <p>Free for First 99 Users</p>
           <p>Fill this form our team will call you to help you</p>
         </div>
 
