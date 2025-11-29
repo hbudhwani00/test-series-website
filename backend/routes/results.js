@@ -184,7 +184,15 @@ router.post('/submit-demo', async (req, res) => {
 
     res.json({
       message: 'Demo test submitted successfully',
-      result
+      result: {
+        id: result._id,
+        score,
+        totalMarks: test.totalMarks,
+        percentage: percentage.toFixed(2),
+        correctAnswers,
+        incorrectAnswers,
+        unattempted
+      }
     });
   } catch (error) {
     console.error('Error submitting demo test:', error);
