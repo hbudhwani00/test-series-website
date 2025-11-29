@@ -12,12 +12,7 @@ const DemoTestSelectionModal = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (isOpen) {
       initializeNEETTest();
-      
-      // Auto-select based on saved preference
-      const selectedExam = localStorage.getItem('selectedExam');
-      if (selectedExam) {
-        handleSelectExam(selectedExam);
-      }
+      // No auto-select; wait for user click
     }
   }, [isOpen]);
 

@@ -1,8 +1,6 @@
 ﻿/* BASE */
 /* Top Banner Styles */
-.home-page {
-  padding-top: 50px; /* Add space for the fixed banner */
-}
+
 .home-page { min-height: 100vh; background: #f8fafc; overflow-x: hidden; }
 
 /* HERO SECTION */

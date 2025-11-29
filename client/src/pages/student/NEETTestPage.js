@@ -18,10 +18,28 @@ const NEETTestPage = () => {
   const [markedForReview, setMarkedForReview] = useState({});
   const [timeRemaining, setTimeRemaining] = useState(12000); // 200 minutes (3 hours 20 min)
   const [isFullscreen, setIsFullscreen] = useState(false);
-  
+  // Mobile orientation state
+  const [isMobile, setIsMobile] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(true);
   // Time tracking per question
   const [questionStartTime, setQuestionStartTime] = useState(Date.now());
   const [questionTimeTracking, setQuestionTimeTracking] = useState({}); // { questionIndex: { firstVisit: time, revisits: [time1, time2], visited: boolean } }
+  // Mobile/orientation detection
+  useEffect(() => {
+    const checkMobileAndOrientation = () => {
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+      const isLandscapeMode = window.innerWidth > window.innerHeight;
+      setIsMobile(isMobileDevice);
+      setIsLandscape(isLandscapeMode);
+    };
+    checkMobileAndOrientation();
+    window.addEventListener('resize', checkMobileAndOrientation);
+    window.addEventListener('orientationchange', checkMobileAndOrientation);
+    return () => {
+      window.removeEventListener('resize', checkMobileAndOrientation);
+      window.removeEventListener('orientationchange', checkMobileAndOrientation);
+    };
+  }, []);
 
   useEffect(() => {
     fetchTest();
@@ -150,7 +168,9 @@ const NEETTestPage = () => {
       }));
       // Auto-navigate to the question when marked from OMR
       if (questionIndexOrOptionIndex !== currentQuestionIndex) {
+        trackQuestionTime(currentQuestionIndex);
         setCurrentQuestionIndex(questionIndexOrOptionIndex);
+        setQuestionStartTime(Date.now());
       }
     } else {
       // Called from question panel with just optionIndex
@@ -252,6 +272,25 @@ const NEETTestPage = () => {
       toast.error(error.response?.data?.message || 'Failed to submit test');
     }
   };
+
+  // Show rotation prompt for mobile devices in portrait mode
+  if (isMobile && !isLandscape) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 z-50">
+        <div className="text-center text-white p-8 max-w-md mx-4">
+          <div className="mb-6 flex justify-center">
+            <svg className="w-24 h-24 animate-spin-slow" style={{ animation: 'spin 3s linear infinite' }} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="2" y="5" width="20" height="14" rx="2" strokeWidth="2"/>
+              <path d="M12 2v3M12 19v3" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <h2 className="text-3xl font-bold mb-4">Please Rotate Your Device</h2>
+          <p className="text-lg opacity-90 mb-2">This test requires landscape mode for better visibility</p>
+          <p className="text-sm opacity-75">Rotate your phone horizontally to continue</p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

@@ -25,12 +25,12 @@ const Home = () => {
 
     // Show callback popup for non-logged-in users
     if (!user) {
-      // First popup after 5 seconds
+      // First popup after 10 seconds
       const firstTimer = setTimeout(() => {
         setShowCallbackPopup(true);
-      }, 30000);
+      }, 10000);
 
-      // Subsequent popups every 10 seconds
+      // Subsequent popups every 30 seconds
       const intervalTimer = setInterval(() => {
         setShowCallbackPopup(true);
       }, 30000);
@@ -87,6 +87,7 @@ const Home = () => {
       <TopBanner /> {/* ADD THIS LINE */}
       {/* Hero Section with Cyan/Turquoise Background - World Class Design */}
       <section className="hero-section modern-hero">
+        
         <div className="hero-background-modern">
           <div className="cyan-gradient"></div>
           <div className="floating-circles">
