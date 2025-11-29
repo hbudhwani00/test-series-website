@@ -62,17 +62,17 @@ router.post('/submit-demo', async (req, res) => {
       }
       
       // Get time tracking data for this question
-      const timeData = questionTimeTracking && questionTimeTracking[index];
-      let questionTimeBreakdown = null;
-      
-      if (timeData && timeData.visited) {
-        questionTimeBreakdown = {
-          firstVisit: timeData.firstVisit || 0,
-          revisits: timeData.revisits || [],
-          totalTime: (timeData.firstVisit || 0) + (timeData.revisits || []).reduce((sum, t) => sum + t, 0)
-        };
-      }
+      // Get time tracking data for this question
+const timeData = questionTimeTracking && questionTimeTracking[index];
+let questionTimeBreakdown = null;
 
+if (timeData && timeData.visited) {
+  questionTimeBreakdown = {
+    firstVisit: timeData.firstVisit || 0,
+    revisits: timeData.revisits || [],
+    totalTime: (timeData.firstVisit || 0) + (timeData.revisits || []).reduce((sum, t) => sum + t, 0)
+  };
+}
       if (!userAnswer || userAnswer === null || userAnswer === undefined || userAnswer === '') {
         unattempted++;
         evaluatedAnswers.push({

@@ -248,27 +248,42 @@ const DemoResultDetail = () => {
     : [];
 
   // Calculate subject-wise average time
-  const subjectTimeStats = {};
-  if (result.answers) {
-    result.answers.forEach(answer => {
-      const subject = answer.subject || 'General';
-      if (!subjectTimeStats[subject]) {
-        subjectTimeStats[subject] = { totalTime: 0, count: 0 };
-      }
-      if (answer.timeBreakdown && answer.timeBreakdown.totalTime) {
-        subjectTimeStats[subject].totalTime += answer.timeBreakdown.totalTime;
-        subjectTimeStats[subject].count++;
-      }
-    });
-  }
-  const subjectAverages = Object.keys(subjectTimeStats).map(subject => ({
+    const subjectTimeStats = {};
+if (result.answers) {
+  result.answers.forEach(answer => {
+    const subject = answer.subject || 'General';
+    
+    // DEBUG: Log first question of each subject
+    if (!subjectTimeStats[subject]) {
+      console.log(`First ${subject} question:`, {
+        subject: answer.subject,
+        hasTimeBreakdown: !!answer.timeBreakdown,
+        timeData: answer.timeBreakdown
+      });
+      subjectTimeStats[subject] = { totalTime: 0, count: 0 };
+    }
+    
+    // Only count questions that have time data
+    if (answer.timeBreakdown && answer.timeBreakdown.totalTime > 0) {
+      subjectTimeStats[subject].totalTime += answer.timeBreakdown.totalTime;
+      subjectTimeStats[subject].count++;
+    }
+  });
+}
+
+console.log('Final subject stats:', subjectTimeStats); // ADD THIS
+
+// Rest of the code stays the same...
+
+// Sort subjects alphabetically and filter out subjects with no time data
+const subjectAverages = Object.keys(subjectTimeStats)
+  .filter(subject => subjectTimeStats[subject].count > 0) // Only show subjects with time data
+  .sort()
+  .map(subject => ({
     subject,
-    avgTime: subjectTimeStats[subject].count > 0 
-      ? Math.round(subjectTimeStats[subject].totalTime / subjectTimeStats[subject].count) 
-      : 0,
+    avgTime: Math.round(subjectTimeStats[subject].totalTime / subjectTimeStats[subject].count),
     questionCount: subjectTimeStats[subject].count
   }));
-
   // Circular progress calculation
   const radius = 85;
   const circumference = 2 * Math.PI * radius;

@@ -111,34 +111,36 @@ const NEETTestPage = () => {
   const currentQuestion = test?.questions[currentQuestionIndex];
 
   // Track time when changing questions
-  const trackQuestionTime = (fromIndex) => {
-    const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000); // Convert to seconds
+    // Track time when changing questions
+const trackQuestionTime = (fromIndex) => {
+  const timeSpent = Math.floor((Date.now() - questionStartTime) / 1000); // Convert to seconds
+  const questionId = test.questions[fromIndex]._id; // GET THE QUESTION ID
+  
+  setQuestionTimeTracking(prev => {
+    const existing = prev[questionId] || { visited: false, firstVisit: 0, revisits: [] }; // USE questionId
     
-    setQuestionTimeTracking(prev => {
-      const existing = prev[fromIndex] || { visited: false, firstVisit: 0, revisits: [] };
-      
-      if (!existing.visited) {
-        // First visit
-        return {
-          ...prev,
-          [fromIndex]: {
-            visited: true,
-            firstVisit: timeSpent,
-            revisits: []
-          }
-        };
-      } else {
-        // Revisit
-        return {
-          ...prev,
-          [fromIndex]: {
-            ...existing,
-            revisits: [...existing.revisits, timeSpent]
-          }
-        };
-      }
-    });
-  };
+    if (!existing.visited) {
+      // First visit
+      return {
+        ...prev,
+        [questionId]: { // USE questionId
+          visited: true,
+          firstVisit: timeSpent,
+          revisits: []
+        }
+      };
+    } else {
+      // Revisit
+      return {
+        ...prev,
+        [questionId]: { // USE questionId
+          ...existing,
+          revisits: [...existing.revisits, timeSpent]
+        }
+      };
+    }
+  });
+};
 
   const navigateToQuestion = (index) => {
     if (index === currentQuestionIndex) return;
