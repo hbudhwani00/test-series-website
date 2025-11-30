@@ -16,6 +16,12 @@ app.use(express.urlencoded({ extended: true }));
 // Serve uploaded images statically
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Ensure MongoDB URI is set in the environment variables
+if (!process.env.MONGODB_URI) {
+  console.error('Error: MONGODB_URI is not set in the environment variables.');
+  process.exit(1); // Exit the process with an error code
+}
+
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
 .then(() => {

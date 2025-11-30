@@ -366,24 +366,23 @@ const JEEMainTest = () => {
     });
   };
 
+  // Update the visited state whenever a question is answered or navigated to
+  const updateVisitedState = (index) => {
+    setVisited((prev) => ({ ...prev, [index.toString()]: true }));
+  };
+
   // Navigate to a question and track time
   const navigateToQuestion = (index) => {
-    // Track time for current question before leaving
     trackQuestionTime(currentQuestionIndex);
-    
-    // Navigate to new question
     setCurrentQuestionIndex(index);
-    const key = index.toString();
-    setVisited(prev => ({ ...prev, [key]: true }));
-    
-    // Reset timer for new question
+    updateVisitedState(index);
     setQuestionStartTime(Date.now());
   };
 
   const handleAnswer = (answer) => {
     const key = getQuestionKey();
-    setAnswers(prev => ({ ...prev, [key]: answer }));
-    setVisited(prev => ({ ...prev, [key]: true }));
+    setAnswers((prev) => ({ ...prev, [key]: answer }));
+    updateVisitedState(currentQuestionIndex);
   };
 
   const handleMarkForReview = () => {
@@ -456,17 +455,17 @@ const JEEMainTest = () => {
 
   const getQuestionStatus = (index) => {
     const key = index.toString();
-    
     const isMarked = markedForReview[key];
     const hasAnswer = answers[key];
     const isVisited = visited[key];
-    
-    // Match official JEE Main interface colors
-    if (isMarked && hasAnswer) return 'marked'; // Purple - Marked and Answered
-    if (isMarked && !hasAnswer) return 'marked-not-answered'; // Orange - Marked but not answered
-    if (hasAnswer) return 'answered'; // Green - Answered
-    if (isVisited && !hasAnswer) return 'not-answered'; // Red - Visited but not answered
-    return 'not-visited'; // Gray - Not visited
+
+    console.log(`Debug: Question ${index} - Marked: ${isMarked}, Answered: ${hasAnswer}, Visited: ${isVisited}`);
+
+    if (isMarked && hasAnswer) return 'marked';
+    if (isMarked && !hasAnswer) return 'marked-not-answered';
+    if (hasAnswer) return 'answered';
+    if (isVisited && !hasAnswer) return 'not-answered';
+    return 'not-visited';
   };
 
   const getStatusColor = (status) => {
@@ -508,106 +507,40 @@ const JEEMainTest = () => {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const allQuestions = getAllQuestions();
       const formattedAnswers = {};
-      
-      console.log('=== JEE Demo Test Submission Debug ===');
-      console.log('Total questions:', allQuestions.length);
-      console.log('Answers state object:', answers);
-      console.log('Answers keys:', Object.keys(answers));
-      console.log('Sample answers:', Object.keys(answers).slice(0, 5).map(k => ({ key: k, value: answers[k], type: typeof answers[k] })));
-      
-      // Convert index-based answers to questionId-based answers for regular test
-      // OR convert to questionId-based for demo test
-      if (isDemoTest) {
-        console.log('=== Processing Demo Test Answers ===');
-        
-        // For demo test, convert index-based answers to questionId-based
-        // IMPORTANT: Include ALL questions, even unattempted ones (null)
-        allQuestions.forEach((question, index) => {
-          if (question && question._id) {
-            // Keys are stored as strings like "0", "1", "2" (see getQuestionKey())
-            const indexKey = index.toString();
-            const answer = answers[indexKey];
-            
-            // DEBUG: Log first 5 and any answered questions
-            if (index < 5 || answer !== undefined) {
-              console.log(`Q${index}: indexKey="${indexKey}", answer="${answer}", type=${typeof answer}, questionId=${question._id}`);
-            }
-            
-            // Convert answers to numeric format for backend
-            let numericAnswer = answer;
-            if (answer !== undefined && answer !== null) {
-              if (typeof answer === 'string') {
-                // Check if it's a letter (A, B, C, D) - convert to index (0, 1, 2, 3)
-                if (answer.length === 1 && answer >= 'A' && answer <= 'Z') {
-                  numericAnswer = answer.charCodeAt(0) - 65; // 'A' -> 0, 'B' -> 1, 'C' -> 2, 'D' -> 3
-                  console.log(`  ✓ Converted letter "${answer}" to ${numericAnswer}`);
-                } else {
-                  // It's a numeric string (Section B numerical answer) - convert to number
-                  numericAnswer = parseFloat(answer);
-                  console.log(`  ✓ Converted numeric string "${answer}" to ${numericAnswer}`);
-                }
-              }
-              // If already a number, keep it as is
-            }
-            
-            formattedAnswers[question._id] = numericAnswer !== undefined ? numericAnswer : null;
-          }
-        });
-        
-        console.log('=== Formatted Answers Summary ===');
-        const answeredQuestions = Object.entries(formattedAnswers).filter(([_, ans]) => ans !== null && ans !== undefined);
-        console.log('Total questions formatted:', Object.keys(formattedAnswers).length);
-        console.log('Answered (non-null):', answeredQuestions.length);
-        console.log('All answered questions:', answeredQuestions.map(([qId, ans]) => ({ questionId: qId, answer: ans, type: typeof ans })));
-        
-        console.log('Formatted answers count:', Object.keys(formattedAnswers).length);
-        console.log('Non-null answers:', Object.values(formattedAnswers).filter(a => a !== null).length);
-      } else {
-        // For regular test, convert to questionId-based
-        Object.keys(answers).forEach(key => {
-          const index = parseInt(key);
-          const question = allQuestions[index];
-          if (question && question._id) {
-            let answer = answers[key];
-            
-            // Convert letter answers (A, B, C, D) to numeric indices (0, 1, 2, 3)
-            if (typeof answer === 'string' && answer.length === 1 && answer >= 'A' && answer <= 'Z') {
-              answer = answer.charCodeAt(0) - 65; // 'A' -> 0, 'B' -> 1, 'C' -> 2, 'D' -> 3
-            }
-            
-            formattedAnswers[question._id] = answer;
-          }
-        });
-      }
+
+      console.log('=== Debugging Submission ===');
+      console.log('All Questions:', allQuestions);
+      console.log('Answers State:', answers);
+
+      // Ensure all questions are included in the submission
+      allQuestions.forEach((question, index) => {
+        const key = index.toString();
+        const answer = answers[key];
+        formattedAnswers[question._id] = answer !== undefined ? answer : null;
+      });
+
+      console.log('Formatted Answers:', formattedAnswers);
 
       let response;
-      
+
       if (isDemoTest) {
-        // Demo test submission - use submit-demo endpoint
-        const userId = user.id || user._id || null; // Backend returns 'id', not '_id'
-        console.log('JEE Demo Test Submit - User from localStorage:', user);
-        console.log('JEE Demo Test Submit - userId to send:', userId);
-        
         const submitPayload = {
           testId: test._id,
           testType: 'jee_demo',
           answers: formattedAnswers,
           timeSpent: (180 * 60) - timeRemaining,
           markedForReview: {},
-          userId: userId, // Include userId if logged in
-          questionTimeTracking // Include detailed time tracking data
+          userId: user.id || user._id || null,
+          questionTimeTracking
         };
-        
-        console.log('JEE Demo Test Submit - Payload:', { ...submitPayload, answers: `[${Object.keys(submitPayload.answers).length} answers]` });
-        
+
+        console.log('Demo Test Payload:', submitPayload);
+
         response = await axios.post(
           `${API_URL}/results/submit-demo`,
           submitPayload
         );
-        
-        console.log('JEE Demo Test Submit - Response:', response.data);
       } else {
-        // Regular test submission
         response = await axios.post(
           `${API_URL}/results/submit`,
           {
@@ -619,14 +552,14 @@ const JEEMainTest = () => {
         );
       }
 
-      // Exit fullscreen after successful submission (with delay to ensure navigation)
+      console.log('Submission Response:', response.data);
+
       setTimeout(() => {
         exitFullscreen();
       }, 100);
-      
+
       toast.success('Test submitted successfully!');
-      
-      // Navigate to appropriate result page
+
       if (isDemoTest) {
         navigate(`/student/demo-result/${response.data.result.id}`);
       } else {
