@@ -4,6 +4,9 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import { API_URL } from '../../services/api';
 import LatexRenderer from '../../components/LatexRenderer';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import './DemoResultDetail.css';
 
 const DemoResultDetail = () => {
@@ -123,6 +126,71 @@ const DemoResultDetail = () => {
       toast.error('Failed to generate AI feedback. Please try again.');
     } finally {
       setLoadingAI(false);
+    }
+  };
+
+  const exportToPDF = async () => {
+    const element = document.querySelector('.demo-result-container');
+    if (!element) {
+      toast.error('Unable to find the results container.');
+      console.error('Element not found: .demo-result-container');
+      return;
+    }
+
+    console.log('Element found:', element);
+
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2, // Adjust scale for better quality
+        useCORS: true, // Enable CORS to handle cross-origin images
+        logging: true, // Enable logging for debugging
+        backgroundColor: null, // Ensure transparent background
+      });
+
+      // Debugging: Append the canvas to the DOM to verify rendering
+      document.body.appendChild(canvas);
+      canvas.style.position = 'absolute';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+      canvas.style.zIndex = '1000';
+      canvas.style.border = '2px solid red';
+
+      console.log('Canvas dimensions:', canvas.width, canvas.height);
+
+      const imgData = canvas.toDataURL('image/png');
+      console.log('Image data generated:', imgData.substring(0, 100)); // Log first 100 characters
+
+      const pdf = new jsPDF('p', 'mm', 'a4');
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      if (pdfHeight > pdf.internal.pageSize.getHeight()) {
+        // Handle large content by splitting into multiple pages
+        let y = 0;
+        while (y < canvas.height) {
+          const pageCanvas = document.createElement('canvas');
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = Math.min(canvas.height - y, pdf.internal.pageSize.getHeight() * (canvas.width / pdfWidth));
+          const pageCtx = pageCanvas.getContext('2d');
+          pageCtx.drawImage(canvas, 0, y, canvas.width, pageCanvas.height, 0, 0, canvas.width, pageCanvas.height);
+          const pageImgData = pageCanvas.toDataURL('image/png');
+          pdf.addImage(pageImgData, 'PNG', 0, 0, pdfWidth, (pageCanvas.height * pdfWidth) / canvas.width);
+          y += pageCanvas.height;
+          if (y < canvas.height) pdf.addPage();
+        }
+      } else {
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      }
+
+      pdf.save('Detailed_Analysis.pdf');
+      toast.success('PDF exported successfully!');
+
+      // Remove the debug canvas after exporting
+      document.body.removeChild(canvas);
+    } catch (error) {
+      console.error('Error exporting to PDF:', error);
+      toast.error('Failed to export PDF. Please try again.');
     }
   };
 
@@ -832,6 +900,23 @@ const subjectAverages = Object.keys(subjectTimeStats)
           >
             <h2>📝 Detailed Analysis - Questions with Solutions</h2>
             <span className={`toggle-icon ${showSolutions ? 'open' : ''}`}>▼</span>
+          </div>
+
+          <div style={{ textAlign: 'right', marginBottom: '1rem' }}>
+            <button 
+              onClick={exportToPDF} 
+              style={{ 
+                padding: '0.5rem 1rem', 
+                backgroundColor: '#3b82f6', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '8px', 
+                cursor: 'pointer', 
+                fontWeight: '600' 
+              }}
+            >
+              📄 Export to PDF
+            </button>
           </div>
 
           {showSolutions && (
