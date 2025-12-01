@@ -61,18 +61,33 @@ router.post('/submit-demo', async (req, res) => {
         console.log(`Q${index + 1}: questionId="${questionId}", userAnswer="${userAnswer}", type=${typeof userAnswer}, correctAnswer="${question.correctAnswer}"`);
       }
       
-      // Get time tracking data for this question
-      // Get time tracking data for this question
-const timeData = questionTimeTracking && questionTimeTracking[index];
-let questionTimeBreakdown = null;
+      // Get time tracking data for this question.
+      // Support two shapes sent from client:
+      // 1) array/object indexed by question position: questionTimeTracking[index]
+      // 2) object keyed by questionId: questionTimeTracking[questionId]
+      let questionTimeBreakdown = null;
+      let timeData = null;
+      if (questionTimeTracking) {
+        // Prefer index-based entry if present
+        if (questionTimeTracking[index] !== undefined && questionTimeTracking[index] !== null) {
+          timeData = questionTimeTracking[index];
+        } else {
+          // Fallback to questionId keyed object (most clients use questionId -> data)
+          const qIdStr = question && question._id ? question._id.toString() : String(question && question._id);
+          timeData = questionTimeTracking[qIdStr] || questionTimeTracking[question && question._id] || null;
+        }
+      }
 
-if (timeData && timeData.visited) {
-  questionTimeBreakdown = {
-    firstVisit: timeData.firstVisit || 0,
-    revisits: timeData.revisits || [],
-    totalTime: (timeData.firstVisit || 0) + (timeData.revisits || []).reduce((sum, t) => sum + t, 0)
-  };
-}
+      if (timeData && timeData.visited) {
+        const firstVisit = Number(timeData.firstVisit) || 0;
+        const revisits = Array.isArray(timeData.revisits) ? timeData.revisits.map(t => Number(t) || 0) : [];
+        const totalTime = firstVisit + revisits.reduce((sum, t) => sum + t, 0);
+        questionTimeBreakdown = {
+          firstVisit,
+          revisits,
+          totalTime
+        };
+      }
       if (!userAnswer || userAnswer === null || userAnswer === undefined || userAnswer === '') {
         unattempted++;
         evaluatedAnswers.push({
@@ -80,6 +95,7 @@ if (timeData && timeData.visited) {
           userAnswer: null,
           isCorrect: false,
           marksAwarded: 0,
+          timeTaken: questionTimeBreakdown ? questionTimeBreakdown.totalTime : 0,
           timeBreakdown: questionTimeBreakdown,
           // Snapshot key fields for result display (ensure all data is saved)
           subject: question.subject || 'General',
@@ -130,6 +146,7 @@ if (timeData && timeData.visited) {
         userAnswer: userAnswer,
         isCorrect,
         marksAwarded,
+        timeTaken: questionTimeBreakdown ? questionTimeBreakdown.totalTime : 0,
         timeBreakdown: questionTimeBreakdown,
         // Snapshot key fields for result display (ensure all data is saved)
         subject: question.subject || 'General',
@@ -236,19 +253,19 @@ router.post('/submit', auth, async (req, res) => {
       allQuestions = test.questions.map(q => q.questionId);
     }
 
-    // Convert answers object to map if needed
+    // Convert answers object to map if needed. Store both answer and optional timeTaken
     const answersMap = {};
     if (Array.isArray(answers)) {
       // Array format: [{ questionId, answer, timeTaken }]
       answers.forEach(a => {
         if (a.questionId) {
-          answersMap[a.questionId.toString()] = a.answer;
+          answersMap[a.questionId.toString()] = { answer: a.answer, timeTaken: a.timeTaken || 0 };
         }
       });
     } else if (typeof answers === 'object') {
       // Object format: { questionId: answer }
       Object.keys(answers).forEach(qId => {
-        answersMap[qId.toString()] = answers[qId];
+        answersMap[qId.toString()] = { answer: answers[qId], timeTaken: 0 };
       });
     }
 
@@ -263,7 +280,8 @@ router.post('/submit', auth, async (req, res) => {
     for (const question of allQuestions) {
       if (!question || !question._id) continue;
 
-      const userAnswer = answersMap[question._id.toString()];
+  const userEntry = answersMap[question._id.toString()];
+  const userAnswer = userEntry ? userEntry.answer : undefined;
 
       if (!userAnswer || userAnswer === null || userAnswer === undefined || userAnswer === '') {
         unattempted++;
@@ -272,7 +290,7 @@ router.post('/submit', auth, async (req, res) => {
           userAnswer: null,
           isCorrect: false,
           marksAwarded: 0,
-          timeTaken: 0
+          timeTaken: userEntry ? (userEntry.timeTaken || 0) : 0
         });
         continue;
       }
@@ -311,7 +329,7 @@ router.post('/submit', auth, async (req, res) => {
         userAnswer: userAnswer,
         isCorrect,
         marksAwarded,
-        timeTaken: 0
+        timeTaken: userEntry ? (userEntry.timeTaken || 0) : 0
       });
     }
 
