@@ -4,8 +4,7 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import { resultService, API_URL } from '../../services/api';
 import LatexRenderer from '../../components/LatexRenderer';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+// PDF export removed
 import './DemoResultDetail.css'; // Use same CSS as Demo
 
 
@@ -59,49 +58,7 @@ const ResultDetail = () => {
     }
   };
 
-  const generatePDF = () => {
-    const doc = new jsPDF();
-
-    doc.setFontSize(18);
-    doc.text('Detailed Analysis - Questions with Solutions', 10, 10);
-
-    Object.keys(groupedAnswers).forEach((subject, subIdx) => {
-      doc.setFontSize(16);
-      doc.text(`Subject: ${subject}`, 10, 20 + subIdx * 10);
-
-      Object.keys(groupedAnswers[subject]).forEach((chapter, chIdx) => {
-        doc.setFontSize(14);
-        doc.text(`Chapter: ${chapter}`, 10, 30 + subIdx * 10 + chIdx * 10);
-
-        Object.keys(groupedAnswers[subject][chapter]).forEach((topic, topIdx) => {
-          const topicAnswers = groupedAnswers[subject][chapter][topic];
-          doc.setFontSize(12);
-          doc.text(`Topic: ${topic}`, 10, 40 + subIdx * 10 + chIdx * 10 + topIdx * 10);
-
-          topicAnswers.forEach((answer, qIdx) => {
-            const isCorrect = answer.isCorrect;
-            const isUnattempted = answer.userAnswer === null || answer.userAnswer === undefined;
-            const questionStatus = isCorrect ? 'Correct' : isUnattempted ? 'Unattempted' : 'Incorrect';
-
-            doc.autoTable({
-              startY: doc.lastAutoTable ? doc.lastAutoTable.finalY + 10 : 50,
-              head: [['Question', 'Your Answer', 'Correct Answer', 'Status']],
-              body: [
-                [
-                  answer.questionId?.question || 'Question not available',
-                  isUnattempted ? 'Not Attempted' : answer.userAnswer,
-                  answer.correctAnswer,
-                  questionStatus
-                ]
-              ]
-            });
-          });
-        });
-      });
-    });
-
-    doc.save('Detailed_Analysis.pdf');
-  };
+  // PDF generation removed
 
   if (loading) {
     return <div className="demo-loading">Loading your results...</div>;
@@ -378,9 +335,7 @@ const ResultDetail = () => {
             <span className={`toggle-icon ${showSolutions ? 'open' : ''}`}>▼</span>
           </div>
 
-          <button className="topic-btn primary" onClick={generatePDF} style={{ margin: '10px 0' }}>
-            Download PDF
-          </button>
+          {/* PDF download removed */}
 
           {showSolutions && (
             <>

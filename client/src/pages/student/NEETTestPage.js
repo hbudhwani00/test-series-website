@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -110,6 +110,62 @@ const NEETTestPage = () => {
 
   const currentQuestion = test?.questions[currentQuestionIndex];
 
+  // Helper to compute subject range like Q1-45 for a given subject
+  const getSubjectRange = (subjectName) => {
+    if (!test || !test.questions) return null;
+    const subjectQuestions = test.questions.filter(q => q.subject && q.subject.toLowerCase() === String(subjectName).toLowerCase());
+    if (!subjectQuestions || subjectQuestions.length === 0) return null;
+    const numbers = subjectQuestions.map(q => q.questionNumber || (test.questions.indexOf(q) + 1)).filter(Boolean);
+    const min = Math.min(...numbers);
+    const max = Math.max(...numbers);
+    return { min, max };
+  };
+
+  const currentSubject = currentQuestion?.subject || (test && test.questions && test.questions.length ? test.questions[0].subject : '');
+  const currentRange = getSubjectRange(currentSubject);
+
+  // Initialize visibleSubject when test loads so the sticky band shows immediately
+  useEffect(() => {
+    if (!test) return;
+    // Prefer the subject of the first question if observer hasn't set it yet
+    if (!visibleSubject) {
+      const firstSubj = test.questions && test.questions.length ? (test.questions[0].subject || '') : '';
+      setVisibleSubject(firstSubj);
+    }
+  }, [test]);
+
+  // Track which subject-section is currently visible inside the scroll container
+  const [visibleSubject, setVisibleSubject] = useState(null);
+  const scrollContainerRef = useRef(null);
+
+  useEffect(() => {
+    if (!test) return;
+    const container = document.querySelector('.all-questions-container');
+    scrollContainerRef.current = container;
+    if (!container) return;
+
+    const sections = container.querySelectorAll('.subject-section');
+    if (!sections || sections.length === 0) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      // Find the entry with largest intersectionRatio that's intersecting
+      const visible = Array.from(entries).filter(e => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (visible && visible.target) {
+        const subj = visible.target.getAttribute('data-subject');
+        if (subj) setVisibleSubject(subj);
+      }
+    }, {
+      root: container,
+      threshold: [0.25, 0.5, 0.75]
+    });
+
+    sections.forEach(s => observer.observe(s));
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [test]);
+
   // Track time when changing questions
     // Track time when changing questions
 const trackQuestionTime = (fromIndex) => {
@@ -173,6 +229,30 @@ const trackQuestionTime = (fromIndex) => {
         trackQuestionTime(currentQuestionIndex);
         setCurrentQuestionIndex(questionIndexOrOptionIndex);
         setQuestionStartTime(Date.now());
+        // Scroll the question into view inside the questions container.
+        // Use a short timeout to ensure the DOM has updated, and try multiple fallbacks.
+        const targetIndex = Number(questionIndexOrOptionIndex);
+        setTimeout(() => {
+          const el = document.getElementById(`question-${targetIndex}`);
+          const container = document.querySelector('.all-questions-container');
+          try {
+            if (el && container) {
+              // Preferred: let the container smoothly scroll so the element is centered
+              el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+              // Fallback: also nudge container.scrollTop in case scrollIntoView doesn't affect the container
+              const containerRect = container.getBoundingClientRect();
+              const elRect = el.getBoundingClientRect();
+              const offset = elRect.top - containerRect.top - 20;
+              container.scrollTo({ top: container.scrollTop + offset, behavior: 'smooth' });
+            } else if (el) {
+              // No scrollable container found, let the page scroll
+              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          } catch (err) {
+            // final fallback: immediate jump
+            if (el) el.scrollIntoView();
+          }
+        }, 60);
       }
     } else {
       // Called from question panel with just optionIndex
@@ -333,24 +413,32 @@ const trackQuestionTime = (fromIndex) => {
         </div>
       </div>
 
+      {/* Top sticky subject band that reflects the subject currently visible in the scroll container */}
+      {/* <div className="subject-sticky-top" aria-hidden={false}>
+        <div className="subject-sticky-inner">
+          <div className="subject-name">{String(visibleSubject || currentSubject || '').toUpperCase()}</div>
+        </div>
+      </div> */}
+
       {/* Main Content Area */}
       <div className="neet-test-content">
         {/* Question Panel (80%) - All Questions Scrollable */}
         <div className="neet-question-panel">
           <div className="all-questions-container">
             {/* Physics Section */}
-            <div className="subject-section">
-              <div className="subject-header">PHYSICS (Q1-45)</div>
-              {test.questions.filter(q => q.subject === 'Physics').sort((a, b) => a.questionNumber - b.questionNumber).map((question, idx) => {
+            <div className="subject-section" data-subject="Physics">
+              <div className="subject-header">PHYSICS</div>
+              {test.questions.filter(q => q.subject === 'Physics').sort((a, b) => a.questionNumber - b.questionNumber).map((question) => {
                 const qIndex = test.questions.indexOf(question);
                 const isSelected = (optIdx) => answers[qIndex] === String.fromCharCode(65 + optIdx);
-                
+
                 return (
                   <div 
                     key={qIndex} 
                     className={`question-card ${qIndex === currentQuestionIndex ? 'active-question' : ''}`}
                     id={`question-${qIndex}`}
                   >
+                    <div className="question-subject-tag">{String(question.subject || '').toUpperCase()}</div>
                     <div className="question-header-card">
                       <h3>Question {question.questionNumber || (qIndex + 1)}</h3>
                       <div className="question-meta">
@@ -431,18 +519,19 @@ const trackQuestionTime = (fromIndex) => {
             </div>
 
             {/* Chemistry Section */}
-            <div className="subject-section">
-              <div className="subject-header">CHEMISTRY (Q46-90)</div>
-              {test.questions.filter(q => q.subject === 'Chemistry').sort((a, b) => a.questionNumber - b.questionNumber).map((question, idx) => {
+            <div className="subject-section" data-subject="Chemistry">
+              <div className="subject-header">CHEMISTRY</div>
+              {test.questions.filter(q => q.subject === 'Chemistry').sort((a, b) => a.questionNumber - b.questionNumber).map((question) => {
                 const qIndex = test.questions.indexOf(question);
                 const isSelected = (optIdx) => answers[qIndex] === String.fromCharCode(65 + optIdx);
-                
+
                 return (
                   <div 
                     key={qIndex} 
                     className={`question-card ${qIndex === currentQuestionIndex ? 'active-question' : ''}`}
                     id={`question-${qIndex}`}
                   >
+                    <div className="question-subject-tag">{String(question.subject || '').toUpperCase()}</div>
                     <div className="question-header-card">
                       <h3>Question {question.questionNumber || (qIndex + 1)}</h3>
                       <div className="question-meta">
@@ -523,18 +612,19 @@ const trackQuestionTime = (fromIndex) => {
             </div>
 
             {/* Biology Section */}
-            <div className="subject-section">
-              <div className="subject-header">BIOLOGY (Q91-180)</div>
-              {test.questions.filter(q => q.subject === 'Biology').sort((a, b) => a.questionNumber - b.questionNumber).map((question, idx) => {
+            <div className="subject-section" data-subject="Biology">
+              <div className="subject-header">BIOLOGY</div>
+              {test.questions.filter(q => q.subject === 'Biology').sort((a, b) => a.questionNumber - b.questionNumber).map((question) => {
                 const qIndex = test.questions.indexOf(question);
                 const isSelected = (optIdx) => answers[qIndex] === String.fromCharCode(65 + optIdx);
-                
+
                 return (
                   <div 
                     key={qIndex} 
                     className={`question-card ${qIndex === currentQuestionIndex ? 'active-question' : ''}`}
                     id={`question-${qIndex}`}
                   >
+                    <div className="question-subject-tag">{String(question.subject || '').toUpperCase()}</div>
                     <div className="question-header-card">
                       <h3>Question {question.questionNumber || (qIndex + 1)}</h3>
                       <div className="question-meta">
