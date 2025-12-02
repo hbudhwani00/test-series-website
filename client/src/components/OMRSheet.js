@@ -1,7 +1,7 @@
 import React from 'react';
 import './OMRSheet.css';
 
-const OMRSheet = ({ totalQuestions = 180, questions = [], answers, markedForReview, currentQuestionIndex, onQuestionClick, onAnswerSelect }) => {
+const OMRSheet = ({ totalQuestions = 180, questions = [], answers = {}, markedForReview = {}, currentQuestionIndex, onQuestionClick, onAnswerSelect }) => {
   // Group questions by subject and sort by questionNumber
   const physicsQuestions = questions.filter(q => q.subject === 'Physics').sort((a, b) => a.questionNumber - b.questionNumber);
   const chemistryQuestions = questions.filter(q => q.subject === 'Chemistry').sort((a, b) => a.questionNumber - b.questionNumber);
@@ -13,25 +13,52 @@ const OMRSheet = ({ totalQuestions = 180, questions = [], answers, markedForRevi
     { name: 'Biology', questions: biologyQuestions, range: 'Q91-180' }
   ];
 
-  const getAnswerStatus = (questionIndex, optionIndex) => {
-    const answer = answers[questionIndex];
-    if (!answer) return 'unanswered';
-    const optionLetter = String.fromCharCode(65 + optionIndex);
-    return answer === optionLetter ? 'answered' : 'unanswered';
+  // Normalize an answer (which may be a letter like 'A' or a numeric index 0..3) to a letter 'A'..'Z'
+  const normalizeAnswerToLetter = (ans) => {
+    if (ans === null || ans === undefined || ans === '') return null;
+    if (typeof ans === 'number') return String.fromCharCode(65 + Number(ans));
+    if (typeof ans === 'string') {
+      const trimmed = ans.trim();
+      // If it's a single letter like 'A'
+      if (/^[A-Za-z]$/.test(trimmed)) return trimmed.toUpperCase();
+      // If it's a numeric string like '0','1'
+      if (/^\d+$/.test(trimmed)) return String.fromCharCode(65 + Number(trimmed));
+    }
+    return null;
   };
 
-  const handleOptionClick = (questionIndex, optionIndex) => {
+  const getAnswerStatus = (questionIndex, optionIndex) => {
+    const q = questions[questionIndex];
+    const byIndex = answers && Object.prototype.hasOwnProperty.call(answers, questionIndex) ? answers[questionIndex] : undefined;
+    const byId = q && q._id && answers && Object.prototype.hasOwnProperty.call(answers, q._id) ? answers[q._id] : undefined;
+    const answerLetter = normalizeAnswerToLetter(byIndex !== undefined ? byIndex : byId);
+    if (!answerLetter) return 'unanswered';
     const optionLetter = String.fromCharCode(65 + optionIndex);
-    
-    // Call the answer select handler if provided
+    return answerLetter === optionLetter ? 'answered' : 'unanswered';
+  };
+
+  const handleOptionClick = (questionIndex, optionIndex, questionId) => {
+    const optionLetter = String.fromCharCode(65 + optionIndex);
+
+    // Call the answer select handler if provided. Pass both index and id when available.
     if (onAnswerSelect) {
-      onAnswerSelect(questionIndex, optionLetter);
+      onAnswerSelect(questionIndex, optionLetter, questionId);
     }
   };
 
-  const answeredCount = Object.values(answers).filter(a => a !== undefined && a !== null).length;
-  const markedCount = Object.values(markedForReview).filter(m => m).length;
-  const unattemptedCount = totalQuestions - answeredCount;
+  // Compute answered count by iterating questions to avoid double-counting index-keyed and id-keyed entries
+  const answeredCount = sections.reduce((sum, section) => {
+    return sum + section.questions.reduce((s, q) => {
+      const idx = questions.indexOf(q);
+      const byIndex = answers && Object.prototype.hasOwnProperty.call(answers, idx) ? answers[idx] : undefined;
+      const byId = q && q._id && answers && Object.prototype.hasOwnProperty.call(answers, q._id) ? answers[q._id] : undefined;
+      const letter = normalizeAnswerToLetter(byIndex !== undefined ? byIndex : byId);
+      return s + (letter ? 1 : 0);
+    }, 0);
+  }, 0);
+
+  const markedCount = Object.values(markedForReview || {}).filter(m => m).length;
+  const unattemptedCount = Math.max(0, totalQuestions - answeredCount);
 
   return (
     <div className="omr-sheet-container">
@@ -80,8 +107,10 @@ const OMRSheet = ({ totalQuestions = 180, questions = [], answers, markedForRevi
               {section.questions.map((question) => {
                 const questionIndex = questions.indexOf(question);
                 const isCurrent = currentQuestionIndex === questionIndex;
-                const isMarked = markedForReview[questionIndex];
-                const answer = answers[questionIndex];
+                const isMarked = !!markedForReview[questionIndex];
+                const rawByIndex = answers && Object.prototype.hasOwnProperty.call(answers, questionIndex) ? answers[questionIndex] : undefined;
+                const rawById = question && question._id && answers && Object.prototype.hasOwnProperty.call(answers, question._id) ? answers[question._id] : undefined;
+                const answer = normalizeAnswerToLetter(rawByIndex !== undefined ? rawByIndex : rawById);
                 const displayNumber = question.questionNumber || (questionIndex + 1);
                 
                 return (
@@ -113,7 +142,7 @@ const OMRSheet = ({ totalQuestions = 180, questions = [], answers, markedForRevi
                           <div
                             key={option}
                             className={`option-bubble-omr ${isSelected ? 'selected' : ''}`}
-                            onClick={() => handleOptionClick(questionIndex, idx)}
+                            onClick={() => handleOptionClick(questionIndex, idx, question._id)}
                             title={`Q${displayNumber} Option ${option}`}
                           >
                             {option}

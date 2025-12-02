@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+
 import { useParams, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
@@ -8,8 +9,12 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import './DemoResultDetail.css';
+import html2pdf from 'html2pdf.js';
 
 const DemoResultDetail = () => {
+const pdfRef = useRef(null);
+
+
   const { resultId } = useParams();
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -129,70 +134,39 @@ const DemoResultDetail = () => {
     }
   };
 
-  const exportToPDF = async () => {
-    const element = document.querySelector('.demo-result-container');
-    if (!element) {
-      toast.error('Unable to find the results container.');
-      console.error('Element not found: .demo-result-container');
-      return;
-    }
+ const exportToPDF = () => {
+  const element = pdfRef.current;
+  if (!element) {
+    toast.error("PDF container not found");
+    return;
+  }
 
-    console.log('Element found:', element);
-
-    try {
-      const canvas = await html2canvas(element, {
-        scale: 2, // Adjust scale for better quality
-        useCORS: true, // Enable CORS to handle cross-origin images
-        logging: true, // Enable logging for debugging
-        backgroundColor: null, // Ensure transparent background
-      });
-
-      // Debugging: Append the canvas to the DOM to verify rendering
-      document.body.appendChild(canvas);
-      canvas.style.position = 'absolute';
-      canvas.style.top = '0';
-      canvas.style.left = '0';
-      canvas.style.zIndex = '1000';
-      canvas.style.border = '2px solid red';
-
-      console.log('Canvas dimensions:', canvas.width, canvas.height);
-
-      const imgData = canvas.toDataURL('image/png');
-      console.log('Image data generated:', imgData.substring(0, 100)); // Log first 100 characters
-
-      const pdf = new jsPDF('p', 'mm', 'a4');
-
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      if (pdfHeight > pdf.internal.pageSize.getHeight()) {
-        // Handle large content by splitting into multiple pages
-        let y = 0;
-        while (y < canvas.height) {
-          const pageCanvas = document.createElement('canvas');
-          pageCanvas.width = canvas.width;
-          pageCanvas.height = Math.min(canvas.height - y, pdf.internal.pageSize.getHeight() * (canvas.width / pdfWidth));
-          const pageCtx = pageCanvas.getContext('2d');
-          pageCtx.drawImage(canvas, 0, y, canvas.width, pageCanvas.height, 0, 0, canvas.width, pageCanvas.height);
-          const pageImgData = pageCanvas.toDataURL('image/png');
-          pdf.addImage(pageImgData, 'PNG', 0, 0, pdfWidth, (pageCanvas.height * pdfWidth) / canvas.width);
-          y += pageCanvas.height;
-          if (y < canvas.height) pdf.addPage();
-        }
-      } else {
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      }
-
-      pdf.save('Detailed_Analysis.pdf');
-      toast.success('PDF exported successfully!');
-
-      // Remove the debug canvas after exporting
-      document.body.removeChild(canvas);
-    } catch (error) {
-      console.error('Error exporting to PDF:', error);
-      toast.error('Failed to export PDF. Please try again.');
-    }
+  const options = {
+    margin: 0.5,
+    filename: 'Detailed_Analysis.pdf',
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      allowTaint: false,
+      scrollX: 0,
+      scrollY: 0,
+      logging: false,
+      windowWidth: element.scrollWidth,
+    },
+    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
   };
+
+  html2pdf()
+    .set(options)
+    .from(element)
+    .save()
+    .then(() => toast.success("PDF exported successfully!"))
+    .catch((err) => {
+      console.error("PDF Error:", err);
+      toast.error("Failed to export PDF");
+    });
+};
 
   if (loading) {
     return <div className="demo-loading">Loading your results</div>;
@@ -200,7 +174,7 @@ const DemoResultDetail = () => {
 
   if (!result) {
     return (
-      <div className="demo-result-container">
+      <div className="demo-result-container" ref={pdfRef}>
         <div className="demo-card">
           <h2>Result not found</h2>
           <p>The requested result could not be found.</p>
@@ -384,7 +358,8 @@ const subjectAverages = Object.keys(subjectTimeStats)
   }) : [];
 
   return (
-    <div className="demo-result-container">
+    <div className="demo-result-container" ref={pdfRef}>
+
         
         {/* Lead Capture Modal - Only for non-logged-in users - BLOCKS ACCESS TO RESULTS */}
         {showLeadForm && (

@@ -44,6 +44,11 @@ router.post('/submit', async (req, res) => {
     console.log('=== Demo Test Submit ===');
     console.log('Test ID:', testId);
     console.log('Received answers:', JSON.stringify(answers, null, 2));
+    try {
+      console.log('Received answer keys:', Object.keys(answers || {}));
+    } catch (e) {
+      // ignore
+    }
 
     // Check if user is authenticated (optional for demo tests)
     const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -90,22 +95,28 @@ router.post('/submit', async (req, res) => {
       const questionId = question._id.toString();
       // Support answers keyed by questionId OR by numeric index (OMR flows may send index keys)
       const questionIndex = demoTest.questions.indexOf(question);
-      let userAnswer = undefined;
+      let rawUserAnswer = undefined;
       if (answers) {
-        if (Object.prototype.hasOwnProperty.call(answers, questionId)) userAnswer = answers[questionId];
-        else if (Object.prototype.hasOwnProperty.call(answers, questionIndex)) userAnswer = answers[questionIndex];
-        else if (Object.prototype.hasOwnProperty.call(answers, String(questionIndex))) userAnswer = answers[String(questionIndex)];
+        if (Object.prototype.hasOwnProperty.call(answers, questionId)) rawUserAnswer = answers[questionId];
+        else if (Object.prototype.hasOwnProperty.call(answers, questionIndex)) rawUserAnswer = answers[questionIndex];
+        else if (Object.prototype.hasOwnProperty.call(answers, String(questionIndex))) rawUserAnswer = answers[String(questionIndex)];
+      }
+
+      // Normalize incoming answer: accept letters (A-D) or numeric strings
+      let normalizedUserAnswer = rawUserAnswer;
+      if (typeof normalizedUserAnswer === 'string' && normalizedUserAnswer.length === 1 && /^[A-Za-z]$/.test(normalizedUserAnswer)) {
+        normalizedUserAnswer = normalizedUserAnswer.toUpperCase().charCodeAt(0) - 65;
+      } else if (typeof normalizedUserAnswer === 'string' && normalizedUserAnswer.trim() !== '') {
+        const maybeNum = Number(normalizedUserAnswer);
+        if (!Number.isNaN(maybeNum)) normalizedUserAnswer = maybeNum;
       }
 
       console.log(`\n--- Question ${questionId} ---`);
-      console.log('User Answer:', userAnswer, 'Type:', typeof userAnswer);
+      console.log('Raw User Answer:', rawUserAnswer, 'Normalized User Answer:', normalizedUserAnswer, 'Type:', typeof normalizedUserAnswer);
       console.log('Correct Answer:', question.correctAnswer, 'Type:', typeof question.correctAnswer);
 
-      // Check if question was attempted
-      const isAttempted = userAnswer !== null && 
-                          userAnswer !== undefined && 
-                          userAnswer !== '' &&
-                          !Number.isNaN(userAnswer);
+      // Check if question was attempted (treat empty/null/undefined as unattempted)
+      const isAttempted = !(normalizedUserAnswer === null || normalizedUserAnswer === undefined || normalizedUserAnswer === '');
 
       if (!isAttempted) {
         console.log('Status: UNATTEMPTED');
@@ -132,12 +143,12 @@ router.post('/submit', async (req, res) => {
         continue;
       }
 
-      // Evaluate the answer
-      let isCorrect = false;
-      const normalizedUserAnswer = typeof userAnswer === 'string' ? parseInt(userAnswer) : Number(userAnswer);
-      const normalizedCorrectAnswer = typeof question.correctAnswer === 'string' ? parseInt(question.correctAnswer) : Number(question.correctAnswer);
+  // Evaluate the answer
+  let isCorrect = false;
+  const userAnsNum = typeof normalizedUserAnswer === 'string' ? parseInt(normalizedUserAnswer) : Number(normalizedUserAnswer);
+  const normalizedCorrectAnswer = typeof question.correctAnswer === 'string' ? parseInt(question.correctAnswer) : Number(question.correctAnswer);
 
-      isCorrect = normalizedUserAnswer === normalizedCorrectAnswer;
+  isCorrect = userAnsNum === normalizedCorrectAnswer;
 
       console.log('Normalized User Answer:', normalizedUserAnswer);
       console.log('Normalized Correct Answer:', normalizedCorrectAnswer);
@@ -162,7 +173,7 @@ router.post('/submit', async (req, res) => {
         questionNumber: question.questionNumber || null,
         questionText: question.question || '',
         options: question.options || [],
-        userAnswer: normalizedUserAnswer,
+        userAnswer: userAnsNum,
         isCorrect,
         marksAwarded,
         timeTaken: 0,

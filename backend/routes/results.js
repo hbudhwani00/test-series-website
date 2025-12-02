@@ -7,6 +7,7 @@ const Question = require('../models/Question');
 const DemoTest = require('../models/DemoTest');
 const NEETDemoTest = require('../models/NEETDemoTest');
 const ScheduledTest = require('../models/ScheduledTest');
+const Draft = require('../models/Draft');
 
 // Ensure all models are registered for refPath to work properly
 // This is necessary for polymorphic populate to function correctly
@@ -35,6 +36,11 @@ router.post('/submit-demo', async (req, res) => {
       console.log('=== NEET Demo Test Submission Debug ===');
       console.log('Received answers object:', answers);
       console.log('All questions:', allQuestions.length);
+      try {
+        console.log('Received answer keys:', Object.keys(answers || {}));
+      } catch (e) {
+        // ignore
+      }
     } else if (testType === 'jee_demo') {
       test = await DemoTest.findById(testId).populate('questions');
       if (!test) {
@@ -49,11 +55,21 @@ router.post('/submit-demo', async (req, res) => {
     const getUserAnswer = (answersObj, qId, idx) => {
       if (!answersObj) return undefined;
       // Direct match by question id
-      if (Object.prototype.hasOwnProperty.call(answersObj, qId)) return answersObj[qId];
+      if (Object.prototype.hasOwnProperty.call(answersObj, qId)) {
+        console.debug(`getUserAnswer: matched by id key=${qId}`);
+        return answersObj[qId];
+      }
       // Fallback to numeric index (number or string key)
-      if (Object.prototype.hasOwnProperty.call(answersObj, idx)) return answersObj[idx];
+      if (Object.prototype.hasOwnProperty.call(answersObj, idx)) {
+        console.debug(`getUserAnswer: matched by numeric key=${idx}`);
+        return answersObj[idx];
+      }
       const idxStr = String(idx);
-      if (Object.prototype.hasOwnProperty.call(answersObj, idxStr)) return answersObj[idxStr];
+      if (Object.prototype.hasOwnProperty.call(answersObj, idxStr)) {
+        console.debug(`getUserAnswer: matched by string key=${idxStr}`);
+        return answersObj[idxStr];
+      }
+      console.debug(`getUserAnswer: no match for qId=${qId} idx=${idx}`);
       return undefined;
     };
 
@@ -68,9 +84,19 @@ router.post('/submit-demo', async (req, res) => {
     // Convert answers object to map (answers is { questionId: numericAnswer })
     allQuestions.forEach((question, index) => {
       const questionId = question._id.toString();
-      const userAnswer = getUserAnswer(answers, questionId, index);
-      if (index < 5 || userAnswer !== undefined) {
-        console.log(`Q${index + 1}: questionId="${questionId}", userAnswer="${userAnswer}", type=${typeof userAnswer}, correctAnswer="${question.correctAnswer}"`);
+      const rawUserAnswer = getUserAnswer(answers, questionId, index);
+      // Normalize incoming answers: accept letters 'A'..'D' as well as numeric strings
+      let userAnswer = rawUserAnswer;
+      if (typeof userAnswer === 'string' && userAnswer.length === 1 && /^[A-Za-z]$/.test(userAnswer)) {
+        const upper = userAnswer.toUpperCase();
+        userAnswer = upper.charCodeAt(0) - 65;
+      } else if (typeof userAnswer === 'string' && userAnswer.trim() !== '') {
+        const maybeNum = Number(userAnswer);
+        if (!Number.isNaN(maybeNum)) userAnswer = maybeNum;
+      }
+
+      if (index < 5 || rawUserAnswer !== undefined) {
+        console.log(`Q${index + 1}: questionId="${questionId}", rawUserAnswer="${rawUserAnswer}", normalizedUserAnswer="${userAnswer}", type=${typeof userAnswer}, correctAnswer="${question.correctAnswer}"`);
       }
       
       // Get time tracking data for this question.
@@ -228,6 +254,39 @@ router.post('/submit-demo', async (req, res) => {
   } catch (error) {
     console.error('Error submitting demo test:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Save draft (autosave) - stores partial answers for a test
+router.post('/save-draft', async (req, res) => {
+  try {
+    const { testId, partialAnswers = {}, userId } = req.body;
+
+    if (!testId) return res.status(400).json({ message: 'testId is required' });
+
+    // Find existing draft by userId+testId if userId provided, otherwise create anonymous draft by testId
+    let draft;
+    if (userId) {
+      draft = await Draft.findOne({ userId: String(userId), testId: String(testId) });
+    } else {
+      // For anonymous, try to find any existing draft for this testId without userId
+      draft = await Draft.findOne({ testId: String(testId), userId: { $exists: false } });
+    }
+
+    if (!draft) {
+      draft = new Draft({ userId: userId || undefined, testId: String(testId), answers: {} });
+    }
+
+    // Merge partialAnswers into draft.answers (overwrite with latest values)
+    draft.answers = Object.assign({}, draft.answers || {}, partialAnswers || {});
+    draft.lastUpdated = new Date();
+
+    await draft.save();
+
+    return res.json({ status: 'ok', draftId: draft._id, answersCount: Object.keys(draft.answers || {}).length });
+  } catch (err) {
+    console.error('Save draft failed', err);
+    return res.status(500).json({ message: 'Save draft failed', error: err.message });
   }
 });
 
@@ -575,3 +634,4 @@ router.get('/user/analytics', auth, async (req, res) => {
 });
 
 module.exports = router;
+
