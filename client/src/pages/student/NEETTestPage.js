@@ -7,17 +7,6 @@ import OMRSheet from '../../components/OMRSheet';
 import { API_URL } from '../../services/api';
 import './NEETTestPage.css';
 
-// Simple debounce helper used for autosave
-function debounce(fn, wait = 700) {
-  let timer = null;
-  return (...args) => {
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(() => {
-      try { fn(...args); } catch (e) { console.error('Debounced function error', e); }
-    }, wait);
-  };
-}
-
 const NEETTestPage = () => {
   const { testId } = useParams();
   const navigate = useNavigate();
@@ -227,42 +216,22 @@ const trackQuestionTime = (fromIndex) => {
     return `${hours}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
-  const handleAnswerSelect = (questionIndexOrOptionIndex, answerLetter, questionId) => {
-    // Handle both cases: from question panel (just optionIndex) or from OMR (index, letter, optional id)
+  const handleAnswerSelect = (questionIndexOrOptionIndex, answerLetter) => {
+    // Handle both cases: from question panel (just optionIndex) or from OMR (index, letter)
     if (answerLetter) {
-      // Determine numeric index and question id reliably
-      let qIndex = Number(questionIndexOrOptionIndex);
-      // If caller passed questionId explicitly, prefer it and compute index if needed
-      const qId = questionId || ( !isNaN(qIndex) && test && test.questions && test.questions[qIndex] ? test.questions[qIndex]._id : undefined );
-
-      if ((qIndex === undefined || isNaN(qIndex) || qIndex < 0) && qId && test && test.questions) {
-        qIndex = test.questions.findIndex(q => String(q._id) === String(qId));
-      }
-
-      // Store both index-keyed and id-keyed answers when possible so UI and submit both work
+      // Called from OMR sheet with (questionIndex, 'A'/'B'/'C'/'D')
       setAnswers(prev => ({
         ...prev,
-        ...(typeof qIndex === 'number' && !isNaN(qIndex) && qIndex >= 0 ? { [qIndex]: answerLetter } : {}),
-        ...(qId ? { [qId]: answerLetter } : {})
+        [questionIndexOrOptionIndex]: answerLetter
       }));
-
-      // Debug: log the selection so we can confirm OMR selections reach state
-      try {
-        console.debug('OMR selection:', { questionIndex: qIndex, questionId: qId, answer: answerLetter });
-      } catch (e) {
-        // no-op
-      }
-
-      // Note: answers state changed; autosave will be triggered by useEffect watching `answers`.
-
       // Auto-navigate to the question when marked from OMR
-      const targetIndex = (typeof qIndex === 'number' && !isNaN(qIndex) && qIndex >= 0) ? qIndex : currentQuestionIndex;
-      if (targetIndex !== currentQuestionIndex) {
+      if (questionIndexOrOptionIndex !== currentQuestionIndex) {
         trackQuestionTime(currentQuestionIndex);
-        setCurrentQuestionIndex(targetIndex);
+        setCurrentQuestionIndex(questionIndexOrOptionIndex);
         setQuestionStartTime(Date.now());
         // Scroll the question into view inside the questions container.
         // Use a short timeout to ensure the DOM has updated, and try multiple fallbacks.
+        const targetIndex = Number(questionIndexOrOptionIndex);
         setTimeout(() => {
           const el = document.getElementById(`question-${targetIndex}`);
           const container = document.querySelector('.all-questions-container');
@@ -294,49 +263,6 @@ const trackQuestionTime = (fromIndex) => {
       }));
     }
   };
-
-  // AUTOSAVE: Debounced autosave of partial answers to backend
-  const autosaveDraft = async (partialAnswers) => {
-    if (!partialAnswers || Object.keys(partialAnswers).length === 0) return;
-    try {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      const userId = user.id || user._id || null;
-      const payload = {
-        testId,
-        partialAnswers,
-        userId
-      };
-      // Hit the new save-draft endpoint
-      await axios.post(`${API_URL}/results/save-draft`, payload);
-      console.debug('Autosave draft successful', { keys: Object.keys(partialAnswers).length });
-    } catch (err) {
-      console.warn('Autosave draft failed', err?.response?.data || err.message || err);
-    }
-  };
-
-  const debouncedAutosaveRef = useRef(null);
-  useEffect(() => {
-    debouncedAutosaveRef.current = debounce(async (p) => autosaveDraft(p), 800);
-  }, []);
-
-  // When answers change, prepare a partial mapping (questionId -> answer) and trigger debounced autosave
-  useEffect(() => {
-    if (!test || !debouncedAutosaveRef.current) return;
-    const partial = {};
-    test.questions.forEach((q, idx) => {
-      const idxKey = String(idx);
-      let ans = answers[idxKey];
-      if ((ans === undefined || ans === null) && q && q._id && answers[q._id] !== undefined) {
-        ans = answers[q._id];
-      }
-      if (ans !== undefined && ans !== null) {
-        partial[q._id] = ans;
-      }
-    });
-    if (Object.keys(partial).length > 0) {
-      try { debouncedAutosaveRef.current(partial); } catch (e) { console.warn('Autosave call failed', e); }
-    }
-  }, [answers, test, testId]);
 
   const toggleMarkForReview = () => {
     setMarkedForReview(prev => ({
@@ -387,47 +313,23 @@ const trackQuestionTime = (fromIndex) => {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const userId = user.id || user._id || null; // Backend returns 'id', not '_id'
 
-      // Convert answers from index keys or questionId keys to questionId->numeric-answer mapping
-      // Be tolerant: answers may be stored under numeric index keys ("0","1"...) or under question._id keys.
+      // Convert answers from index keys to questionId keys and letters to numbers
       const formattedAnswers = {};
       if (test && test.questions) {
         test.questions.forEach((question, index) => {
           const indexKey = index.toString();
-          // Prefer index-keyed answer, fall back to id-keyed answer
-            let answer = answers[indexKey];
-            if ((answer === undefined || answer === null) && question._id && answers[question._id] !== undefined) {
-              answer = answers[question._id];
-            }
-
-            // Robust normalization: accept letters 'A'..'Z', numeric strings ('0','1'), and numbers
-            let normalized = null;
-            if (answer !== undefined && answer !== null && answer !== '') {
-              if (typeof answer === 'number') {
-                normalized = answer;
-              } else if (typeof answer === 'string') {
-                const trimmed = answer.trim();
-                const upper = trimmed.toUpperCase();
-                if (/^[A-Z]$/.test(upper)) {
-                  normalized = upper.charCodeAt(0) - 65;
-                } else if (/^\d+$/.test(trimmed)) {
-                  normalized = Number(trimmed);
-                } else {
-                  const maybeNum = Number(trimmed);
-                  if (!Number.isNaN(maybeNum)) normalized = maybeNum;
-                }
-              }
-            }
-
-            formattedAnswers[question._id] = normalized !== null && normalized !== undefined ? normalized : null;
+          let answer = answers[indexKey];
+          // Convert letter answers (A, B, C, D) to numeric indices (0, 1, 2, 3)
+          if (typeof answer === 'string' && answer.length === 1 && answer >= 'A' && answer <= 'Z') {
+            answer = answer.charCodeAt(0) - 65;
+          }
+          formattedAnswers[question._id] = answer !== undefined ? answer : null;
         });
       }
 
-  // Count non-null answers detected before submit
-  const detectedCount = Object.values(formattedAnswers).filter(v => v !== null && v !== undefined).length;
-  console.log('NEET Test Submit - Detected answers count before submit:', detectedCount);
-  console.log('NEET Test Submit - User from localStorage:', user);
-  console.log('NEET Test Submit - userId to send:', userId);
-  console.log('NEET Test Submit - Formatted answers:', formattedAnswers);
+      console.log('NEET Test Submit - User from localStorage:', user);
+      console.log('NEET Test Submit - userId to send:', userId);
+      console.log('NEET Test Submit - Formatted answers:', formattedAnswers);
 
       const submitData = {
         testId,
@@ -438,16 +340,6 @@ const trackQuestionTime = (fromIndex) => {
         userId: userId, // Include userId if logged in
         questionTimeTracking // Include detailed time tracking data
       };
-
-      // Debug: show exactly what's being submitted (answers count + sample)
-      try {
-        console.debug('NEET Test Submit - Formatted answers count:', Object.keys(formattedAnswers).length);
-        // Log first 5 entries for quick inspection
-        const sample = Object.keys(formattedAnswers).slice(0, 5).reduce((acc, k) => ({ ...acc, [k]: formattedAnswers[k] }), {});
-        console.debug('NEET Test Submit - Sample formatted answers:', sample);
-      } catch (e) {
-        // no-op
-      }
 
       console.log('NEET Test Submit - Complete submitData:', { ...submitData, answers: `[${Object.keys(submitData.answers).length} answers]` });
 
@@ -580,11 +472,9 @@ const trackQuestionTime = (fromIndex) => {
                             className={`option ${isSelected(idx) ? 'selected' : ''}`}
                             onClick={() => {
                               const answerLetter = String.fromCharCode(65 + idx);
-                              const qId = question && question._id;
                               setAnswers(prev => ({
                                 ...prev,
-                                [qIndex]: answerLetter,
-                                ...(qId ? { [qId]: answerLetter } : {})
+                                [qIndex]: answerLetter
                               }));
                             }}
                           >
@@ -675,11 +565,9 @@ const trackQuestionTime = (fromIndex) => {
                             className={`option ${isSelected(idx) ? 'selected' : ''}`}
                             onClick={() => {
                               const answerLetter = String.fromCharCode(65 + idx);
-                              const qId = question && question._id;
                               setAnswers(prev => ({
                                 ...prev,
-                                [qIndex]: answerLetter,
-                                ...(qId ? { [qId]: answerLetter } : {})
+                                [qIndex]: answerLetter
                               }));
                             }}
                           >
@@ -770,11 +658,9 @@ const trackQuestionTime = (fromIndex) => {
                             className={`option ${isSelected(idx) ? 'selected' : ''}`}
                             onClick={() => {
                               const answerLetter = String.fromCharCode(65 + idx);
-                              const qId = question && question._id;
                               setAnswers(prev => ({
                                 ...prev,
-                                [qIndex]: answerLetter,
-                                ...(qId ? { [qId]: answerLetter } : {})
+                                [qIndex]: answerLetter
                               }));
                             }}
                           >
