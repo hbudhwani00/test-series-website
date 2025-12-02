@@ -228,6 +228,12 @@ const trackQuestionTime = (fromIndex) => {
         [questionIndexOrOptionIndex]: answerLetter,
         ...(qId ? { [qId]: answerLetter } : {})
       }));
+      // Debug: log the selection so we can confirm OMR selections reach state
+      try {
+        console.debug('OMR selection:', { questionIndex: qIndex, questionId: qId, answer: answerLetter });
+      } catch (e) {
+        // no-op
+      }
       // Auto-navigate to the question when marked from OMR
       if (questionIndexOrOptionIndex !== currentQuestionIndex) {
         trackQuestionTime(currentQuestionIndex);
@@ -317,16 +323,26 @@ const trackQuestionTime = (fromIndex) => {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const userId = user.id || user._id || null; // Backend returns 'id', not '_id'
 
-      // Convert answers from index keys to questionId keys and letters to numbers
+      // Convert answers from index keys or questionId keys to questionId->numeric-answer mapping
+      // Be tolerant: answers may be stored under numeric index keys ("0","1"...) or under question._id keys.
       const formattedAnswers = {};
       if (test && test.questions) {
         test.questions.forEach((question, index) => {
           const indexKey = index.toString();
+          // Prefer index-keyed answer, fall back to id-keyed answer
           let answer = answers[indexKey];
-          // Convert letter answers (A, B, C, D) to numeric indices (0, 1, 2, 3)
-          if (typeof answer === 'string' && answer.length === 1 && answer >= 'A' && answer <= 'Z') {
-            answer = answer.charCodeAt(0) - 65;
+          if (answer === undefined && question._id && answers[question._id] !== undefined) {
+            answer = answers[question._id];
           }
+
+          // Normalize letter answers (A, B, C, D) to numeric indices (0,1,2,3)
+          if (typeof answer === 'string' && answer.length === 1) {
+            const upper = answer.toUpperCase();
+            if (upper >= 'A' && upper <= 'Z') {
+              answer = upper.charCodeAt(0) - 65;
+            }
+          }
+
           formattedAnswers[question._id] = answer !== undefined ? answer : null;
         });
       }
