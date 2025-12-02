@@ -45,6 +45,18 @@ router.post('/submit-demo', async (req, res) => {
       return res.status(400).json({ message: 'Invalid test type' });
     }
 
+    // Helper to read answer supporting both questionId-keyed and index-keyed shapes
+    const getUserAnswer = (answersObj, qId, idx) => {
+      if (!answersObj) return undefined;
+      // Direct match by question id
+      if (Object.prototype.hasOwnProperty.call(answersObj, qId)) return answersObj[qId];
+      // Fallback to numeric index (number or string key)
+      if (Object.prototype.hasOwnProperty.call(answersObj, idx)) return answersObj[idx];
+      const idxStr = String(idx);
+      if (Object.prototype.hasOwnProperty.call(answersObj, idxStr)) return answersObj[idxStr];
+      return undefined;
+    };
+
     // Evaluate answers
     let score = 0;
     let correctAnswers = 0;
@@ -56,7 +68,7 @@ router.post('/submit-demo', async (req, res) => {
     // Convert answers object to map (answers is { questionId: numericAnswer })
     allQuestions.forEach((question, index) => {
       const questionId = question._id.toString();
-      const userAnswer = answers[questionId];
+      const userAnswer = getUserAnswer(answers, questionId, index);
       if (index < 5 || userAnswer !== undefined) {
         console.log(`Q${index + 1}: questionId="${questionId}", userAnswer="${userAnswer}", type=${typeof userAnswer}, correctAnswer="${question.correctAnswer}"`);
       }
@@ -88,7 +100,9 @@ router.post('/submit-demo', async (req, res) => {
           totalTime
         };
       }
-      if (!userAnswer || userAnswer === null || userAnswer === undefined || userAnswer === '') {
+      // Treat only null / undefined / empty-string as unattempted.
+      // Do NOT use a truthy check because numeric answers like 0 are falsy but valid.
+      if (userAnswer === null || userAnswer === undefined || userAnswer === '') {
         unattempted++;
         evaluatedAnswers.push({
           questionId: question._id,
@@ -280,10 +294,11 @@ router.post('/submit', auth, async (req, res) => {
     for (const question of allQuestions) {
       if (!question || !question._id) continue;
 
-  const userEntry = answersMap[question._id.toString()];
+    const userEntry = answersMap[question._id.toString()];
   const userAnswer = userEntry ? userEntry.answer : undefined;
 
-      if (!userAnswer || userAnswer === null || userAnswer === undefined || userAnswer === '') {
+      // Treat only null / undefined / empty-string as unattempted. Allow 0 as a valid answer.
+      if (userAnswer === null || userAnswer === undefined || userAnswer === '') {
         unattempted++;
         evaluatedAnswers.push({
           questionId: question._id,

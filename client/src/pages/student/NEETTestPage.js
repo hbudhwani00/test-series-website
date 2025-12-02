@@ -220,9 +220,13 @@ const trackQuestionTime = (fromIndex) => {
     // Handle both cases: from question panel (just optionIndex) or from OMR (index, letter)
     if (answerLetter) {
       // Called from OMR sheet with (questionIndex, 'A'/'B'/'C'/'D')
+      // Also store the answer keyed by question _id so submissions that expect id-keyed answers work reliably.
+      const qIndex = Number(questionIndexOrOptionIndex);
+      const qId = test && test.questions && test.questions[qIndex] ? test.questions[qIndex]._id : undefined;
       setAnswers(prev => ({
         ...prev,
-        [questionIndexOrOptionIndex]: answerLetter
+        [questionIndexOrOptionIndex]: answerLetter,
+        ...(qId ? { [qId]: answerLetter } : {})
       }));
       // Auto-navigate to the question when marked from OMR
       if (questionIndexOrOptionIndex !== currentQuestionIndex) {

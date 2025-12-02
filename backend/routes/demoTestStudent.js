@@ -88,7 +88,14 @@ router.post('/submit', async (req, res) => {
       }
 
       const questionId = question._id.toString();
-      const userAnswer = answers[questionId];
+      // Support answers keyed by questionId OR by numeric index (OMR flows may send index keys)
+      const questionIndex = demoTest.questions.indexOf(question);
+      let userAnswer = undefined;
+      if (answers) {
+        if (Object.prototype.hasOwnProperty.call(answers, questionId)) userAnswer = answers[questionId];
+        else if (Object.prototype.hasOwnProperty.call(answers, questionIndex)) userAnswer = answers[questionIndex];
+        else if (Object.prototype.hasOwnProperty.call(answers, String(questionIndex))) userAnswer = answers[String(questionIndex)];
+      }
 
       console.log(`\n--- Question ${questionId} ---`);
       console.log('User Answer:', userAnswer, 'Type:', typeof userAnswer);
