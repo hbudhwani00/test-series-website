@@ -267,74 +267,81 @@ const ManageScheduledTest = () => {
   };
 
   const handleCreateTest = async () => {
-    if (!testData.title.trim()) {
-      toast.error('Please enter test title');
-      return;
-    }
-
-    if (questions.length === 0) {
-      toast.error('Please add at least one question');
-      return;
-    }
-      
-      const invalidQuestions = questions.filter(q => !q || !q.question || !q.question.trim());
-    if (invalidQuestions.length > 0) {
-    toast.error(`Found ${invalidQuestions.length} invalid question(s). Please check all questions have text.`);
-    console.error('Invalid questions:', invalidQuestions);
+  // Basic validation
+  if (!testData.title?.trim()) {
+    toast.error("Please enter test title");
     return;
   }
-    if (!testData.startDate) {
-      toast.error('Please select start date');
-      return;
-    }
+  if (!testData.examType) {
+    toast.error("Please select exam type");
+    return;
+  }
+  if (!testData.testType) {
+    toast.error("Please select test type");
+    return;
+  }
+  if (!testData.scheduleType) {
+    toast.error("Please select schedule type");
+    return;
+  }
+  if (!testData.startDate) {
+    toast.error("Please select start date");
+    return;
+  }
+  if (!testData.startTime) {
+    toast.error("Please select start time");
+    return;
+  }
 
-    try {
-      const token = localStorage.getItem('token');
-       const cleanedQuestions = questions.map(q => ({
-      questionNumber: q.questionNumber,
-      question: q.question?.trim() || '',
-      options: q.options || ['', '', '', ''],
-      correctAnswer: q.correctAnswer !== undefined ? q.correctAnswer : 0,
-      marks: q.marks || 4,
-      hasNegativeMarking: q.hasNegativeMarking !== undefined ? q.hasNegativeMarking : true,
-      difficulty: q.difficulty || 'medium',
-      subject: q.subject || '',
-      chapter: q.chapter || '',
-      topic: q.topic || '',
-      explanation: q.explanation || '',
-      questionType: q.questionType || 'mcq',
-      source: q.source || 'Practice'
-    }));
-      const payload = {
-        ...testData,
-        questions: cleanedQuestions
-      };
-        console.log('Sending payload:', JSON.stringify(payload, null, 2)); // Debug log
+  try {
+    const token = localStorage.getItem("token");
 
-      if (editingTest) {
-        await axios.put(
-          `${API_URL}/scheduled-tests/${editingTest._id}`,
-          payload,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        toast.success('Test updated successfully!');
-      } else {
-        const { data } = await axios.post(
-          `${API_URL}/scheduled-tests/create`,
-          payload,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        toast.success(`Test created! ${data.totalQuestions} questions, ${data.totalScheduledDates} scheduled dates`);
+    // Payload required by backend
+    const payload = {
+      testTitle: testData.title,
+      examType: testData.examType,
+      testType: testData.testType,
+      scheduleType: testData.scheduleType,
+      startDate: testData.startDate,
+      startTime: testData.startTime,
+      endDate: testData.endDate || null,
+      customDays: testData.customDays || []
+    };
+
+    // 🔍 Debugging
+    console.log("----- DEBUG START -----");
+    console.log("POST URL = https://test-series-backend-dyfc.onrender.com/scheduled-tests");
+    console.log("Payload =", payload);
+    console.log("Token present =", !!token);
+    console.log("----- DEBUG END -----");
+
+    const response = await axios.post(
+      "https://test-series-backend-dyfc.onrender.com/scheduled-tests",
+      payload,
+      {
+        headers: { Authorization: `Bearer ${token}` }
       }
+    );
 
-      setShowModal(false);
-      resetForm();
-      fetchTests();
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to create test');
-      console.error(error);
+    const data = response.data;
+
+    toast.success(`Test scheduled! Total dates: ${data.totalScheduledDates}`);
+
+    setShowModal(false);
+    resetForm();
+    fetchTests();
+
+  } catch (error) {
+    console.error("🔥 FULL API ERROR:", error);
+
+    if (error.response) {
+      console.error("🔥 SERVER RESPONSE:", error.response.data);
+      toast.error(error.response.data.message || "Failed to schedule test");
+    } else {
+      toast.error("Network or server unreachable");
     }
-  };
+  }
+};
 
   const handleDeleteTest = async (id) => {
     if (!window.confirm('Are you sure? This will delete the test and all associated questions.')) {
@@ -621,14 +628,26 @@ const ManageScheduledTest = () => {
                     </div>
 
                     <div className="form-group">
-                      <label>Start Date *</label>
-                      <input
-                        type="datetime-local"
-                        value={testData.startDate}
-                        onChange={(e) => setTestData({ ...testData, startDate: e.target.value })}
-                        min={new Date().toISOString().split('T')[0]}
-                      />
-                    </div>
+  <label>Start Date *</label>
+  <input
+    type="datetime-local"
+    value={
+      testData.startDate && testData.startTime
+        ? `${testData.startDate}T${testData.startTime}`
+        : ""
+    }
+    onChange={(e) => {
+      const value = e.target.value; // "2025-12-05T14:30"
+      const [date, time] = value.split("T");
+      setTestData({
+        ...testData,
+        startDate: date,
+        startTime: time,
+      });
+    }}
+  />
+</div>
+
                   </div>
 
                   {testData.scheduleType !== 'one-time' && (

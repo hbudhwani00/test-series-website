@@ -855,11 +855,14 @@ const JEEMainTest = () => {
                           </button>
 
                           <button
-                            onClick={() => handleAnswer('')}
-                            className="vn-btn enter-btn"
-                          >
-                            Enter
-                          </button>
+  onClick={() => {
+    // Do nothing! Enter should NOT affect answer storage
+  }}
+  className="vn-btn enter-btn"
+>
+  Enter
+</button>
+
                         </div>
 
                         <div className="mt-2 flex gap-2">
