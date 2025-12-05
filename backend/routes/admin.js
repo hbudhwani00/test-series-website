@@ -424,39 +424,36 @@ router.post('/subscriptions/bulk-update', adminAuth, async (req, res) => {
 // Create Scheduled Test
 router.post('/scheduled-tests', adminAuth, async (req, res) => {
   try {
-    const { testTitle, testType, examType, scheduleType, startDate, startTime, endDate, customDays } = req.body;
-
-    if (!testTitle || !testType || !examType || !scheduleType || !startDate || !startTime) {
-      return res.status(400).json({ message: 'Missing required fields' });
-    }
+    console.log("Received payload:", req.body);
 
     // Combine date and time
     const [hours, minutes] = startTime.split(':');
     const startDateTime = new Date(startDate);
     startDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
+    console.log("Calculated startDateTime:", startDateTime);
+
     // Create a new test for this schedule
     let duration, totalMarks, pattern, jeeMainStructure;
-    
+
     if (testType === 'sunday_full') {
-      // Sunday Full Test: 3 hours, 75 questions (20 MCQ + 5 Numerical per subject)
       duration = 180; // 3 hours
       totalMarks = 300;
       pattern = 'jee_main';
-      
-      // Generate question structure (will be populated when test starts)
       jeeMainStructure = {
         Physics: { sectionA: [], sectionB: [] },
         Chemistry: { sectionA: [], sectionB: [] },
         Mathematics: { sectionA: [], sectionB: [] }
       };
     } else if (testType === 'alternate_day') {
-      // Alternate Day: 1 hour, 30 MCQs only (10 per subject)
       duration = 60; // 1 hour
       totalMarks = 120;
       pattern = 'standard';
-      jeeMainStructure = null; // Will use standard questions array
+      jeeMainStructure = null;
     }
+
+    console.log("Calculated duration:", duration);
+    console.log("Calculated totalMarks:", totalMarks);
 
     const newTest = new Test({
       title: testTitle,
@@ -520,9 +517,12 @@ router.post('/scheduled-tests', adminAuth, async (req, res) => {
     }
 
     const scheduledTest = new ScheduledTest({
+      title,                      // REQUIRED ✔
       testId: newTest._id,
-      examType,
-      testType: testType, // 'sunday_full' or 'alternate_day'
+      duration,                   // REQUIRED ✔
+      totalMarks,                 // REQUIRED ✔
+      examType,                   // REQUIRED ✔
+      testType,
       scheduleType,
       startDate: startDateTime,
       endDate: end,
@@ -531,7 +531,7 @@ router.post('/scheduled-tests', adminAuth, async (req, res) => {
       isActive: true,
       createdBy: req.user.userId
     });
-
+    
     await scheduledTest.save();
 
     res.status(201).json({

@@ -267,81 +267,89 @@ const ManageScheduledTest = () => {
   };
 
   const handleCreateTest = async () => {
-  // Basic validation
-  if (!testData.title?.trim()) {
-    toast.error("Please enter test title");
-    return;
-  }
-  if (!testData.examType) {
-    toast.error("Please select exam type");
-    return;
-  }
-  if (!testData.testType) {
-    toast.error("Please select test type");
-    return;
-  }
-  if (!testData.scheduleType) {
-    toast.error("Please select schedule type");
-    return;
-  }
-  if (!testData.startDate) {
-    toast.error("Please select start date");
-    return;
-  }
-  if (!testData.startTime) {
-    toast.error("Please select start time");
-    return;
-  }
-
-  try {
-    const token = localStorage.getItem("token");
-
-    // Payload required by backend
-    const payload = {
-      testTitle: testData.title,
-      examType: testData.examType,
-      testType: testData.testType,
-      scheduleType: testData.scheduleType,
-      startDate: testData.startDate,
-      startTime: testData.startTime,
-      endDate: testData.endDate || null,
-      customDays: testData.customDays || []
-    };
-
-    // 🔍 Debugging
-    console.log("----- DEBUG START -----");
-    console.log("POST URL = https://test-series-backend-dyfc.onrender.com/scheduled-tests");
-    console.log("Payload =", payload);
-    console.log("Token present =", !!token);
-    console.log("----- DEBUG END -----");
-
-    const response = await axios.post(
-      "https://test-series-backend-dyfc.onrender.com/scheduled-tests",
-      payload,
-      {
-        headers: { Authorization: `Bearer ${token}` }
-      }
-    );
-
-    const data = response.data;
-
-    toast.success(`Test scheduled! Total dates: ${data.totalScheduledDates}`);
-
-    setShowModal(false);
-    resetForm();
-    fetchTests();
-
-  } catch (error) {
-    console.error("🔥 FULL API ERROR:", error);
-
-    if (error.response) {
-      console.error("🔥 SERVER RESPONSE:", error.response.data);
-      toast.error(error.response.data.message || "Failed to schedule test");
-    } else {
-      toast.error("Network or server unreachable");
+    // Basic validation
+    if (!testData.title?.trim()) {
+      toast.error("Please enter test title");
+      return;
     }
-  }
-};
+    if (!testData.examType) {
+      toast.error("Please select exam type");
+      return;
+    }
+    if (!testData.testType) {
+      toast.error("Please select test type");
+      return;
+    }
+    if (!testData.scheduleType) {
+      toast.error("Please select schedule type");
+      return;
+    }
+    if (!testData.startDate || !testData.startTime) {
+      toast.error("Please select both start date and start time");
+      return;
+    }
+    if (!testData.totalMarks || testData.totalMarks <= 0) {
+      toast.error("Please enter a valid total marks");
+      return;
+    }
+    if (!testData.duration || testData.duration <= 0) {
+      toast.error("Please enter a valid duration");
+      return;
+    }
+
+    const startDateTime = `${testData.startDate}T${testData.startTime}`; // Combine date and time
+
+    try {
+      const token = localStorage.getItem("token");
+
+      // Payload required by backend
+      const payload = {
+        title: testData.title,
+        examType: testData.examType,
+        testType: testData.testType,
+        scheduleType: testData.scheduleType,
+        startDate: testData.startDate,
+        startTime: testData.startTime, // Include startTime
+        endDate: testData.endDate || null,
+        customDays: testData.customDays || [],
+        totalMarks: testData.totalMarks // Include totalMarks
+      };
+
+      // 🔍 Debugging
+      console.log("----- DEBUG START -----");
+      console.log("POST URL = https://test-series-backend-dyfc.onrender.com/api/admin/scheduled-tests");
+      console.log("Payload =", payload);
+      console.log("Token present =", !!token);
+      console.log("Payload being sent to backend:", payload);
+      console.log("----- DEBUG END -----");
+
+      const response = await axios.post(
+        `${API_URL}/admin/scheduled-tests`, // Updated endpoint to match backend
+        payload,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      const data = response.data;
+
+      toast.success(`Test scheduled! Total dates: ${data.totalScheduledDates}`);
+
+      setShowModal(false);
+      resetForm();
+      fetchTests();
+
+    } catch (error) {
+      console.error("🔥 FULL API ERROR:", error);
+
+      if (error.response) {
+        console.error("🔥 SERVER RESPONSE:", error.response.data);
+        toast.error(error.response.data.message || "Failed to schedule test");
+      } else {
+        toast.error("Network or server unreachable");
+      }
+    }
+  };
 
   const handleDeleteTest = async (id) => {
     if (!window.confirm('Are you sure? This will delete the test and all associated questions.')) {
@@ -1023,45 +1031,47 @@ const ManageScheduledTest = () => {
                   )}
                   {/* Added Questions List */}
                   {questions.length > 0 && (
-  <div className="added-questions">
-    <h4>Added Questions:</h4>
-    <div className="questions-list">
-      {questions.map((q, idx) => (
-        <div key={idx} className="question-item">
-          <div className="question-number">Q{q?.questionNumber || idx + 1}</div>
-          <div className="question-preview">
-            <strong>{q?.question ? q.question.substring(0, 100) : 'No question text'}...</strong>
-            <div className="question-meta">
-              <span>{q?.subject || 'N/A'}</span>
-              <span>{q?.chapter || 'N/A'}</span>
-              <span>{q?.topic || 'N/A'}</span>
-              <span>{q?.marks || 0} marks</span>
-              <span>{q?.questionType === 'mcq' ? 'MCQ' : 'Numerical'}</span>
-            </div>
-          </div>
-                            <div style={{ display: 'flex', gap: '5px' }}>
-                              <button 
-                                className="btn btn-primary btn-sm" 
-                                onClick={() => handleEditQuestion(idx)}
-                                disabled={editingQuestionIndex !== null && editingQuestionIndex !== idx}
-                              >
-                                Edit
-                              </button>
-                              <button 
-                                className="btn btn-danger btn-sm" 
-                                onClick={() => handleRemoveQuestion(idx)}
-                                disabled={editingQuestionIndex !== null}
-                              >
-                                Remove
-                              </button>
+                    <div className="added-questions">
+                      <h4>Added Questions:</h4>
+                      <div className="questions-list">
+                        <>
+                          {questions.map((q, idx) => (
+                            <div key={idx} className="question-item">
+                              <div className="question-number">Q{q?.questionNumber || idx + 1}</div>
+                              <div className="question-preview">
+                                <strong>{q?.question ? q.question.substring(0, 100) : 'No question text'}...</strong>
+                                <div className="question-meta">
+                                  <span>{q?.subject || 'N/A'}</span>
+                                  <span>{q?.chapter || 'N/A'}</span>
+                                  <span>{q?.topic || 'N/A'}</span>
+                                  <span>{q?.marks || 0} marks</span>
+                                  <span>{q?.questionType === 'mcq' ? 'MCQ' : 'Numerical'}</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: '5px' }}>
+                                  <button 
+                                    className="btn btn-primary btn-sm" 
+                                    onClick={() => handleEditQuestion(idx)}
+                                    disabled={editingQuestionIndex !== null && editingQuestionIndex !== idx}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button 
+                                    className="btn btn-danger btn-sm" 
+                                    onClick={() => handleRemoveQuestion(idx)}
+                                    disabled={editingQuestionIndex !== null}
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </>
                       </div>
                     </div>
                   )}
                 </div>
-              </div>
+              </div> {/* Ensure this div is properly closed */}
 
               <div className="modal-footer">
                 <button className="btn btn-outline" onClick={() => setShowModal(false)}>
