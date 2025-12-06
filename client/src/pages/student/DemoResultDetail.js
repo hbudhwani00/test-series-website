@@ -878,21 +878,22 @@ const subjectAverages = Object.keys(subjectTimeStats)
           </div>
 
           <div style={{ textAlign: 'right', marginBottom: '1rem' }}>
-            <button 
-              onClick={exportToPDF} 
-              style={{ 
-                padding: '0.5rem 1rem', 
-                backgroundColor: '#3b82f6', 
-                color: 'white', 
-                border: 'none', 
-                borderRadius: '8px', 
-                cursor: 'pointer', 
-                fontWeight: '600' 
-              }}
-            >
-              📄 Export to PDF
-            </button>
-          </div>
+          <button
+  onClick={() => window.print()}
+  style={{
+    padding: "0.5rem 1rem",
+    backgroundColor: "#3b82f6",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "600",
+  }}
+>
+  🖨️ Pdf
+</button>
+
+</div>
 
           {showSolutions && (
             <>

@@ -57,7 +57,12 @@
   border-bottom: 2px solid #e5e7eb;
   flex-shrink: 0;
 }
-
+.omr-sections {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
 .stat-item {
   display: flex;
   flex-direction: column;
