@@ -455,6 +455,27 @@ router.post('/scheduled-tests', adminAuth, async (req, res) => {
     console.log("Calculated duration:", duration);
     console.log("Calculated totalMarks:", totalMarks);
 
+    // Ensure that the questions array contains at least one valid placeholder question if empty
+    if (!Array.isArray(req.body.questions) || req.body.questions.length === 0) {
+      req.body.questions = [
+        {
+          questionNumber: 1,
+          question: "Placeholder question?",
+          options: ["A", "B", "C", "D"],
+          correctAnswer: 0,
+          marks: 4,
+          hasNegativeMarking: true,
+          difficulty: "medium",
+          subject: req.body.subject || "General",
+          chapter: req.body.chapter || "General",
+          topic: "General",
+          explanation: "",
+          source: "Default",
+          questionType: "mcq",
+        },
+      ];
+    }
+
     const newTest = new Test({
       title: testTitle,
       examType: 'JEE',

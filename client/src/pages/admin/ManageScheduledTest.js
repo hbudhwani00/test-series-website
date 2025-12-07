@@ -265,92 +265,95 @@ const ManageScheduledTest = () => {
     setCurrentQuestion({ ...currentQuestion, questionNumber: renumbered.length + 1 });
     toast.info('Question removed');
   };
-
+  const getDefaultSubject = (examType) => {
+    if (examType === "NEET") return "Physics";
+    return "Physics"; // fallback
+  };
+  
+  const getDefaultChapter = () => "Chapter 1";
+  
   const handleCreateTest = async () => {
-    // Basic validation
-    if (!testData.title?.trim()) {
-      toast.error("Please enter test title");
-      return;
-    }
-    if (!testData.examType) {
-      toast.error("Please select exam type");
-      return;
-    }
-    if (!testData.testType) {
-      toast.error("Please select test type");
-      return;
-    }
-    if (!testData.scheduleType) {
-      toast.error("Please select schedule type");
-      return;
-    }
-    if (!testData.startDate || !testData.startTime) {
-      toast.error("Please select both start date and start time");
-      return;
-    }
-    if (!testData.totalMarks || testData.totalMarks <= 0) {
-      toast.error("Please enter a valid total marks");
-      return;
-    }
-    if (!testData.duration || testData.duration <= 0) {
-      toast.error("Please enter a valid duration");
-      return;
-    }
-
-    const startDateTime = `${testData.startDate}T${testData.startTime}`; // Combine date and time
-
     try {
       const token = localStorage.getItem("token");
 
-      // Payload required by backend
+      const defaultSubject =
+        testData.subject && testData.subject.trim() !== ""
+          ? testData.subject
+          : getDefaultSubject(testData.examType);
+
+      const defaultChapter =
+        testData.chapter && testData.chapter.trim() !== ""
+          ? testData.chapter
+          : getDefaultChapter();
+
+      // Ensure at least one valid placeholder question
+      const safeQuestions = questions.length > 0 ? questions : [
+        {
+          questionNumber: 1,
+          question: "Placeholder question?",
+          questionImage: null,
+
+          options: ["A", "B", "C", "D"],
+          optionImages: [],
+
+          correctAnswer: 0,
+          marks: 4,
+          hasNegativeMarking: true,
+          difficulty: "medium",
+
+          subject: defaultSubject,
+          chapter: defaultChapter,
+          topic: "General",
+
+          explanation: "",
+          explanationImage: null,
+
+          source: "Practice",
+          questionType: "mcq",
+          examType: testData.examType || "JEE_MAIN",
+        }
+      ];
+
       const payload = {
         title: testData.title,
         examType: testData.examType,
         testType: testData.testType,
         scheduleType: testData.scheduleType,
-        startDate: testData.startDate,
-        startTime: testData.startTime, // Include startTime
+
+        startDate: `${testData.startDate}T${testData.startTime}:00`,
         endDate: testData.endDate || null,
+
+        duration: testData.duration,
+        totalMarks: testData.totalMarks,
+
+        subject: defaultSubject,
+        chapter: defaultChapter,
+
         customDays: testData.customDays || [],
-        totalMarks: testData.totalMarks // Include totalMarks
+
+        questions: safeQuestions
       };
 
-      // 🔍 Debugging
-      console.log("----- DEBUG START -----");
-      console.log("POST URL = https://test-series-backend-dyfc.onrender.com/api/admin/scheduled-tests");
-      console.log("Payload =", payload);
-      console.log("Token present =", !!token);
-      console.log("Payload being sent to backend:", payload);
-      console.log("----- DEBUG END -----");
+      console.log("Sending payload:", payload);
 
       const response = await axios.post(
-        `${API_URL}/admin/scheduled-tests`, // Updated endpoint to match backend
+        `${API_URL}/scheduled-tests/create`,
         payload,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const data = response.data;
-
-      toast.success(`Test scheduled! Total dates: ${data.totalScheduledDates}`);
-
+      toast.success("Scheduled test created!");
       setShowModal(false);
       resetForm();
       fetchTests();
 
     } catch (error) {
       console.error("🔥 FULL API ERROR:", error);
-
-      if (error.response) {
-        console.error("🔥 SERVER RESPONSE:", error.response.data);
-        toast.error(error.response.data.message || "Failed to schedule test");
-      } else {
-        toast.error("Network or server unreachable");
-      }
+      toast.error(error.response?.data?.message || "Server error");
     }
   };
-
+  
+  
   const handleDeleteTest = async (id) => {
     if (!window.confirm('Are you sure? This will delete the test and all associated questions.')) {
       return;
