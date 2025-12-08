@@ -46,6 +46,27 @@ router.post('/create', auth, adminAuth, async (req, res) => {
       questions // Array of question objects with questionNumber field
     } = req.body;
 
+    // Ensure that the questions array contains at least one valid placeholder question if empty or invalid
+    if (!Array.isArray(req.body.questions) || req.body.questions.length === 0 || !req.body.questions[0].question) {
+      req.body.questions = [
+        {
+          questionNumber: 1,
+          question: "Placeholder question?",
+          options: ["A", "B", "C", "D"],
+          correctAnswer: 0,
+          marks: 4,
+          hasNegativeMarking: true,
+          difficulty: "medium",
+          subject: req.body.subject || "General",
+          chapter: req.body.chapter || "General",
+          topic: "General",
+          explanation: "",
+          source: "Default",
+          questionType: "mcq",
+        },
+      ];
+    }
+
     // Validate required fields
     if (!title || !examType || !duration || !totalMarks || !questions || questions.length === 0) {
       return res.status(400).json({ message: 'Missing required fields' });

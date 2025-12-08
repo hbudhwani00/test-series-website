@@ -290,7 +290,7 @@ const ManageScheduledTest = () => {
       const safeQuestions = questions.length > 0 ? questions : [
         {
           questionNumber: 1,
-          question: "Placeholder question?",
+          question: "Placeholder question?", // Ensure this field is valid
           questionImage: null,
 
           options: ["A", "B", "C", "D"],
@@ -305,7 +305,7 @@ const ManageScheduledTest = () => {
           chapter: defaultChapter,
           topic: "General",
 
-          explanation: "",
+          explanation: "This is a placeholder explanation.", // Add explanation
           explanationImage: null,
 
           source: "Practice",
@@ -337,7 +337,7 @@ const ManageScheduledTest = () => {
       console.log("Sending payload:", payload);
 
       const response = await axios.post(
-        `${API_URL}/scheduled-tests/create`,
+        `${API_URL}/scheduled-tests`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -527,7 +527,7 @@ const ManageScheduledTest = () => {
               className="modal-content large-modal"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              exit={{ scale: 9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="modal-header">
@@ -911,7 +911,7 @@ const ManageScheduledTest = () => {
                         />
                       </div>
 
-                      <div className="form-group">
+                      <div class="form-group">
                         <label>Difficulty</label>
                         <select
                           value={currentQuestion.difficulty}

@@ -23,8 +23,44 @@ const NEETTestPage = () => {
   const [isLandscape, setIsLandscape] = useState(true);
   // Time tracking per question
   const [questionStartTime, setQuestionStartTime] = useState(Date.now());
+  const questionScrollRef = useRef(null);
+const omrScrollRef = useRef(null);
+// STOP infinite loop
+const isSyncingScroll = useRef(false);
+
   const [questionTimeTracking, setQuestionTimeTracking] = useState({}); // { questionIndex: { firstVisit: time, revisits: [time1, time2], visited: boolean } }
   // Mobile/orientation detection
+  useEffect(() => {
+    const qEl = document.getElementById(`question-${currentQuestionIndex}`);
+    const oEl = document.getElementById(`omr-question-${currentQuestionIndex}`);
+  
+    if (!qEl || !oEl) return;
+  
+    // STOP infinite loop
+    isSyncingScroll.current = true;
+  
+    // Scroll Question panel
+    if (questionScrollRef.current) {
+      questionScrollRef.current.scrollTo({
+        top: qEl.offsetTop - 150,
+        behavior: "smooth",
+      });
+    }
+  
+    // Scroll OMR panel
+    if (omrScrollRef.current) {
+      omrScrollRef.current.scrollTo({
+        top: oEl.offsetTop - 150,
+        behavior: "smooth",
+      });
+    }
+  
+    // Release lock
+    setTimeout(() => {
+      isSyncingScroll.current = false;
+    }, 400);
+  }, [currentQuestionIndex]);
+  
   useEffect(() => {
     const checkMobileAndOrientation = () => {
       const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
@@ -224,10 +260,8 @@ useEffect(() => {
   };
 
   const handleAnswerSelect = (questionIndex, answerLetter) => {
-
-    // If user selects answer of DIFFERENT question → track time
+    // Track time for the current question before leaving it
     trackQuestionTime(currentQuestionIndex);
-
   
     // Save answer
     setAnswers(prev => ({
@@ -240,19 +274,13 @@ useEffect(() => {
       setCurrentQuestionIndex(questionIndex);
   
       setTimeout(() => {
-        const omrElement = document.getElementById(`omr-question-${questionIndex}`);
-        const container = document.querySelector('.omr-sections');
-  
-        if (omrElement && container) {
-          container.scrollTo({
-            top: omrElement.offsetTop - container.clientHeight / 2,
-            behavior: "smooth"
-          });
+        const questionElement = document.getElementById(`question-${questionIndex}`);
+        if (questionElement) {
+          questionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
       }, 100);
     }
   };
-  
   
 
   const toggleMarkForReview = () => {
@@ -418,7 +446,7 @@ useEffect(() => {
       <div className="neet-test-content">
         {/* Question Panel (80%) - All Questions Scrollable */}
         <div className="neet-question-panel">
-        <div className="all-questions-container">
+        <div className="all-questions-container"  ref={questionScrollRef}>
 
   {/* PHYSICS SECTION */}
   <div className="subject-section" data-subject="Physics">
@@ -663,15 +691,17 @@ useEffect(() => {
            </div>
         {/* OMR Sheet Panel (30%) */}
         <div className="neet-omr-panel">
-          <OMRSheet
-            totalQuestions={test.questions.length}
-            questions={test.questions}
-            answers={answers}
-            markedForReview={markedForReview}
-            currentQuestionIndex={currentQuestionIndex}
-            onQuestionClick={handleNavigate}
-            onAnswerSelect={handleAnswerSelect}
-          />
+        <OMRSheet
+  ref={omrScrollRef}
+  totalQuestions={test.questions.length}
+  questions={test.questions}
+  answers={answers}
+  markedForReview={markedForReview}
+  currentQuestionIndex={currentQuestionIndex}
+  onQuestionClick={handleNavigate}
+  onAnswerSelect={handleAnswerSelect}
+/>
+
         </div>
       </div>
     </div>

@@ -16,21 +16,28 @@
   .stat-item span {
     font-size: 0.55rem;
   }
-  .omr-legend {
-    font-size: 0.6rem;
-    padding: 1px 1px;
-    gap: 0.5px;
-    height: 16px;
-    min-height: 0;
-    max-height: 18px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-  }
-  .legend-item {
-    font-size: 0.6rem;
-    gap: 4px;
-  }
+  /* Legend */
+.omr-legend {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between; /* or flex-start */
+  gap: 10px;
+  padding: 4px 8px;
+  background: #ffe4e6;
+  flex-shrink: 0;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  color: #6b7280;
+  font-weight: 500;
+  white-space: nowrap; /* keep text in one line */
+}
+
   .legend-box {
     width: 9px;
     height: 9px;
@@ -42,8 +49,9 @@
   flex-direction: column;
   height: 100%;
   background: #ffe4e6;
-  overflow-y: auto;
+  overflow-y: hidden;   /* ⬅️ IMPORTANT: was auto, make it hidden */
 }
+
 
 /* Stats Bar */
 .omr-stats {
@@ -62,7 +70,11 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  gap: 0;
+  padding: 8px;
+  scrollbar-width: none;
 }
+
 .stat-item {
   display: flex;
   flex-direction: column;
