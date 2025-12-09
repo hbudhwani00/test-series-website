@@ -337,7 +337,7 @@ const ManageScheduledTest = () => {
       console.log("Sending payload:", payload);
 
       const response = await axios.post(
-        `${API_URL}/scheduled-tests`,
+        `${API_URL}/admin/scheduled-tests`,
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );

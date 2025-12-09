@@ -43,10 +43,10 @@ router.post('/create', auth, adminAuth, async (req, res) => {
       scheduleType,
       startDate,
       endDate,
-      questions // Array of question objects with questionNumber field
+      questions 
     } = req.body;
 
-    // Ensure that the questions array contains at least one valid placeholder question if empty or invalid
+    // Ensure at least 1 question
     if (!Array.isArray(req.body.questions) || req.body.questions.length === 0 || !req.body.questions[0].question) {
       req.body.questions = [
         {
@@ -67,31 +67,29 @@ router.post('/create', auth, adminAuth, async (req, res) => {
       ];
     }
 
-    // Validate required fields
+    // Required fields check
     if (!title || !examType || !duration || !totalMarks || !questions || questions.length === 0) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    // Create questions in the database
+    // Save questions
     const createdQuestions = [];
     for (const q of questions) {
-      // Map examType from JEE_MAIN/NEET to JEE/NEET
       let mappedExamType = examType;
       if (examType === 'JEE_MAIN' || examType === 'JEE_MAIN_ADVANCED') {
         mappedExamType = 'JEE';
       }
-      
-      // Map questionType from mcq/numerical to single/numerical
+
       let mappedQuestionType = q.questionType || 'single';
       if (mappedQuestionType === 'mcq') {
         mappedQuestionType = 'single';
       }
-      
+
       const question = new Question({
         question: q.question,
-        questionImage: typeof q.questionImage !== 'undefined' ? (q.questionImage && typeof q.questionImage === 'string' && !q.questionImage.startsWith('http') ? `${req.protocol}://${req.get('host')}${q.questionImage}` : q.questionImage) : null,
+        questionImage: q.questionImage || null,
         options: q.options || [],
-        optionImages: typeof q.optionImages !== 'undefined' ? (Array.isArray(q.optionImages) ? q.optionImages.map(img => (img && typeof img === 'string' && !img.startsWith('http') ? `${req.protocol}://${req.get('host')}${img}` : img)) : q.optionImages) : [],
+        optionImages: q.optionImages || [],
         correctAnswer: q.correctAnswer,
         marks: q.marks || 4,
         hasNegativeMarking: q.hasNegativeMarking !== undefined ? q.hasNegativeMarking : true,
@@ -107,27 +105,26 @@ router.post('/create', auth, adminAuth, async (req, res) => {
         examType: mappedExamType,
         section: mappedQuestionType === 'numerical' ? 'B' : 'A'
       });
-      
+
       const savedQuestion = await question.save();
       createdQuestions.push(savedQuestion._id);
     }
 
-
-    // Helper: Extract date and time from ISO or string
+    // -------- DATE & TIME PROCESSING FIXED -------- //
     function extractDateAndTime(dateInput, fallbackTime = '10:00') {
       if (!dateInput) return { dateStr: '', timeStr: fallbackTime };
-      // If ISO string, split date and time
+
       if (typeof dateInput === 'string' && dateInput.includes('T')) {
         const [dateStr, timePart] = dateInput.split('T');
-        const timeStr = timePart ? timePart.slice(0,5) : fallbackTime;
+        const timeStr = timePart ? timePart.slice(0, 5) : fallbackTime;
         return { dateStr, timeStr };
       }
-      // If just date string
+
       return { dateStr: dateInput, timeStr: fallbackTime };
     }
 
-    // Convert IST date+time to UTC
     const IST_OFFSET_MINUTES = 330; // +5:30
+
     function toUTCFromIST(dateStr, timeStr) {
       if (!dateStr) return null;
       const [year, month, day] = dateStr.split('-').map(Number);
@@ -137,13 +134,18 @@ router.post('/create', auth, adminAuth, async (req, res) => {
       return istDate;
     }
 
-    // Extract start/end date and time
-    const { dateStr: startDateStr, timeStr: startTimeStr } = extractDateAndTime(startDate, req.body.startTime || '10:00');
-    const { dateStr: endDateStr, timeStr: endTimeStr } = extractDateAndTime(endDate, req.body.endTime || '10:00');
+    // IMPORTANT: USING startTimeStr and endTimeStr
+    const { dateStr: startDateStr, timeStr: startTimeStr } = 
+      extractDateAndTime(startDate, req.body.startTime || '10:00');
+
+    const { dateStr: endDateStr, timeStr: endTimeStr } = 
+      extractDateAndTime(endDate, req.body.endTime || '10:00');
 
     const start = toUTCFromIST(startDateStr, startTimeStr);
     const end = endDateStr ? toUTCFromIST(endDateStr, endTimeStr) : null;
+    // ------------------------------------------------- //
 
+    // Generate schedule dates
     const scheduledDates = [];
     if (scheduleType === 'one-time') {
       scheduledDates.push({ date: start, isCompleted: false });
@@ -161,7 +163,7 @@ router.post('/create', auth, adminAuth, async (req, res) => {
       }
     }
 
-    // Create scheduled test (store only question IDs)
+    // ------- SAVING THE FIXED DATES (important fix) ------- //
     const scheduledTest = new ScheduledTest({
       title,
       examType,
@@ -171,9 +173,11 @@ router.post('/create', auth, adminAuth, async (req, res) => {
       totalMarks,
       testType,
       scheduleType,
-      startDate,
-      endDate: endDate || null,
-      questions: createdQuestions, // Array of ObjectIds
+      startDate: start,     // <--- FIXED
+      endDate: end || null, // <--- FIXED
+      startTime: startTimeStr, // <--- OPTIONAL BUT SAFE
+      endTime: endTimeStr,
+      questions: createdQuestions,
       scheduledDates,
       isActive: true,
       createdBy: req.user.userId
@@ -181,12 +185,13 @@ router.post('/create', auth, adminAuth, async (req, res) => {
 
     await scheduledTest.save();
 
-    res.status(201).json({ 
+    res.status(201).json({
       message: 'Scheduled test created successfully',
       scheduledTest,
       totalQuestions: createdQuestions.length,
       totalScheduledDates: scheduledDates.length
     });
+
   } catch (error) {
     console.error('Error creating scheduled test:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
