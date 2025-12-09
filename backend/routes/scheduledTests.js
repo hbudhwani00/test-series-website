@@ -32,7 +32,8 @@ function generateScheduledDates(scheduleType, startDate, endDate) {
 // Admin: Create Scheduled Test with Manual Questions
 router.post('/create', auth, adminAuth, async (req, res) => {
   try {
-    const { 
+    // Extract & allow mutation by using "let"
+    let { 
       title, 
       examType, 
       subject,
@@ -43,11 +44,17 @@ router.post('/create', auth, adminAuth, async (req, res) => {
       scheduleType,
       startDate,
       endDate,
-      questions 
+      questions
     } = req.body;
 
-    // Ensure at least 1 question
-    if (!Array.isArray(req.body.questions) || req.body.questions.length === 0 || !req.body.questions[0].question) {
+    // -------------------------------
+    // 1. PLACEHOLDER QUESTION HANDLING
+    // -------------------------------
+    if (
+      !Array.isArray(req.body.questions) ||
+      req.body.questions.length === 0 ||
+      !req.body.questions[0].question
+    ) {
       req.body.questions = [
         {
           questionNumber: 1,
@@ -57,8 +64,8 @@ router.post('/create', auth, adminAuth, async (req, res) => {
           marks: 4,
           hasNegativeMarking: true,
           difficulty: "medium",
-          subject: req.body.subject || "General",
-          chapter: req.body.chapter || "General",
+          subject: subject || "General",
+          chapter: chapter || "General",
           topic: "General",
           explanation: "",
           source: "Default",
@@ -67,25 +74,30 @@ router.post('/create', auth, adminAuth, async (req, res) => {
       ];
     }
 
-    // Required fields check
+    // ⭐ IMPORTANT: Update local variable
+    questions = req.body.questions;
+
+    // -------------------------------
+    // 2. VALIDATE REQUIRED FIELDS
+    // -------------------------------
     if (!title || !examType || !duration || !totalMarks || !questions || questions.length === 0) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    // Save questions
+    // -------------------------------
+    // 3. SAVE QUESTIONS ONE BY ONE
+    // -------------------------------
     const createdQuestions = [];
+
     for (const q of questions) {
-      let mappedExamType = examType;
-      if (examType === 'JEE_MAIN' || examType === 'JEE_MAIN_ADVANCED') {
-        mappedExamType = 'JEE';
-      }
+      // Map question types
+      let mappedExamType = examType === "JEE_MAIN" || examType === "JEE_MAIN_ADVANCED"
+        ? "JEE"
+        : examType;
 
-      let mappedQuestionType = q.questionType || 'single';
-      if (mappedQuestionType === 'mcq') {
-        mappedQuestionType = 'single';
-      }
+      let mappedQuestionType = q.questionType === "mcq" ? "single" : q.questionType;
 
-      const question = new Question({
+      const newQuestion = new Question({
         question: q.question,
         questionImage: q.questionImage || null,
         options: q.options || [],
@@ -93,77 +105,83 @@ router.post('/create', auth, adminAuth, async (req, res) => {
         correctAnswer: q.correctAnswer,
         marks: q.marks || 4,
         hasNegativeMarking: q.hasNegativeMarking !== undefined ? q.hasNegativeMarking : true,
-        difficulty: q.difficulty || 'medium',
+        difficulty: q.difficulty || "medium",
         subject: subject || q.subject,
         chapter: chapter || q.chapter,
-        topic: q.topic || 'General',
-        explanation: q.explanation || '',
+        topic: q.topic || "General",
+        explanation: q.explanation || "",
         explanationImage: q.explanationImage || null,
-        source: q.source || 'Practice',
+        source: q.source || "Practice",
         questionType: mappedQuestionType,
-        questionNumber: q.questionNumber || (createdQuestions.length + 1),
+        questionNumber: q.questionNumber || createdQuestions.length + 1,
         examType: mappedExamType,
-        section: mappedQuestionType === 'numerical' ? 'B' : 'A'
+        section: mappedQuestionType === "numerical" ? "B" : "A",
       });
 
-      const savedQuestion = await question.save();
-      createdQuestions.push(savedQuestion._id);
+      const savedQ = await newQuestion.save();
+      createdQuestions.push(savedQ._id);
     }
 
-    // -------- DATE & TIME PROCESSING FIXED -------- //
-    function extractDateAndTime(dateInput, fallbackTime = '10:00') {
-      if (!dateInput) return { dateStr: '', timeStr: fallbackTime };
+    // -------------------------------
+    // 4. DATE/TIME PROCESSING (FIXED)
+    // -------------------------------
 
-      if (typeof dateInput === 'string' && dateInput.includes('T')) {
-        const [dateStr, timePart] = dateInput.split('T');
-        const timeStr = timePart ? timePart.slice(0, 5) : fallbackTime;
-        return { dateStr, timeStr };
+    function extractDateAndTime(iso, fallback = "10:00") {
+      if (!iso) return { dateStr: "", timeStr: fallback };
+
+      if (iso.includes("T")) {
+        const [d, t] = iso.split("T");
+        return { dateStr: d, timeStr: t.slice(0, 5) };
       }
-
-      return { dateStr: dateInput, timeStr: fallbackTime };
+      return { dateStr: iso, timeStr: fallback };
     }
 
-    const IST_OFFSET_MINUTES = 330; // +5:30
+    const IST_OFFSET = 330; // +5:30
 
-    function toUTCFromIST(dateStr, timeStr) {
-      if (!dateStr) return null;
-      const [year, month, day] = dateStr.split('-').map(Number);
-      const [hour, minute] = timeStr.split(':').map(Number);
-      const istDate = new Date(Date.UTC(year, month - 1, day, hour, minute));
-      istDate.setUTCMinutes(istDate.getUTCMinutes() - IST_OFFSET_MINUTES);
-      return istDate;
+    function ISTtoUTC(dateStr, timeStr) {
+      const [y, m, d] = dateStr.split("-").map(Number);
+      const [H, M] = timeStr.split(":").map(Number);
+
+      const dt = new Date(Date.UTC(y, m - 1, d, H, M));
+      dt.setUTCMinutes(dt.getUTCMinutes() - IST_OFFSET);
+      return dt;
     }
 
-    // IMPORTANT: USING startTimeStr and endTimeStr
-    const { dateStr: startDateStr, timeStr: startTimeStr } = 
-      extractDateAndTime(startDate, req.body.startTime || '10:00');
+    const { dateStr: startDateStr, timeStr: startTimeStr } =
+      extractDateAndTime(startDate, req.body.startTime || "10:00");
 
-    const { dateStr: endDateStr, timeStr: endTimeStr } = 
-      extractDateAndTime(endDate, req.body.endTime || '10:00');
+    const { dateStr: endDateStr, timeStr: endTimeStr } =
+      extractDateAndTime(endDate, req.body.endTime || "10:00");
 
-    const start = toUTCFromIST(startDateStr, startTimeStr);
-    const end = endDateStr ? toUTCFromIST(endDateStr, endTimeStr) : null;
-    // ------------------------------------------------- //
+    const startUTC = ISTtoUTC(startDateStr, startTimeStr);
+    const endUTC = endDateStr ? ISTtoUTC(endDateStr, endTimeStr) : null;
 
-    // Generate schedule dates
+    // -------------------------------
+    // 5. GENERATE SCHEDULED DATES
+    // -------------------------------
     const scheduledDates = [];
-    if (scheduleType === 'one-time') {
-      scheduledDates.push({ date: start, isCompleted: false });
-    } else if (scheduleType === 'weekly' && end) {
-      let currentDate = new Date(start);
-      while (currentDate <= end) {
-        scheduledDates.push({ date: new Date(currentDate), isCompleted: false });
-        currentDate.setDate(currentDate.getDate() + 7);
+
+    if (scheduleType === "one-time") {
+      scheduledDates.push({ date: startUTC, isCompleted: false });
+
+    } else if (scheduleType === "weekly" && endUTC) {
+      let cur = new Date(startUTC);
+      while (cur <= endUTC) {
+        scheduledDates.push({ date: new Date(cur), isCompleted: false });
+        cur.setDate(cur.getDate() + 7);
       }
-    } else if (scheduleType === 'alternate-days' && end) {
-      let currentDate = new Date(start);
-      while (currentDate <= end) {
-        scheduledDates.push({ date: new Date(currentDate), isCompleted: false });
-        currentDate.setDate(currentDate.getDate() + 2);
+
+    } else if (scheduleType === "alternate-days" && endUTC) {
+      let cur = new Date(startUTC);
+      while (cur <= endUTC) {
+        scheduledDates.push({ date: new Date(cur), isCompleted: false });
+        cur.setDate(cur.getDate() + 2);
       }
     }
 
-    // ------- SAVING THE FIXED DATES (important fix) ------- //
+    // -------------------------------
+    // 6. CREATE SCHEDULED TEST
+    // -------------------------------
     const scheduledTest = new ScheduledTest({
       title,
       examType,
@@ -173,30 +191,34 @@ router.post('/create', auth, adminAuth, async (req, res) => {
       totalMarks,
       testType,
       scheduleType,
-      startDate: start,     // <--- FIXED
-      endDate: end || null, // <--- FIXED
-      startTime: startTimeStr, // <--- OPTIONAL BUT SAFE
+
+      startDate: startUTC,
+      endDate: endUTC || null,
+
+      startTime: startTimeStr,
       endTime: endTimeStr,
+
       questions: createdQuestions,
       scheduledDates,
       isActive: true,
-      createdBy: req.user.userId
+      createdBy: req.user.userId,
     });
 
     await scheduledTest.save();
 
     res.status(201).json({
-      message: 'Scheduled test created successfully',
+      message: "Scheduled test created successfully",
       scheduledTest,
       totalQuestions: createdQuestions.length,
       totalScheduledDates: scheduledDates.length
     });
 
   } catch (error) {
-    console.error('Error creating scheduled test:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error("Error creating scheduled test:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 });
+
 
 // Admin: Get All Scheduled Tests
 router.get('/all', auth, adminAuth, async (req, res) => {

@@ -275,83 +275,92 @@ const ManageScheduledTest = () => {
   const handleCreateTest = async () => {
     try {
       const token = localStorage.getItem("token");
-
+  
+      // Subject defaults
       const defaultSubject =
         testData.subject && testData.subject.trim() !== ""
           ? testData.subject
           : getDefaultSubject(testData.examType);
-
+  
       const defaultChapter =
         testData.chapter && testData.chapter.trim() !== ""
           ? testData.chapter
           : getDefaultChapter();
-
-      // Ensure at least one valid placeholder question
-      const safeQuestions = questions.length > 0 ? questions : [
-        {
-          questionNumber: 1,
-          question: "Placeholder question?", // Ensure this field is valid
-          questionImage: null,
-
-          options: ["A", "B", "C", "D"],
-          optionImages: [],
-
-          correctAnswer: 0,
-          marks: 4,
-          hasNegativeMarking: true,
-          difficulty: "medium",
-
-          subject: defaultSubject,
-          chapter: defaultChapter,
-          topic: "General",
-
-          explanation: "This is a placeholder explanation.", // Add explanation
-          explanationImage: null,
-
-          source: "Practice",
-          questionType: "mcq",
-          examType: testData.examType || "JEE_MAIN",
-        }
-      ];
-
+  
+      // Ensure at least one placeholder question
+      const safeQuestions =
+        questions.length > 0
+          ? questions
+          : [
+              {
+                questionNumber: 1,
+                question: "Placeholder question?",
+                questionImage: null,
+  
+                options: ["A", "B", "C", "D"],
+                optionImages: [],
+  
+                correctAnswer: 0,
+                marks: 4,
+                hasNegativeMarking: true,
+                difficulty: "medium",
+  
+                subject: defaultSubject,
+                chapter: defaultChapter,
+                topic: "General",
+  
+                explanation: "This is a placeholder explanation.",
+                explanationImage: null,
+  
+                source: "Practice",
+                questionType: "mcq",
+                examType: testData.examType || "JEE_MAIN",
+              },
+            ];
+  
+      // ⭐⭐⭐ MOST IMPORTANT FIX — send startTime & endTime
       const payload = {
         title: testData.title,
         examType: testData.examType,
         testType: testData.testType,
         scheduleType: testData.scheduleType,
-
+  
+        // Frontend: send ISO + raw times (backend needs both)
         startDate: `${testData.startDate}T${testData.startTime}:00`,
         endDate: testData.endDate || null,
-
+  
+        startTime: testData.startTime,              // <--- FIXED
+        endTime: testData.endTime || "10:00",       // <--- FIXED
+  
         duration: testData.duration,
         totalMarks: testData.totalMarks,
-
+  
         subject: defaultSubject,
         chapter: defaultChapter,
-
+  
         customDays: testData.customDays || [],
-
-        questions: safeQuestions
+  
+        questions: safeQuestions,
       };
-
+  
       console.log("Sending payload:", payload);
-
+  
       const response = await axios.post(
-        `${API_URL}/admin/scheduled-tests`,
+        `${API_URL}/scheduled-tests/create`,   // <--- FIXED ENDPOINT
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
+  
       toast.success("Scheduled test created!");
       setShowModal(false);
       resetForm();
       fetchTests();
-
     } catch (error) {
       console.error("🔥 FULL API ERROR:", error);
       toast.error(error.response?.data?.message || "Server error");
     }
   };
+  
   
   
   const handleDeleteTest = async (id) => {
