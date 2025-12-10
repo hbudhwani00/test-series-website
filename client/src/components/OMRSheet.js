@@ -24,7 +24,7 @@ const OMRSheet = forwardRef(
       // ⭐ Height of stats + legend (auto-detect)
       const stats = document.querySelector(".omr-stats")?.offsetHeight || 0;
       const legend = document.querySelector(".omr-legend")?.offsetHeight || 0;
-      const TOP_BUFFER = stats + legend + 230; // Extra 10px spacing
+      const TOP_BUFFER = stats + legend + 120; // Extra 10px spacing
     
       const newScrollTop = target.offsetTop - TOP_BUFFER;
     
