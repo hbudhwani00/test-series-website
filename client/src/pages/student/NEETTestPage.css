@@ -20,22 +20,24 @@
 }
 
 /* HEADER */
+/* ====== COMPACT HEADER (NEW) ====== */
+
 .neet-test-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
+  padding: 6px 14px;        /* smaller */
   background: white;
   color: #1f2937;
-  border-bottom: 2px solid #e5e7eb;
-  gap: 20px;
-  flex-shrink: 0;
+  border-bottom: 1px solid #e5e7eb;  /* thinner */
+  gap: 10px;
+  height: 48px;             /* fixed slim height */
 }
 
 .header-left h2 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 15px;          /* smaller title */
+  font-weight: 600;
   color: #111827;
 }
 
@@ -45,20 +47,53 @@
 }
 
 .timer {
-  font-size: 18px;
-  font-weight: 700;
-  padding: 8px 16px;
+  font-size: 14px;            /* smaller timer */
+  font-weight: 600;
+  padding: 4px 10px;          /* smaller box */
   background: #f3f4f6;
-  border: 2px solid #d1d5db;
-  border-radius: 8px;
-  min-width: 120px;
+  border: 1px solid #d1d5db;  /* thinner */
+  border-radius: 6px;
+  min-width: 90px;
   color: #111827;
 }
 
 .timer.warning {
-  background: #ff6b6b;
-  animation: pulse 1s infinite;
+  background: #ffe5e5;
 }
+
+.header-right {
+  display: flex;
+  gap: 6px;
+}
+
+.header-btn {
+  padding: 0 12px;              /* equal top/bottom */
+  height: 32px;                 /* fixed height */
+  display: flex;
+  align-items: center;          /* vertically center text */
+  justify-content: center;
+  background: white;
+  color: #111827;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+
+.submit-btn {
+  background: #111827;
+  border-color: #111827;
+  color: white;
+}
+
+.submit-btn:hover {
+  background: #374151;
+  border-color: #374151;
+}
+
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }

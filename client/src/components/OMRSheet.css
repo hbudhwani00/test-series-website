@@ -231,7 +231,7 @@
 .omr-question-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   padding: 8px 10px;
   border-bottom: 1px solid #111827;
   background: #ffe4e6;
@@ -253,7 +253,7 @@
 }
 
 .question-num {
-  min-width: 50px;
+  min-width: 30px;
   font-weight: 700;
   font-size: 0.95rem;
   color: #111827;

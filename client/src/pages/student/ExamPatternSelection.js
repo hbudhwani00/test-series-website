@@ -181,11 +181,9 @@ const ExamPatternSelection = () => {
       }
     }
   };
-
   const handleDemoTest = async () => {
-    // Directly start the test based on selected exam (no modal needed)
     const examType = selectedExam;
-    
+  
     try {
       if (examType === 'NEET') {
         const response = await axios.get(`${API_URL}/demo/neet-test`);
@@ -193,14 +191,24 @@ const ExamPatternSelection = () => {
           toast.error('NEET demo test not available');
           return;
         }
+  
+        // FULLSCREEN BEFORE NAVIGATION 100% WORKS
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) await elem.requestFullscreen();
+  
         navigate(`/student/neet-demo-test/${response.data.neetTest._id}`);
-      } else {
-        // Default to JEE
+      } 
+      else {
         const response = await axios.get(`${API_URL}/demo/test`);
         if (!response.data.test) {
           toast.error('JEE demo test not available');
           return;
         }
+  
+        // FULLSCREEN BEFORE NAVIGATION
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) await elem.requestFullscreen();
+  
         navigate(`/student/demo-test/${response.data.test._id}`);
       }
     } catch (error) {
@@ -208,7 +216,7 @@ const ExamPatternSelection = () => {
       toast.error('Failed to load demo test. Please try again.');
     }
   };
-
+  
   const handleStartTest = async () => {
     // Always start demo test (no login required)
     await handleDemoTest();
