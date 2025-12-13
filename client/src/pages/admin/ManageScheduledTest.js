@@ -49,7 +49,18 @@ const ManageScheduledTest = () => {
   });
   const [showPreview, setShowPreview] = useState(false);
   const [imageSizes, setImageSizes] = useState({ question: 100, option0: 100, option1: 100, option2: 100, option3: 100, explanation: 100 });
-
+  useEffect(() => {
+    if (showModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+  
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [showModal]);
+  
   useEffect(() => {
     fetchTests();
     fetchAllQuestions();
