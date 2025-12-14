@@ -104,7 +104,7 @@ const ManageSubscriptions = () => {
   const openModal = (student, mode, subscription = null) => {
     setSelectedStudent(student);
     setModalMode(mode);
-    
+  
     if (mode === 'edit' && subscription) {
       setFormData({
         examType: subscription.examType,
@@ -113,11 +113,17 @@ const ManageSubscriptions = () => {
         isActive: subscription.isActive
       });
     } else {
-      resetForm();
+      setFormData({
+        examType: 'JEE_MAIN',
+        expiryDate: '',
+        amount: 0,
+        isActive: true
+      });
     }
-    
+  
     setShowModal(true);
   };
+  
 
   const resetForm = () => {
     setFormData({
@@ -126,7 +132,7 @@ const ManageSubscriptions = () => {
       amount: 0,
       isActive: true
     });
-    setSelectedStudent(null);
+    // setSelectedStudent(null);
   };
 
   const getStatusBadge = (subscription) => {
@@ -376,16 +382,18 @@ const ManageSubscriptions = () => {
                         {modalMode === 'add' ? 'Grant Subscription' : 'Update Subscription'}
                       </Button>
                       <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          setShowModal(false);
-                          resetForm();
-                        }}
-                        className="flex-1"
-                      >
-                        Cancel
-                      </Button>
+  type="button"
+  variant="outline"
+  onClick={() => {
+    setShowModal(false);
+    resetForm();
+    setSelectedStudent(null);
+  }}
+  className="flex-1"
+>
+  Cancel
+</Button>
+
                     </div>
                   </div>
                 </form>

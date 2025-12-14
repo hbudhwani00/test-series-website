@@ -243,7 +243,7 @@
 
 .question-subject-tag {
   position: absolute;
-  top: 12px;
+  top: -1px;
   right: 16px;
   background: #111827;
   color: white;
@@ -785,4 +785,48 @@
   .option {
     padding: 8px;
   }
+}
+.question-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: 100%;
+}
+
+.q-number {
+  font-weight: 700;
+  white-space: nowrap;   /* keeps Q1. intact */
+}
+
+.q-statement {
+  flex: 1;
+}
+
+/* remove default margins added by latex */
+.q-statement p,
+.q-statement div {
+  margin: 0;
+}
+
+/* ✅ FORCE Q1 AND QUESTION IN SAME LINE */
+.question-text-inline {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
+.q-number {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.q-text {
+  flex: 1;
+}
+
+/* Kill latex default margins */
+.q-text p,
+.q-text div {
+  margin: 0 !important;
 }

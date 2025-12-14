@@ -477,14 +477,17 @@ useEffect(() => {
             </div>
 
             <div className="question-content">
-              <div className="question-text">
-                <strong>Q{question.questionNumber}.</strong>
-                <LatexRenderer content={question.question} />
+            <div className="question-text-inline">
+  <span className="q-number">Q{question.questionNumber}.</span>
+  <span className="q-text">
+    <LatexRenderer content={question.question} />
+  </span>
+</div>
 
-                {question.questionImage && (
-                  <img src={question.questionImage} className="question-image" alt="" />
-                )}
-              </div>
+{question.questionImage && (
+  <img src={question.questionImage} className="question-image" alt="" />
+)}
+
 
               <div className="options-container">
                 {question.options.map((option, idx) => (
@@ -557,13 +560,17 @@ useEffect(() => {
             </div>
 
             <div className="question-content">
-              <div className="question-text">
-                <strong>Q{question.questionNumber}.</strong>
-                <LatexRenderer content={question.question} />
-                {question.questionImage && (
-                  <img src={question.questionImage} className="question-image" alt="" />
-                )}
-              </div>
+            <div className="question-text-inline">
+  <span className="q-number">Q{question.questionNumber}.</span>
+  <span className="q-text">
+    <LatexRenderer content={question.question} />
+  </span>
+</div>
+
+{question.questionImage && (
+  <img src={question.questionImage} className="question-image" alt="" />
+)}
+
 
               <div className="options-container">
                 {question.options.map((option, idx) => (
@@ -636,13 +643,18 @@ useEffect(() => {
             </div>
 
             <div className="question-content">
-              <div className="question-text">
-                <strong>Q{question.questionNumber}.</strong>
-                <LatexRenderer content={question.question} />
-                {question.questionImage && (
-                  <img src={question.questionImage} className="question-image" alt="" />
-                )}
-              </div>
+            <div className="question-text-inline">
+  <span className="q-number">Q{question.questionNumber}.</span>
+  <span className="q-text">
+    <LatexRenderer content={question.question} />
+  </span>
+</div>
+
+{question.questionImage && (
+  <img src={question.questionImage} className="question-image" alt="" />
+)}
+
+
 
               <div className="options-container">
                 {question.options.map((option, idx) => (
