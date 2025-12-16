@@ -45,7 +45,9 @@ const ManageScheduledTest = () => {
     topic: '',
     explanation: '',
     questionType: 'mcq',
-    source: 'Practice'
+    source: 'Practice',
+    questionImage: null,
+    optionImages: []
   });
   const [showPreview, setShowPreview] = useState(false);
   const [imageSizes, setImageSizes] = useState({ question: 100, option0: 100, option1: 100, option2: 100, option3: 100, explanation: 100 });
@@ -238,7 +240,9 @@ const ManageScheduledTest = () => {
       chapter: testData.chapter,
       topic: '',
       explanation: '',
-      questionType: 'mcq'
+      questionType: 'mcq',
+      questionImage: null,
+      optionImages: []
     });
   };
 
@@ -263,7 +267,9 @@ const ManageScheduledTest = () => {
       chapter: testData.chapter,
       topic: '',
       explanation: '',
-      questionType: 'mcq'
+      questionType: 'mcq',
+      questionImage: null,
+      optionImages: []
     });
     toast.info('Edit cancelled');
   };
@@ -427,7 +433,9 @@ const ManageScheduledTest = () => {
         questionType: q.questionType,
         topic: q.topic || '',
         numericalAnswer: q.numericalAnswer || '',
-        source: q.source || 'Practice'
+        source: q.source || 'Practice',
+        questionImage: q.questionImage || null,
+        optionImages: q.optionImages || []
       }));
       setQuestions(formattedQuestions);
 
@@ -467,9 +475,29 @@ const ManageScheduledTest = () => {
       topic: '',
       explanation: '',
       questionType: 'mcq',
-      source: 'Practice'
+      questionImage: null,
+      optionImages: []
     });
     setEditingTest(null);
+  };
+
+  // Add support for uploading images for questions and options
+  const handleImageUpload = (e, field) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (field === 'questionImage') {
+          setCurrentQuestion({ ...currentQuestion, questionImage: reader.result });
+        } else {
+          const index = parseInt(field.replace('optionImage', ''));
+          const updatedOptionImages = [...(currentQuestion.optionImages || [])];
+          updatedOptionImages[index] = reader.result;
+          setCurrentQuestion({ ...currentQuestion, optionImages: updatedOptionImages });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -813,6 +841,23 @@ const ManageScheduledTest = () => {
                       />
                     </div>
 
+                    {/* Add file input fields for uploading images */}
+                    <div className="form-group">
+                      <label>Question Image</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageUpload(e, 'questionImage')}
+                      />
+                      {currentQuestion.questionImage && (
+                        <img
+                          src={currentQuestion.questionImage}
+                          alt="Question Preview"
+                          style={{ width: '100px', marginTop: '10px' }}
+                        />
+                      )}
+                    </div>
+
                     {currentQuestion.questionType === 'mcq' && (
                       <>
                         <div className="form-group">
@@ -830,6 +875,28 @@ const ManageScheduledTest = () => {
                                 }}
                                 placeholder={`Option ${String.fromCharCode(65 + idx)}`}
                               />
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Add file input fields for uploading images */}
+                        <div className="form-group">
+                          <label>Option Images</label>
+                          {currentQuestion.options.map((_, idx) => (
+                            <div key={idx} style={{ marginBottom: '10px' }}>
+                              <span>Option {String.fromCharCode(65 + idx)}:</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => handleImageUpload(e, `optionImage${idx}`)}
+                              />
+                              {currentQuestion.optionImages && currentQuestion.optionImages[idx] && (
+                                <img
+                                  src={currentQuestion.optionImages[idx]}
+                                  alt={`Option ${String.fromCharCode(65 + idx)} Preview`}
+                                  style={{ width: '100px', marginTop: '10px' }}
+                                />
+                              )}
                             </div>
                           ))}
                         </div>
